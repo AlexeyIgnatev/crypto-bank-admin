@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Transaction } from "../types";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -10,6 +10,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
+  const [stickyWidths, setStickyWidths] = useState<number[] | null>(null);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -25,6 +26,25 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const totalPages = Math.max(1, Math.ceil(sorted.length / size));
   const pageData = sorted.slice((page - 1) * size, page * size);
 
+  // Lock column widths to avoid layout shifts on filtering/sorting
+  const cols = ["id","status","createdAt","amount","sender","recipient"];
+  const measure = (root: HTMLElement) => {
+    const widths: number[] = [];
+    for (let i = 0; i < cols.length; i++) {
+      const th = root.querySelector(`th[data-col="${i}"]`) as HTMLElement | null;
+      widths.push(th ? th.getBoundingClientRect().width : 0);
+    }
+  const tableRef = useRef<HTMLTableElement | null>(null);
+  useEffect(() => {
+    if (tableRef.current) {
+      const thead = tableRef.current.querySelector('thead');
+      if (thead) measure(thead as HTMLElement);
+    }
+  }, [sortKey, sortDir, size, page, data.length]);
+
+    setStickyWidths(widths);
+  };
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -35,17 +55,36 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
   return (
     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+      {stickyWidths && (
+        <style>{`
+          .col-0{width:${stickyWidths[0]}px}
+          .col-1{width:${stickyWidths[1]}px}
+          .col-2{width:${stickyWidths[2]}px}
+          .col-3{width:${stickyWidths[3]}px}
+          .col-4{width:${stickyWidths[4]}px}
+          .col-5{width:${stickyWidths[5]}px}
+        `}</style>
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="sticky top-0 text-white" style={{ background: "var(--primary)" }}>
+              {/* Hidden probe row to measure headers once */}
+              <tr className="invisible absolute -z-10">
+                {cols.map((_, i) => (
+                  <th key={i} data-col={i} className={`px-4 py-3 text-left text-xs font-semibold`}>
+                    &nbsp;
+                  </th>
+                ))}
+              </tr>
+
             <tr>
-              <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>
-              <Th onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>Статус</Th>
-              <Th onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>Дата</Th>
-              <Th onClick={() => toggleSort("amount")} active={sortKey === "amount"} dir={sortDir}>Сумма</Th>
-              <Th>Отправитель</Th>
-              <Th>Получатель</Th>
-            </tr>
+                <Th col={0} onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>
+                <Th col={1} onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>Статус</Th>
+                <Th col={2} onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>Дата</Th>
+                <Th col={3} onClick={() => toggleSort("amount")} active={sortKey === "amount"} dir={sortDir}>Сумма</Th>
+                <Th col={4}>Отправитель</Th>
+                <Th col={5}>Получатель</Th>
+              </tr>
           </thead>
           <tbody>
             {pageData.map((t) => (
@@ -87,11 +126,12 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   );
 }
 
-function Th({ children, onClick, active, dir }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir: SortDir }) {
+function Th({ children, onClick, active, dir, col }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir: SortDir; col?: number }) {
   return (
     <th
-      className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""}`}
+      className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""} ${typeof col === 'number' && stickyWidths ? `col-${col}` : ''}`}
       onClick={onClick}
+      data-col={typeof col === 'number' ? col : undefined}
     >
       <div className="flex items-center gap-1">
         <span>{children}</span>

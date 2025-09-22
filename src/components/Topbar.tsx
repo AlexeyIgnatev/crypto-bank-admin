@@ -6,7 +6,11 @@ export default function Topbar({ title }: { title: string }) {
   return (
     <header className="sticky top-0 z-10 backdrop-blur border-b" style={{ background: "color-mix(in srgb, var(--card) 70%, transparent)", borderColor: "var(--sidebar-border)" }}>
       <div className="h-14 flex items-center justify-between px-4">
-        <div className="text-lg font-semibold">{title}</div>
+        <div className="flex items-center gap-3">
+          <div className="text-xl font-semibold">Банк</div>
+          <div className="text-neutral-500">/</div>
+          <div className="text-lg font-semibold">{title}</div>
+        </div>
         <ThemeSwitch theme={theme} onToggle={toggle} />
       </div>
     </header>

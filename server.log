@@ -1,564 +1,473 @@
+nohup: ignoring input
 
 > bank-admin@0.1.0 dev
-> next dev --turbopack --hostname 0.0.0.0 --port 40896
+> next dev --turbopack --hostname 0.0.0.0 --port 40896 --turbopack
 
    ▲ Next.js 15.5.3 (Turbopack)
    - Local:        http://localhost:40896
    - Network:      http://0.0.0.0:40896
 
  ✓ Starting...
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
- ✓ Ready in 764ms
+ ✓ Ready in 992ms
  ○ Compiling / ...
- ✓ Compiled / in 2.2s
- GET / 200 in 2474ms
- GET / 200 in 88ms
- ✓ Compiled /favicon.ico in 141ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 408ms
- GET / 200 in 63ms
- GET / 200 in 59ms
- GET / 200 in 65ms
- GET / 200 in 69ms
- GET / 200 in 67ms
- GET / 200 in 64ms
- GET / 200 in 63ms
+ ✓ Compiled / in 2.7s
+ GET / 200 in 3030ms
+ GET / 200 in 92ms
+ ✓ Compiled /favicon.ico in 176ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 446ms
+ GET / 200 in 89ms
+ GET / 200 in 82ms
+ GET / 200 in 95ms
+ GET / 200 in 93ms
+ GET / 200 in 89ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 245ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
+ ✓ Compiled /_not-found/page in 257ms
+ GET /admins 404 in 315ms
+ GET /admins 404 in 54ms
+ GET /admins 404 in 75ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 252ms
+ GET / 200 in 50ms
+ GET / 200 in 111ms
+ GET / 200 in 95ms
+ GET / 200 in 91ms
+ GET /admins 404 in 49ms
+ GET /admins 404 in 77ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 233ms
- GET / 200 in 72ms
- GET / 200 in 62ms
- GET / 200 in 70ms
- GET / 200 in 69ms
- GET / 200 in 61ms
- GET / 200 in 54ms
- GET / 200 in 52ms
- GET / 200 in 63ms
- GET / 200 in 67ms
- GET / 200 in 57ms
- GET / 200 in 59ms
- GET / 200 in 52ms
- GET / 200 in 60ms
- GET / 200 in 65ms
- GET / 200 in 61ms
- GET / 200 in 56ms
- GET / 200 in 55ms
- GET / 200 in 60ms
- GET / 200 in 66ms
- GET / 200 in 69ms
- GET / 200 in 65ms
- GET / 200 in 63ms
- GET / 200 in 52ms
- GET / 200 in 57ms
- GET / 200 in 57ms
- GET / 200 in 53ms
- GET / 200 in 55ms
- GET / 200 in 52ms
- GET / 200 in 55ms
- GET / 200 in 63ms
- GET / 200 in 61ms
- GET / 200 in 56ms
- GET / 200 in 55ms
- GET / 200 in 57ms
- GET / 200 in 811ms
- GET / 200 in 61ms
- GET / 200 in 57ms
- GET / 200 in 54ms
- GET / 200 in 55ms
- GET / 200 in 71ms
- GET / 200 in 51ms
- GET / 200 in 56ms
- GET / 200 in 62ms
- GET / 200 in 67ms
- GET / 200 in 57ms
- GET / 200 in 67ms
- GET / 200 in 54ms
- GET / 200 in 57ms
- GET / 200 in 60ms
- GET / 200 in 67ms
- GET / 200 in 51ms
- GET / 200 in 56ms
- GET / 200 in 65ms
- GET / 200 in 64ms
- GET / 200 in 56ms
- GET / 200 in 59ms
- GET / 200 in 53ms
- GET / 200 in 56ms
- GET / 200 in 56ms
- GET / 200 in 51ms
- GET / 200 in 53ms
- GET / 200 in 71ms
- GET / 200 in 50ms
- GET / 200 in 60ms
+ GET / 200 in 81ms
+ GET / 200 in 44ms
+ GET / 200 in 82ms
+ GET / 200 in 96ms
+ GET / 200 in 82ms
  GET / 200 in 84ms
- GET / 200 in 1093ms
- GET / 200 in 63ms
+ GET / 200 in 95ms
+ GET / 200 in 87ms
+ GET / 200 in 95ms
+ GET / 200 in 89ms
+ GET / 200 in 88ms
+ GET / 200 in 99ms
+ GET / 200 in 94ms
+ GET / 200 in 87ms
+ GET / 200 in 92ms
+ GET / 200 in 102ms
+ GET / 200 in 83ms
+ GET / 200 in 93ms
+ GET / 200 in 84ms
+ GET / 200 in 83ms
+ GET / 200 in 92ms
+ GET / 200 in 91ms
+ GET / 200 in 86ms
+ GET / 200 in 78ms
+ GET / 200 in 83ms
  GET / 200 in 73ms
- GET / 200 in 61ms
- GET / 200 in 54ms
- GET / 200 in 64ms
- GET / 200 in 52ms
- GET / 200 in 59ms
- GET / 200 in 63ms
- GET / 200 in 52ms
- GET / 200 in 50ms
- GET / 200 in 62ms
- GET / 200 in 65ms
- GET / 200 in 60ms
- GET / 200 in 55ms
- GET / 200 in 68ms
- GET / 200 in 66ms
- GET / 200 in 59ms
- GET / 200 in 62ms
- GET / 200 in 56ms
- GET / 200 in 64ms
- GET / 200 in 70ms
- GET / 200 in 54ms
- GET / 200 in 54ms
- GET / 200 in 54ms
- GET / 200 in 60ms
- GET / 200 in 57ms
- GET / 200 in 56ms
- GET / 200 in 76ms
- GET / 200 in 65ms
- GET / 200 in 55ms
- GET / 200 in 863ms
- GET / 200 in 63ms
- GET / 200 in 58ms
- GET / 200 in 60ms
- GET / 200 in 63ms
- GET / 200 in 56ms
- GET / 200 in 56ms
- GET / 200 in 59ms
- GET / 200 in 61ms
- GET / 200 in 55ms
- GET / 200 in 54ms
- GET / 200 in 67ms
- GET / 200 in 72ms
- GET / 200 in 64ms
- GET / 200 in 57ms
- GET / 200 in 63ms
- GET / 200 in 54ms
- GET / 200 in 64ms
- GET / 200 in 67ms
- GET / 200 in 58ms
- GET / 200 in 58ms
- GET / 200 in 57ms
- GET / 200 in 62ms
- GET / 200 in 56ms
- GET / 200 in 59ms
- GET / 200 in 72ms
- GET / 200 in 64ms
- GET / 200 in 60ms
- GET / 200 in 64ms
- GET / 200 in 63ms
- GET / 200 in 55ms
- GET / 200 in 800ms
- GET / 200 in 66ms
- GET / 200 in 56ms
- GET / 200 in 54ms
- GET / 200 in 63ms
- GET / 200 in 57ms
- GET / 200 in 59ms
- GET / 200 in 54ms
- GET / 200 in 60ms
- GET / 200 in 64ms
- GET / 200 in 69ms
- GET / 200 in 62ms
- GET / 200 in 59ms
- GET / 200 in 61ms
- GET / 200 in 53ms
- GET / 200 in 58ms
- GET / 200 in 56ms
- GET / 200 in 55ms
- GET / 200 in 58ms
- GET / 200 in 55ms
- GET / 200 in 60ms
- GET / 200 in 66ms
- GET / 200 in 51ms
- GET / 200 in 53ms
- GET / 200 in 65ms
- GET / 200 in 67ms
- GET / 200 in 60ms
- GET / 200 in 64ms
- ✓ Compiled in 75ms
- GET / 200 in 65ms
- GET / 200 in 56ms
- GET / 200 in 64ms
- ✓ Compiled in 68ms
- GET / 200 in 62ms
- GET / 200 in 64ms
- GET / 200 in 61ms
- GET / 200 in 56ms
- ✓ Compiled in 71ms
- GET / 200 in 59ms
- GET / 200 in 67ms
- GET / 200 in 54ms
- GET / 200 in 57ms
- GET / 200 in 67ms
- GET / 200 in 69ms
- GET / 200 in 63ms
- GET / 200 in 71ms
- GET / 200 in 65ms
- ✓ Compiled in 71ms
- GET / 200 in 56ms
- GET / 200 in 67ms
- GET / 200 in 68ms
- GET / 200 in 60ms
- GET / 200 in 53ms
- GET / 200 in 61ms
- GET / 200 in 63ms
- GET / 200 in 66ms
- GET / 200 in 55ms
- GET / 200 in 57ms
- GET / 200 in 66ms
- GET / 200 in 73ms
- GET / 200 in 61ms
- GET / 200 in 62ms
- ✓ Compiled in 74ms
- GET / 200 in 64ms
- GET / 200 in 57ms
- GET / 200 in 63ms
- GET / 200 in 63ms
- ✓ Compiled in 76ms
- GET / 200 in 59ms
- GET / 200 in 58ms
- GET / 200 in 58ms
- GET / 200 in 56ms
- GET / 200 in 69ms
- GET / 200 in 59ms
- GET / 200 in 57ms
- GET / 200 in 69ms
- ✓ Compiled in 137ms
- ✓ Compiled / in 43ms
- GET / 200 in 339ms
- GET / 200 in 331ms
- GET / 200 in 328ms
+ GET / 200 in 85ms
+ GET / 200 in 105ms
+ GET / 200 in 94ms
+ GET / 200 in 77ms
+ GET / 200 in 89ms
+ GET / 200 in 82ms
+ GET / 200 in 90ms
+ GET / 200 in 85ms
+ GET / 200 in 83ms
+ GET / 200 in 83ms
+ GET / 200 in 78ms
+ GET / 200 in 96ms
+ GET / 200 in 78ms
+ GET / 200 in 1047ms
+ GET / 200 in 84ms
+ GET / 200 in 96ms
+ GET / 200 in 89ms
+ GET / 200 in 80ms
+ GET / 200 in 97ms
+ GET / 200 in 85ms
+ GET / 200 in 78ms
+ GET / 200 in 88ms
+ GET / 200 in 74ms
+ GET / 200 in 84ms
+ GET / 200 in 82ms
+ GET / 200 in 78ms
+ GET / 200 in 96ms
+ GET / 200 in 101ms
+ GET / 200 in 97ms
+ GET / 200 in 103ms
  GET / 200 in 100ms
+ GET / 200 in 89ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 246ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 235ms
- GET / 200 in 63ms
- GET / 200 in 68ms
- GET / 200 in 80ms
- GET / 200 in 72ms
- GET / 200 in 72ms
- ✓ Compiled / in 25ms
- GET / 200 in 117ms
- GET / 200 in 72ms
- GET / 200 in 213ms
- GET / 200 in 81ms
- GET / 200 in 80ms
- GET / 200 in 81ms
- GET / 200 in 80ms
- GET / 200 in 78ms
+ GET / 200 in 89ms
+ GET / 200 in 88ms
+ GET / 200 in 93ms
+ GET / 200 in 76ms
  GET / 200 in 81ms
  GET / 200 in 93ms
- GET / 200 in 89ms
- GET / 200 in 80ms
- GET / 200 in 82ms
- GET / 200 in 82ms
- GET / 200 in 73ms
- GET / 200 in 81ms
- GET / 200 in 78ms
- GET / 200 in 78ms
- GET / 200 in 76ms
- GET / 200 in 80ms
- GET / 200 in 83ms
- GET / 200 in 89ms
- GET / 200 in 79ms
- GET / 200 in 76ms
- ✓ Compiled /_not-found/page in 250ms
- GET /admins 404 in 328ms
- GET /users 404 in 108ms
- GET /users 404 in 46ms
- GET /users 404 in 70ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 247ms
- GET /users 404 in 45ms
- GET /users 404 in 70ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET / 200 in 45ms
- GET /admins 404 in 51ms
- GET /admins 404 in 71ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET / 200 in 52ms
- GET / 200 in 86ms
- GET / 200 in 91ms
- GET / 200 in 81ms
- GET / 200 in 820ms
- GET / 200 in 85ms
- GET / 200 in 77ms
- GET / 200 in 83ms
- GET / 200 in 92ms
- GET / 200 in 88ms
- GET / 200 in 79ms
- GET / 200 in 77ms
- GET / 200 in 86ms
- GET / 200 in 102ms
- GET / 200 in 87ms
- GET / 200 in 76ms
- GET / 200 in 82ms
- GET / 200 in 81ms
- GET / 200 in 77ms
- GET / 200 in 83ms
- GET / 200 in 75ms
- GET / 200 in 75ms
- GET / 200 in 76ms
- GET / 200 in 73ms
- GET / 200 in 86ms
- GET / 200 in 84ms
- GET / 200 in 76ms
- GET / 200 in 81ms
- GET / 200 in 79ms
- GET / 200 in 117ms
- GET / 200 in 92ms
- GET / 200 in 98ms
- GET / 200 in 83ms
- GET / 200 in 79ms
- GET / 200 in 87ms
- GET / 200 in 77ms
- GET / 200 in 81ms
- GET / 200 in 82ms
- GET / 200 in 80ms
- GET / 200 in 84ms
- GET / 200 in 79ms
- GET / 200 in 78ms
- GET / 200 in 84ms
- GET / 200 in 86ms
- GET / 200 in 81ms
- GET / 200 in 96ms
- GET / 200 in 77ms
- GET / 200 in 77ms
- ⚠ Fast Refresh had to perform a full reload when ./src/components/ThemeProvider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ⚠ Fast Refresh had to perform a full reload when ./src/components/ThemeProvider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- ✓ Compiled in 130ms
- GET / 200 in 324ms
- GET / 200 in 324ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 265ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
- GET / 200 in 84ms
- ✓ Compiled in 103ms
- ✓ Compiled in 124ms
- ✓ Compiled in 130ms
- GET / 200 in 282ms
- ✓ Compiled in 119ms
- GET / 200 in 236ms
- GET / 200 in 79ms
- ✓ Compiled in 124ms
- GET / 200 in 206ms
- GET / 200 in 84ms
- GET / 200 in 74ms
- ✓ Compiled in 127ms
- GET / 200 in 196ms
- GET / 200 in 74ms
- GET / 200 in 85ms
- GET / 200 in 93ms
- GET / 200 in 87ms
- GET / 200 in 82ms
- GET / 200 in 83ms
- GET / 200 in 81ms
- GET / 200 in 79ms
- GET / 200 in 79ms
- GET / 200 in 78ms
- GET / 200 in 77ms
- GET / 200 in 81ms
- GET / 200 in 98ms
- GET / 200 in 97ms
- GET / 200 in 102ms
- GET / 200 in 87ms
- GET / 200 in 82ms
- GET / 200 in 97ms
- GET / 200 in 90ms
- GET / 200 in 80ms
- GET / 200 in 86ms
- GET / 200 in 77ms
- GET / 200 in 89ms
- GET / 200 in 93ms
- GET / 200 in 86ms
- GET / 200 in 83ms
- GET / 200 in 88ms
- GET / 200 in 82ms
- GET / 200 in 88ms
- GET / 200 in 79ms
- GET / 200 in 110ms
- GET / 200 in 87ms
- GET / 200 in 78ms
- GET / 200 in 80ms
- GET / 200 in 77ms
- GET / 200 in 79ms
- GET / 200 in 83ms
- GET / 200 in 82ms
- GET / 200 in 90ms
- GET / 200 in 92ms
- GET / 200 in 83ms
- GET / 200 in 92ms
- GET / 200 in 87ms
- GET / 200 in 85ms
- GET / 200 in 104ms
- GET / 200 in 90ms
- ✓ Compiled in 102ms
- GET / 200 in 87ms
- GET / 200 in 81ms
- GET / 200 in 81ms
- GET / 200 in 83ms
- ✓ Compiled in 140ms
- GET / 200 in 247ms
- GET / 200 in 826ms
- GET / 200 in 82ms
- ✓ Compiled in 127ms
- GET / 200 in 206ms
- GET / 200 in 81ms
- GET / 200 in 79ms
- GET / 200 in 89ms
- ✓ Compiled in 129ms
- GET / 200 in 296ms
- GET / 200 in 80ms
- ✓ Compiled in 135ms
- GET / 200 in 282ms
- ✓ Compiled in 125ms
- GET / 200 in 245ms
- GET / 200 in 86ms
- GET / 200 in 84ms
+ ✓ Compiled / in 27ms
+ GET / 200 in 114ms
+ GET / 200 in 62ms
+ ✓ Compiled in 166ms
+ ✓ Compiled in 156ms
+ ✓ Compiled in 165ms
+ ✓ Compiled in 156ms
+ ✓ Compiled in 171ms
+ ✓ Compiled in 171ms
+ ✓ Compiled in 156ms
+ ⨯ ./src/components/Table.tsx:49:10
+Parsing ecmascript source code failed
+[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 48 |[39m
+[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ⨯ ./src/components/Table.tsx:49:10
+Parsing ecmascript source code failed
+[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 48 |[39m
+[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ ✓ Compiled /_error in 1154ms
+ GET / 500 in 243ms
+ GET / 500 in 1332ms
+ ✓ Compiled in 175ms
+ ⨯ ./src/components/Table.tsx:49:10
+Parsing ecmascript source code failed
+[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 48 |[39m
+[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ⨯ ./src/components/Table.tsx:49:10
+Parsing ecmascript source code failed
+[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 48 |[39m
+[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 53ms
+ ⨯ ./src/components/Table.tsx:49:10
+Parsing ecmascript source code failed
+[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 48 |[39m
+[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 51ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 50ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 47ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 54ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 67ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 47ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 49ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 47ms
+ ⨯ ./src/components/Table.tsx:60:10
+Parsing ecmascript source code failed
+[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
+ [90m 59 |[39m
+[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
+ [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
+ [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ✓ Compiled in 156ms
+ ✓ Compiled / in 16ms
  GET / 200 in 101ms
- GET / 200 in 82ms
- GET / 200 in 83ms
- GET / 200 in 81ms
- GET / 200 in 79ms
- GET / 200 in 90ms
- GET / 200 in 94ms
- GET / 200 in 85ms
- GET / 200 in 82ms
- GET / 200 in 78ms
- GET / 200 in 82ms
- GET / 200 in 85ms
- GET / 200 in 76ms
- GET / 200 in 85ms
- GET / 200 in 81ms
- GET / 200 in 102ms
- GET / 200 in 94ms
- GET / 200 in 81ms
- GET / 200 in 82ms
- GET / 200 in 107ms
- GET / 200 in 96ms
- GET / 200 in 95ms
- GET / 200 in 90ms
- GET / 200 in 90ms
- GET / 200 in 84ms
- GET / 200 in 111ms
- GET / 200 in 80ms
- GET / 200 in 82ms
- GET / 200 in 84ms
- GET / 200 in 79ms
- GET / 200 in 96ms
- GET / 200 in 84ms
- GET / 200 in 83ms
- GET / 200 in 85ms
- GET / 200 in 91ms
- GET / 200 in 82ms
- GET / 200 in 85ms
- GET / 200 in 90ms
- GET / 200 in 104ms
- GET / 200 in 96ms
- GET / 200 in 85ms
- GET / 200 in 97ms
- GET / 200 in 92ms
- GET / 200 in 89ms
- GET / 200 in 86ms
- GET / 200 in 85ms
- GET / 200 in 86ms
- GET / 200 in 85ms
- GET / 200 in 86ms
- GET / 200 in 89ms
- GET / 200 in 1102ms
- GET / 200 in 92ms
- GET / 200 in 86ms
- GET / 200 in 106ms
- GET / 200 in 96ms
- GET / 200 in 83ms
- GET / 200 in 78ms
- GET / 200 in 89ms
- GET / 200 in 97ms
- GET / 200 in 111ms
- GET / 200 in 84ms
- GET / 200 in 78ms
- GET / 200 in 83ms
- GET / 200 in 100ms
- GET / 200 in 91ms
- GET / 200 in 82ms
- GET / 200 in 98ms
- GET / 200 in 97ms
- GET / 200 in 98ms
- GET / 200 in 85ms
- GET / 200 in 85ms
- GET / 200 in 112ms
- GET / 200 in 84ms
- GET / 200 in 92ms
- GET / 200 in 82ms
- GET / 200 in 82ms
- GET / 200 in 80ms
- GET / 200 in 80ms
- GET / 200 in 91ms
- GET / 200 in 86ms
- GET / 200 in 83ms
- GET / 200 in 109ms
- GET / 200 in 81ms
- GET / 200 in 87ms
- GET / 200 in 82ms
- GET / 200 in 76ms
- GET / 200 in 87ms
- GET / 200 in 95ms
- GET / 200 in 87ms
- GET / 200 in 83ms
- GET / 200 in 836ms
- GET / 200 in 97ms
- GET / 200 in 89ms
- GET / 200 in 89ms
- GET / 200 in 88ms
- GET / 200 in 84ms
- GET / 200 in 89ms
- ✓ Compiled in 224ms
- ✓ Compiled / in 33ms
- GET / 200 in 361ms
- GET / 200 in 362ms
- GET / 200 in 383ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 236ms
- GET / 200 in 101ms
- GET / 200 in 89ms
- ✓ Compiled in 115ms
- GET / 200 in 88ms
- ✓ Compiled in 119ms
- GET / 200 in 337ms
- ✓ Compiled in 117ms
- GET / 200 in 213ms
- ✓ Compiled in 115ms
- GET / 200 in 275ms
- GET / 200 in 96ms
- GET / 200 in 93ms
- GET / 200 in 95ms
- ✓ Compiled in 120ms
- GET / 200 in 261ms
- GET / 200 in 87ms
- GET / 200 in 83ms
- GET / 200 in 80ms
- ✓ Compiled in 120ms
- GET / 200 in 277ms
- GET / 200 in 90ms
- ✓ Compiled in 123ms
- GET / 200 in 221ms
- GET / 200 in 98ms
- ✓ Compiled in 126ms
- GET / 200 in 202ms
- ✓ Compiled in 119ms
- GET / 200 in 303ms
- ✓ Compiled in 123ms
- GET / 200 in 258ms
- GET / 200 in 89ms
- ✓ Compiled in 118ms
- GET / 200 in 320ms
- ✓ Compiled in 118ms
- GET / 200 in 247ms
+ ✓ Compiled in 166ms
+ ✓ Compiled in 160ms
+ ✓ Compiled in 163ms
+ ✓ Compiled in 174ms
+ ✓ Compiled in 160ms
+ ✓ Compiled in 157ms

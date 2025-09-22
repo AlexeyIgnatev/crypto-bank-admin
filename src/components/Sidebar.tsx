@@ -33,7 +33,8 @@ export default function Sidebar() {
         >
           ☰
         </button>
-        {open && <div className="text-xl font-semibold">Банк</div>}
+        {/* Бренд перенесён в Topbar для выравнивания с заголовком */}
+        {open && <div className="text-sm opacity-60">&nbsp;</div>}
       </div>
       <nav className="mt-2 space-y-1">
         {items.map((it) => {
@@ -57,8 +58,9 @@ export default function Sidebar() {
         })}
       </nav>
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
-        <button className="w-full text-left px-3 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
-          Выйти
+        <button className="w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
+          <span className="text-lg w-5 text-center">🚪</span>
+          {open && <span>Выйти</span>}
         </button>
       </div>
     </aside>

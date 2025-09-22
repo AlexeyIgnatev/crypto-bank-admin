@@ -32,9 +32,9 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="flex">
             <Sidebar />
-            <div className="flex-1 min-h-screen">
+            <div className="flex-1 min-h-screen flex flex-col">
               <Topbar title="Главная" />
-              <main className="p-4 space-y-4 max-w-[1400px] mx-auto">{children}</main>
+              <main className="flex-1 overflow-hidden p-4 max-w-[1400px] mx-auto flex flex-col gap-4">{children}</main>
             </div>
           </div>
         </ThemeProvider>
