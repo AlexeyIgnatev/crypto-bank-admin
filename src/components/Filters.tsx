@@ -37,6 +37,7 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
 
   const [dateFromOpen, setDateFromOpen] = useState(false);
   const [dateToOpen, setDateToOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const presets = [
     { label: "Сегодня", days: 0 },
@@ -44,6 +45,36 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
     { label: "30 дней", days: 30 },
     { label: "Этот месяц", month: "current" as const },
   ];
+
+  const fmt = (iso?: string) => iso ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "";
+  const statusMeta = (v: string) => {
+    const color = v === "confirmed" ? "var(--success)" : v === "pending" ? "var(--warning)" : v === "declined" ? "var(--danger)" : "var(--muted)";
+    const label = statuses.find(s => s.value === v)?.label || v;
+    return { color, label };
+  };
+  const summaryChips = useMemo(() => {
+    const chips: JSX.Element[] = [];
+    if (local.status && local.status !== "all") {
+      const { color, label } = statusMeta(local.status);
+      chips.push(<span key="status" className="chip"><span className="dot" style={{ background: color }} />{label}</span>);
+    }
+    if (local.currencies && local.currencies.length) {
+      chips.push(<span key="curr" className="chip">Валюты: {local.currencies.join(", ")}</span>);
+    }
+    if (local.dateFrom || local.dateTo) {
+      const text = `${local.dateFrom ? `с ${fmt(local.dateFrom)}` : ""}${local.dateFrom && local.dateTo ? " — " : ""}${local.dateTo ? `по ${fmt(local.dateTo)}` : ""}`;
+      chips.push(<span key="dates" className="chip">{text}</span>);
+    }
+    if (local.minAmount != null || local.maxAmount != null) {
+      const min = local.minAmount != null ? local.minAmount.toLocaleString() : "…";
+      const max = local.maxAmount != null ? local.maxAmount.toLocaleString() : "…";
+      chips.push(<span key="amt" className="chip">Сумма: {min}–{max}</span>);
+    }
+    if (local.q && local.q.trim()) {
+      chips.push(<span key="q" className="chip">Поиск: {local.q.trim()}</span>);
+    }
+    return chips;
+  }, [local]);
 
   return (
     <div className="rounded-xl border border-soft p-4 card">
@@ -67,7 +98,16 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start">
+      {/* Compact header */}
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        <button className="btn btn-ghost text-xs" onClick={() => setExpanded(v => !v)}>
+          {expanded ? "Свернуть" : "Расширенные"}
+        </button>
+        <div className="flex flex-wrap gap-2">{summaryChips}</div>
+      </div>
+
+      {/* Filters grid (collapsible) */}
+      <div className={`grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start ${expanded ? "" : "hidden"}`}>
         <div className="lg:col-span-2">
           <label className="block text-xs text-muted mb-1">Поиск</label>
           <input
