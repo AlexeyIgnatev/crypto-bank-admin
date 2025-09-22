@@ -184,6 +184,8 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
                 </div>
               </div>
             </div>
+          )}
+        </div>
 
         <div className="lg:col-span-2">
           <label className="block text-xs text-muted mb-1">Сумма (ползунок)</label>
@@ -191,9 +193,6 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
             value={[local.minAmount ?? 0, local.maxAmount ?? 1_000_000]}
             onChange={(min, max) => setLocal({ ...local, minAmount: min, maxAmount: max })}
           />
-        </div>
-
-          )}
         </div>
 
         <div className="lg:col-span-2">
