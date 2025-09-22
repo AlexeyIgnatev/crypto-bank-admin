@@ -255,3 +255,102 @@ https://nextjs.org/telemetry
  GET / 200 in 80ms
  GET / 200 in 78ms
  GET / 200 in 81ms
+ GET / 200 in 93ms
+ GET / 200 in 89ms
+ GET / 200 in 80ms
+ GET / 200 in 82ms
+ GET / 200 in 82ms
+ GET / 200 in 73ms
+ GET / 200 in 81ms
+ GET / 200 in 78ms
+ GET / 200 in 78ms
+ GET / 200 in 76ms
+ GET / 200 in 80ms
+ GET / 200 in 83ms
+ GET / 200 in 89ms
+ GET / 200 in 79ms
+ GET / 200 in 76ms
+ ✓ Compiled /_not-found/page in 250ms
+ GET /admins 404 in 328ms
+ GET /users 404 in 108ms
+ GET /users 404 in 46ms
+ GET /users 404 in 70ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 247ms
+ GET /users 404 in 45ms
+ GET /users 404 in 70ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
+ GET / 200 in 45ms
+ GET /admins 404 in 51ms
+ GET /admins 404 in 71ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
+ GET / 200 in 52ms
+ GET / 200 in 86ms
+ GET / 200 in 91ms
+ GET / 200 in 81ms
+ GET / 200 in 820ms
+ GET / 200 in 85ms
+ GET / 200 in 77ms
+ GET / 200 in 83ms
+ GET / 200 in 92ms
+ GET / 200 in 88ms
+ GET / 200 in 79ms
+ GET / 200 in 77ms
+ GET / 200 in 86ms
+ GET / 200 in 102ms
+ GET / 200 in 87ms
+ GET / 200 in 76ms
+ GET / 200 in 82ms
+ GET / 200 in 81ms
+ GET / 200 in 77ms
+ GET / 200 in 83ms
+ GET / 200 in 75ms
+ GET / 200 in 75ms
+ GET / 200 in 76ms
+ GET / 200 in 73ms
+ GET / 200 in 86ms
+ GET / 200 in 84ms
+ GET / 200 in 76ms
+ GET / 200 in 81ms
+ GET / 200 in 79ms
+ GET / 200 in 117ms
+ GET / 200 in 92ms
+ GET / 200 in 98ms
+ GET / 200 in 83ms
+ GET / 200 in 79ms
+ GET / 200 in 87ms
+ GET / 200 in 77ms
+ GET / 200 in 81ms
+ GET / 200 in 82ms
+ GET / 200 in 80ms
+ GET / 200 in 84ms
+ GET / 200 in 79ms
+ GET / 200 in 78ms
+ GET / 200 in 84ms
+ GET / 200 in 86ms
+ GET / 200 in 81ms
+ GET / 200 in 96ms
+ GET / 200 in 77ms
+ GET / 200 in 77ms
+ ⚠ Fast Refresh had to perform a full reload when ./src/components/ThemeProvider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload when ./src/components/ThemeProvider.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ✓ Compiled in 130ms
+ GET / 200 in 324ms
+ GET / 200 in 324ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 265ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
+ GET / 200 in 84ms
+ ✓ Compiled in 103ms
+ ✓ Compiled in 124ms
+ ✓ Compiled in 130ms
+ GET / 200 in 282ms
+ ✓ Compiled in 119ms
+ GET / 200 in 236ms
+ GET / 200 in 79ms
+ ✓ Compiled in 124ms
+ GET / 200 in 206ms
+ GET / 200 in 84ms
+ GET / 200 in 74ms
+ ✓ Compiled in 127ms
+ GET / 200 in 196ms
+ GET / 200 in 74ms

@@ -22,8 +22,36 @@ body {
   color: var(--foreground);
 }
 
+/* Palette - polished modern */
+:root {
+  --red: #e11d48;         /* rose-600 */
+  --red-hover: #be123c;   /* rose-700 */
+  --bg-soft: #eef1f5;
+  --card: #ffffff;
+  --muted: #64748b;       /* slate-500 */
+}
+:root.dark {
+  --red: #fb7185;         /* rose-400 */
+  --red-hover: #f43f5e;   /* rose-500 */
+  --bg-soft: #0b0f1a;
+  --card: #0f1220;
+  --muted: #94a3b8;       /* slate-400 */
+}
+
+/* Smooth transitions during theme switching */
+html.theme-switching body, html.theme-switching * {
+  transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important;
+}
+
 /* Animations */
 @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
 @keyframes pop-in { from { transform: scale(.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
 .animate-fade-in { animation: fade-in .2s ease-out both }
 .animate-pop-in { animation: pop-in .2s ease-out both }
+
+/* Components helpers */
+.btn-primary { background: var(--red); color: white; }
+.btn-primary:hover { background: var(--red-hover); }
+.card { background: var(--card); }
+.text-muted { color: var(--muted); }
+.bg-soft { background: var(--bg-soft); }

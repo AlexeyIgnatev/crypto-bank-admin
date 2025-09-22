@@ -20,7 +20,7 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
   ], []);
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/10 p-3 bg-white dark:bg-neutral-900">
+    <div className="rounded-xl border border-black/10 dark:border-white/10 p-3 card">
       <div className="grid md:grid-cols-5 gap-3">
         <div className="md:col-span-2">
           <label className="block text-xs text-neutral-500 mb-1">Поиск</label>
