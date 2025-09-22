@@ -17,6 +17,7 @@ export default function Sidebar() {
   const [open, setOpen] = useState(true);
   const { theme, toggle } = useTheme();
   const pathname = usePathname();
+  const labelClass = open ? "inline" : "sr-only";
 
   return (
     <aside
@@ -58,9 +59,9 @@ export default function Sidebar() {
         })}
       </nav>
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
-          <span className="text-lg w-5 text-center">🚪</span>
-          {open && <span>Выйти</span>}
+        <button className="w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden">
+          <span className="text-lg w-5 text-center shrink-0">🚪</span>
+          <span className={`${labelClass}`}>Выйти</span>
         </button>
       </div>
     </aside>

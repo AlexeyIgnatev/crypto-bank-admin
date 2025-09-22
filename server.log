@@ -471,3 +471,295 @@ Import traces:
  ✓ Compiled in 174ms
  ✓ Compiled in 160ms
  ✓ Compiled in 157ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Th (src/components/Table.tsx:132:155)
+  130 |   return (
+  131 |     <th
+> 132 |       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""} ${typeof col === 'number' && stickyWidths ? `col-${col}` : ''}`}
+      |                                                                                                                                                           ^
+  133 |       onClick={onClick}
+  134 |       data-col={typeof col === 'number' ? col : undefined}
+  135 |     > {
+  digest: '4294800883'
+}
+ HEAD / 500 in 274ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Th (src/components/Table.tsx:132:155)
+  130 |   return (
+  131 |     <th
+> 132 |       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""} ${typeof col === 'number' && stickyWidths ? `col-${col}` : ''}`}
+      |                                                                                                                                                           ^
+  133 |       onClick={onClick}
+  134 |       data-col={typeof col === 'number' ? col : undefined}
+  135 |     > {
+  digest: '4294800883'
+}
+ GET / 500 in 106ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 160ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 271ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 254ms
+ GET /favicon.ico 200 in 235ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 163ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 272ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 233ms
+ GET /favicon.ico 200 in 234ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 179ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 105ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 94ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 93ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 90ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 77ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 97ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 95ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:57:8)
+  55 |   return (
+  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 57 |       {stickyWidths && (
+     |        ^
+  58 |         <style>{`
+  59 |           .col-0{width:${stickyWidths[0]}px}
+  60 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '1578866589'
+}
+ GET / 500 in 107ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 165ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:39:8)
+  37 |   return (
+  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 39 |       {stickyWidths && (
+     |        ^
+  40 |         <style>{`
+  41 |           .col-0{width:${stickyWidths[0]}px}
+  42 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '3282597726'
+}
+ GET / 500 in 254ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
+ GET /favicon.ico 200 in 232ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:39:8)
+  37 |   return (
+  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 39 |       {stickyWidths && (
+     |        ^
+  40 |         <style>{`
+  41 |           .col-0{width:${stickyWidths[0]}px}
+  42 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '3282597726'
+}
+ GET / 500 in 103ms
+ ⨯ ReferenceError: stickyWidths is not defined
+    at Table (src/components/Table.tsx:39:8)
+  37 |   return (
+  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+> 39 |       {stickyWidths && (
+     |        ^
+  40 |         <style>{`
+  41 |           .col-0{width:${stickyWidths[0]}px}
+  42 |           .col-1{width:${stickyWidths[1]}px} {
+  digest: '3282597726'
+}
+ GET / 500 in 120ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 179ms
+ GET / 200 in 240ms
+ GET / 200 in 110ms
+ GET / 200 in 117ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 253ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 236ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 233ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
+ ✓ Compiled in 156ms
+ GET / 200 in 213ms
+ GET / 200 in 87ms
+ ✓ Compiled in 162ms
+ GET / 200 in 200ms
+ GET / 200 in 76ms
+ GET / 200 in 106ms
+ GET / 200 in 87ms
+ GET / 200 in 89ms
+ GET / 200 in 86ms
+ GET / 200 in 113ms
+ GET / 200 in 81ms
+ GET / 200 in 100ms
+ GET / 200 in 85ms
+ GET / 200 in 85ms
+ GET / 200 in 87ms
+ GET / 200 in 89ms
+ GET / 200 in 92ms
+ GET / 200 in 82ms
+ GET / 200 in 90ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 248ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
+ GET / 200 in 96ms
+ GET / 200 in 98ms
+ GET / 200 in 80ms
+ GET / 200 in 80ms
+ GET / 200 in 90ms
+ GET / 200 in 84ms
+ GET / 200 in 80ms
+ GET / 200 in 78ms
+ GET / 200 in 88ms
+ GET / 200 in 85ms
+ GET / 200 in 85ms
+ GET / 200 in 87ms
+ GET / 200 in 73ms
+ GET / 200 in 81ms
+ GET / 200 in 90ms
+ GET / 200 in 838ms
+ GET / 200 in 86ms
+ GET / 200 in 96ms
+ GET / 200 in 88ms
+ GET / 200 in 120ms
+ GET / 200 in 88ms
+ GET / 200 in 88ms
+ GET / 200 in 89ms
+ GET / 200 in 93ms
+ GET / 200 in 90ms
+ GET / 200 in 115ms
+ GET / 200 in 98ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 259ms
+ GET / 200 in 77ms
+ GET / 200 in 86ms
+ GET / 200 in 91ms
+ GET / 200 in 89ms
+ GET / 200 in 86ms
+ GET / 200 in 89ms
+ GET / 200 in 97ms
+ GET / 200 in 101ms
+ GET / 200 in 98ms
+ GET / 200 in 103ms
+ GET / 200 in 118ms
+ GET / 200 in 98ms
+ GET / 200 in 98ms
+ GET / 200 in 85ms
+ GET / 200 in 108ms
+ GET / 200 in 119ms
+ GET / 200 in 102ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
+ GET / 200 in 101ms
+ GET / 200 in 85ms
+ ✓ Compiled in 166ms
+ GET / 200 in 252ms
+ ✓ Compiled in 164ms
+ GET / 200 in 272ms
+ ✓ Compiled in 157ms
+ ✓ Compiled in 127ms
+ ✓ Compiled in 125ms
+ ✓ Compiled in 116ms

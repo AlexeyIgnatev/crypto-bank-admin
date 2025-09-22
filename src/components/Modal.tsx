@@ -16,7 +16,7 @@ export default function Modal({ open, onClose, children, title }: { open: boolea
       <div className="relative w-[90vw] max-w-xl rounded-xl card border border-soft shadow-xl animate-pop-in" style={{ color: "var(--foreground)" }}>
         <div className="flex items-center justify-between p-4 border-b border-soft">
           <div className="font-semibold">{title}</div>
-          <button aria-label="Close" className="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10" onClick={onClose}>✕</button>
+          <button aria-label="Close" className="px-2 py-1 rounded hover-surface" onClick={onClose}>✕</button>
         </div>
         <div className="p-4 max-h-[70vh] overflow-auto">
           {children}
