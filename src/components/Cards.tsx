@@ -6,7 +6,7 @@ export default function Cards() {
       }`}
     >
       <div className="text-sm text-muted">{title}</div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className="mt-2 text-2xl font-bold text-fg">{value}</div>
     </div>
   );
 

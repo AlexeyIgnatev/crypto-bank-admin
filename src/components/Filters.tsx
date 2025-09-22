@@ -23,20 +23,20 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
     <div className="rounded-xl border border-black/10 dark:border-white/10 p-3 card">
       <div className="grid md:grid-cols-5 gap-3">
         <div className="md:col-span-2">
-          <label className="block text-xs text-neutral-500 mb-1">Поиск</label>
+          <label className="block text-xs text-muted mb-1">Поиск</label>
           <input
             value={local.q}
             onChange={(e) => setLocal({ ...local, q: e.target.value })}
             placeholder="ID, отправитель, получатель"
-            className="w-full px-3 py-2 rounded border bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="ui-input"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Статус</label>
+          <label className="block text-xs text-muted mb-1">Статус</label>
           <select
             value={local.status}
             onChange={(e) => setLocal({ ...local, status: e.target.value as any })}
-            className="w-full px-3 py-2 rounded border bg-transparent"
+            className="ui-input"
           >
             {statuses.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -44,41 +44,41 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
           </select>
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">От</label>
+          <label className="block text-xs text-muted mb-1">От</label>
           <input
             type="date"
             value={local.dateFrom?.slice(0, 10) || ""}
             onChange={(e) => setLocal({ ...local, dateFrom: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-            className="w-full px-3 py-2 rounded border bg-transparent"
+            className="ui-input"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">До</label>
+          <label className="block text-xs text-muted mb-1">До</label>
           <input
             type="date"
             value={local.dateTo?.slice(0, 10) || ""}
             onChange={(e) => setLocal({ ...local, dateTo: e.target.value ? new Date(e.target.value).toISOString() : undefined })}
-            className="w-full px-3 py-2 rounded border bg-transparent"
+            className="ui-input"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Мин. сумма</label>
+          <label className="block text-xs text-muted mb-1">Мин. сумма</label>
           <input
             type="number"
             inputMode="decimal"
             value={local.minAmount ?? ""}
             onChange={(e) => setLocal({ ...local, minAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
-            className="w-full px-3 py-2 rounded border bg-transparent"
+            className="ui-input"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500 mb-1">Макс. сумма</label>
+          <label className="block text-xs text-muted mb-1">Макс. сумма</label>
           <input
             type="number"
             inputMode="decimal"
             value={local.maxAmount ?? ""}
             onChange={(e) => setLocal({ ...local, maxAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
-            className="w-full px-3 py-2 rounded border bg-transparent"
+            className="ui-input"
           />
         </div>
         <div className="md:col-span-5 flex gap-2 justify-end">

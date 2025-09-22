@@ -22,47 +22,8 @@ body {
   color: var(--foreground);
 }
 
-/* Palette - polished modern */
-:root {
-  /* Red-focused modern palette */
-  --primary: #d32f2f;        /* deep red */
-  --primary-hover: #b71c1c;  /* darker red */
-  --background: #f7f7f9;     /* page background */
-  --foreground: #0f172a;     /* text */
-  --bg-soft: #eef1f5;        /* subtle surfaces */
-  --card: #ffffff;           /* cards */
-  --muted: #64748b;          /* muted text */
-  --sidebar-bg: #ffffff;
-  --sidebar-fg: #1f2937;
-  --sidebar-border: rgba(2, 6, 23, 0.08);
-}
-:root.dark {
-  --primary: #ef4444;        /* vivid red in dark */
-  --primary-hover: #dc2626;
-  --background: #0b0e14;
-  --foreground: #e5e7eb;
-  --bg-soft: #0d1117;
-  --card: #111418;
-  --muted: #94a3b8;
-  --sidebar-bg: #0f131a;
-  --sidebar-fg: #e5e7eb;
-  --sidebar-border: rgba(255,255,255,0.08);
-}
-
-/* Smooth transitions during theme switching */
-html.theme-switching body, html.theme-switching * {
-  transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important;
-}
-
 /* Animations */
 @keyframes fade-in { from { opacity: 0 } to { opacity: 1 } }
 @keyframes pop-in { from { transform: scale(.96); opacity: 0 } to { transform: scale(1); opacity: 1 } }
 .animate-fade-in { animation: fade-in .2s ease-out both }
 .animate-pop-in { animation: pop-in .2s ease-out both }
-
-/* Components helpers */
-.btn-primary { background: var(--red); color: white; }
-.btn-primary:hover { background: var(--red-hover); }
-.card { background: var(--card); }
-.text-muted { color: var(--muted); }
-.bg-soft { background: var(--bg-soft); }

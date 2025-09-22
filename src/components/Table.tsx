@@ -52,10 +52,10 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
                 <td className="px-4 py-3 font-mono">{t.id}</td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                    t.status === "confirmed" ? "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/30" :
-                    t.status === "pending" ? "text-amber-700 bg-amber-100 dark:bg-amber-900/30" :
-                    "text-red-700 bg-red-100 dark:bg-red-900/30"
+                  <span className={`badge ${
+                    t.status === "confirmed" ? "badge-success" :
+                    t.status === "pending" ? "badge-warning" :
+                    "badge-danger"
                   }`}>
                     {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
                   </span>

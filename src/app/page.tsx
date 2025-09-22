@@ -27,7 +27,7 @@ export default function Home() {
       />
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (
-          <div className="space-y-2 text-sm">
+          <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
             <Row label="Статус" value={selected.status} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
