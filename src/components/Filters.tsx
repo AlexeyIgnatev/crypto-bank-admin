@@ -229,36 +229,6 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
         <button onClick={() => setLocal(value)} className="btn btn-ghost">Сбросить</button>
         <button onClick={() => onChange(local)} className="btn btn-primary">Применить</button>
       </div>
-
-      {dateFromOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setDateFromOpen(false)} />
-          <div className="relative w-[90vw] max-w-md rounded-xl card border border-soft shadow-xl p-4">
-            <div className="font-semibold mb-2">Выбрать начало периода</div>
-            <input type="datetime-local" className="ui-input" value={local.dateFrom ? new Date(local.dateFrom).toISOString().slice(0,16) : ""}
-              onChange={(e) => setLocal({ ...local, dateFrom: e.target.value ? new Date(e.target.value).toISOString() : undefined })} />
-            <div className="mt-3 flex justify-end gap-2">
-              <button className="btn" onClick={() => setDateFromOpen(false)}>Отмена</button>
-              <button className="btn btn-primary" onClick={() => setDateFromOpen(false)}>Готово</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {dateToOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setDateToOpen(false)} />
-          <div className="relative w-[90vw] max-w-md rounded-xl card border border-soft shadow-xl p-4">
-            <div className="font-semibold mb-2">Выбрать конец периода</div>
-            <input type="datetime-local" className="ui-input" value={local.dateTo ? new Date(local.dateTo).toISOString().slice(0,16) : ""}
-              onChange={(e) => setLocal({ ...local, dateTo: e.target.value ? new Date(e.target.value).toISOString() : undefined })} />
-            <div className="mt-3 flex justify-end gap-2">
-              <button className="btn" onClick={() => setDateToOpen(false)}>Отмена</button>
-              <button className="btn btn-primary" onClick={() => setDateToOpen(false)}>Готово</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
