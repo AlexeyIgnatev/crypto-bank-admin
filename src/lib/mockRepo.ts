@@ -88,5 +88,8 @@ export function applyFilters(data: Transaction[], f: Filters): Transaction[] {
   if (typeof f.maxAmount === "number") {
     res = res.filter((t) => t.amount <= f.maxAmount!);
   }
+  if (f.currencies && f.currencies.length > 0) {
+    res = res.filter((t) => f.currencies!.includes(t.currency));
+  }
   return res;
 }

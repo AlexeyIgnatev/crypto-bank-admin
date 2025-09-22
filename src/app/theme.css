@@ -86,3 +86,25 @@ html.theme-switching textarea::placeholder {
 .badge-success { color: var(--success); background: var(--success-bg); }
 .badge-warning { color: var(--warning); background: var(--warning-bg); }
 .badge-danger { color: var(--danger); background: var(--danger-bg); }
+
+/* Pills and segmented controls */
+.pill { display:inline-flex; gap:.5rem; align-items:center; padding:.375rem .75rem; border-radius:9999px; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); cursor:pointer; }
+.pill[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 15%, transparent); border-color: var(--primary); }
+.pill .dot { width:.5rem; height:.5rem; border-radius:50%; background: currentColor; opacity:.7; }
+
+.segment { display:inline-flex; border:1px solid var(--border-soft); border-radius:.75rem; overflow:hidden; }
+.segment button { padding:.5rem .75rem; background:transparent; color:var(--foreground); }
+.segment button[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--foreground); }
+
+/* Icon chips */
+.chip { display:inline-flex; align-items:center; gap:.5rem; padding:.375rem .625rem; border-radius:.5rem; border:1px solid var(--border-soft); background:transparent; cursor:pointer; }
+.chip[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 12%, transparent); border-color: var(--primary); }
+.chip .icon { width:1rem; height:1rem; display:inline-flex; align-items:center; justify-content:center; }
+
+/* CTA buttons */
+.btn { padding:.5rem .875rem; border-radius:.625rem; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); transition: background .2s ease; }
+.btn:hover { background: color-mix(in srgb, var(--foreground) 8%, transparent); }
+.btn-primary { background: var(--primary); color: #fff; border-color: transparent; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-ghost { background: transparent; }
+

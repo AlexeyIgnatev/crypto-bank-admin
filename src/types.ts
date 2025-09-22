@@ -17,4 +17,5 @@ export interface Filters {
   dateTo?: string;   // ISO
   minAmount?: number;
   maxAmount?: number;
+  currencies?: string[]; // e.g., ["USD","KGS"]
 }
