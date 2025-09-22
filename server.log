@@ -967,3 +967,271 @@ Import traces:
  GET / 200 in 216ms
  ✓ Compiled in 152ms
  GET / 200 in 262ms
+ GET / 200 in 102ms
+ GET / 200 in 86ms
+ GET / 200 in 92ms
+ GET / 200 in 81ms
+ GET / 200 in 95ms
+ GET / 200 in 86ms
+ GET / 200 in 82ms
+ GET / 200 in 91ms
+ GET / 200 in 89ms
+ GET / 200 in 116ms
+ GET / 200 in 109ms
+ GET / 200 in 110ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
+ ✓ Compiled in 132ms
+ GET / 200 in 272ms
+ GET / 200 in 83ms
+ ✓ Compiled in 127ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 66ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 59ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 52ms
+ ⨯ ./src/components/Filters.tsx:188:14
+Parsing ecmascript source code failed
+[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 187 |[39m
+[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
+ [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
+
+Expected '</', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 51ms
+ GET /favicon.ico 500 in 33ms
+ ⨯ ./src/components/Filters.tsx:71:14
+Parsing ecmascript source code failed
+[0m [90m 69 |[39m
+ [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
+[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 73 |[39m           [33m<[39m[33minput[39m
+ [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 55ms
+ ⨯ ./src/components/Filters.tsx:71:14
+Parsing ecmascript source code failed
+[0m [90m 69 |[39m
+ [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
+[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 73 |[39m           [33m<[39m[33minput[39m
+ [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 54ms
+ ⨯ ./src/components/Filters.tsx:71:14
+Parsing ecmascript source code failed
+[0m [90m 69 |[39m
+ [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
+[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 73 |[39m           [33m<[39m[33minput[39m
+ [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 78ms
+ ⨯ ./src/components/Filters.tsx:71:14
+Parsing ecmascript source code failed
+[0m [90m 69 |[39m
+ [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
+[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
+ [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
+ [90m 73 |[39m           [33m<[39m[33minput[39m
+ [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
+
+Expected ',', got 'className'
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Filters.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Filters.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 50ms

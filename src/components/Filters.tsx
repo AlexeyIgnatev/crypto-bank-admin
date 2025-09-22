@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Filters as FiltersType } from "../types";
+import { Range, getTrackBackground } from "react-range";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
@@ -66,7 +67,7 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3">
+      <div className="grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start">
         <div className="lg:col-span-2">
           <label className="block text-xs text-muted mb-1">Поиск</label>
           <input
@@ -183,6 +184,15 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
                 </div>
               </div>
             </div>
+
+        <div className="lg:col-span-2">
+          <label className="block text-xs text-muted mb-1">Сумма (ползунок)</label>
+          <AmountRange
+            value={[local.minAmount ?? 0, local.maxAmount ?? 1_000_000]}
+            onChange={(min, max) => setLocal({ ...local, minAmount: min, maxAmount: max })}
+          />
+        </div>
+
           )}
         </div>
 
@@ -252,3 +262,61 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
     </div>
   );
 }
+
+function AmountRange({ value, onChange }: { value: [number, number]; onChange: (min: number, max: number) => void }) {
+  const [min, max] = value;
+  const STEP = 1000;
+  const MIN = 0;
+  const MAX = 1_000_000;
+  return (
+    <div className="px-2 py-3 card rounded-lg border border-soft">
+      <Range
+        values={[min, max]}
+        step={STEP}
+        min={MIN}
+        max={MAX}
+        onChange={(vals) => onChange(vals[0], vals[1])}
+        renderTrack={({ props, children }) => (
+          <div
+            onMouseDown={props.onMouseDown}
+            onTouchStart={props.onTouchStart}
+            style={{ ...props.style, height: "36px", display: "flex", width: "100%" }}
+          >
+            <div
+              ref={props.ref}
+              style={{
+                height: "6px",
+                width: "100%",
+                borderRadius: "9999px",
+                background: getTrackBackground({ values: [min, max], colors: ["var(--border-soft)", "var(--primary)", "var(--border-soft)"], min: MIN, max: MAX }),
+                alignSelf: "center",
+              }}
+            >
+              {children}
+            </div>
+          </div>
+        )}
+        renderThumb={({ props, index }) => (
+          <div
+            {...props}
+            style={{
+              ...props.style,
+              height: "18px",
+              width: "18px",
+              borderRadius: "50%",
+              backgroundColor: "var(--card)",
+              border: "2px solid var(--primary)",
+              boxShadow: "0 1px 4px rgba(0,0,0,.2)",
+            }}
+            aria-label={index === 0 ? "Минимальная сумма" : "Максимальная сумма"}
+          />
+        )}
+      />
+      <div className="mt-2 flex justify-between text-xs text-muted">
+        <span>{min.toLocaleString()} ₸</span>
+        <span>{max.toLocaleString()} ₸</span>
+      </div>
+    </div>
+  );
+}
+
