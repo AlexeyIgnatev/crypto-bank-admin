@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Filters as FiltersType } from "../types";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/airbnb.css";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
 
 export default function Filters({ value, onChange }: { value: FiltersType; onChange: (v: FiltersType) => void }) {
   const [local, setLocal] = useState<FiltersType>(value);
@@ -34,21 +37,32 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
   const [dateFromOpen, setDateFromOpen] = useState(false);
   const [dateToOpen, setDateToOpen] = useState(false);
 
+  const presets = [
+    { label: "Сегодня", days: 0 },
+    { label: "7 дней", days: 7 },
+    { label: "30 дней", days: 30 },
+    { label: "Этот месяц", month: "current" as const },
+  ];
+
   return (
     <div className="rounded-xl border border-soft p-4 card">
       <div className="flex items-center justify-between mb-3">
         <div className="text-sm text-muted">Фильтры</div>
         <div className="segment">
-          {statuses.map(s => (
-            <button
-              key={s.value}
-              className="text-sm"
-              aria-pressed={String(local.status === s.value)}
-              onClick={() => setLocal({ ...local, status: s.value as any })}
-            >
-              {s.label}
-            </button>
-          ))}
+          {statuses.map(s => {
+            const color = s.value === "confirmed" ? "var(--success)" : s.value === "pending" ? "var(--warning)" : s.value === "declined" ? "var(--danger)" : "var(--muted)";
+            return (
+              <button
+                key={s.value}
+                className="text-sm flex items-center gap-2"
+                aria-pressed={String(local.status === s.value)}
+                onClick={() => setLocal({ ...local, status: s.value as any })}
+              >
+                <span className="dot" style={{ background: color }} />
+                {s.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -70,7 +84,7 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
               <button
                 key={c.value}
                 className="chip"
-                aria-pressed={String(local.currencies?.includes(c.value))}
+                aria-pressed={local.currencies?.includes(c.value) ? "true" : "false"}
                 onClick={() => toggleCurrency(c.value)}
                 title={c.label}
               >
@@ -87,6 +101,44 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
             <span>{local.dateFrom ? new Date(local.dateFrom).toLocaleString() : "Не выбрано"}</span>
             <span>📅</span>
           </button>
+          {dateFromOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setDateFromOpen(false)} />
+              <div className="relative w-[90vw] max-w-md rounded-xl card border border-soft shadow-xl p-4">
+                <div className="font-semibold mb-2">Выбрать начало периода</div>
+                <Flatpickr
+                  options={{
+                    enableTime: true,
+                    dateFormat: "d.m.Y H:i",
+                    time_24hr: true,
+                    locale: Russian,
+                    defaultDate: local.dateFrom ? new Date(local.dateFrom) : undefined,
+                  }}
+                  onChange={([d]) => setLocal({ ...local, dateFrom: d ? new Date(d).toISOString() : undefined })}
+                  className="ui-input"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {presets.map(p => (
+                    <button key={p.label} className="pill" onClick={() => {
+                      const now = new Date();
+                      if (p.days !== undefined) {
+                        const from = new Date(now.getTime() - p.days * 24 * 60 * 60 * 1000);
+                        setLocal({ ...local, dateFrom: from.toISOString(), dateTo: now.toISOString() });
+                      } else if (p.month === "current") {
+                        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                        setLocal({ ...local, dateFrom: start.toISOString(), dateTo: now.toISOString() });
+                      }
+                      setDateFromOpen(false);
+                    }}>{p.label}</button>
+                  ))}
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <button className="btn" onClick={() => setDateFromOpen(false)}>Отмена</button>
+                  <button className="btn btn-primary" onClick={() => setDateFromOpen(false)}>Готово</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-xs text-muted mb-1">До (дата и время)</label>
@@ -94,27 +146,72 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
             <span>{local.dateTo ? new Date(local.dateTo).toLocaleString() : "Не выбрано"}</span>
             <span>📅</span>
           </button>
+          {dateToOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setDateToOpen(false)} />
+              <div className="relative w-[90vw] max-w-md rounded-xl card border border-soft shadow-xl p-4">
+                <div className="font-semibold mb-2">Выбрать конец периода</div>
+                <Flatpickr
+                  options={{
+                    enableTime: true,
+                    dateFormat: "d.m.Y H:i",
+                    time_24hr: true,
+                    locale: Russian,
+                    defaultDate: local.dateTo ? new Date(local.dateTo) : undefined,
+                  }}
+                  onChange={([d]) => setLocal({ ...local, dateTo: d ? new Date(d).toISOString() : undefined })}
+                  className="ui-input"
+                />
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {presets.map(p => (
+                    <button key={p.label} className="pill" onClick={() => {
+                      const now = new Date();
+                      if (p.days !== undefined) {
+                        const from = new Date(now.getTime() - p.days * 24 * 60 * 60 * 1000);
+                        setLocal({ ...local, dateFrom: from.toISOString(), dateTo: now.toISOString() });
+                      } else if (p.month === "current") {
+                        const start = new Date(now.getFullYear(), now.getMonth(), 1);
+                        setLocal({ ...local, dateFrom: start.toISOString(), dateTo: now.toISOString() });
+                      }
+                      setDateToOpen(false);
+                    }}>{p.label}</button>
+                  ))}
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <button className="btn" onClick={() => setDateToOpen(false)}>Отмена</button>
+                  <button className="btn btn-primary" onClick={() => setDateToOpen(false)}>Готово</button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        <div>
-          <label className="block text-xs text-muted mb-1">Сумма от</label>
-          <input
-            type="number"
-            inputMode="decimal"
-            value={local.minAmount ?? ""}
-            onChange={(e) => setLocal({ ...local, minAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
-            className="ui-input"
-          />
-        </div>
-        <div>
-          <label className="block text-xs text-muted mb-1">Сумма до</label>
-          <input
-            type="number"
-            inputMode="decimal"
-            value={local.maxAmount ?? ""}
-            onChange={(e) => setLocal({ ...local, maxAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
-            className="ui-input"
-          />
+        <div className="lg:col-span-2">
+          <label className="block text-xs text-muted mb-1">Сумма</label>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="decimal"
+                placeholder="От"
+                value={local.minAmount ?? ""}
+                onChange={(e) => setLocal({ ...local, minAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
+                className="ui-input pr-10"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">₸</span>
+            </div>
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="decimal"
+                placeholder="До"
+                value={local.maxAmount ?? ""}
+                onChange={(e) => setLocal({ ...local, maxAmount: e.target.value ? parseFloat(e.target.value) : undefined })}
+                className="ui-input pr-10"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted">₸</span>
+            </div>
+          </div>
         </div>
       </div>
 
