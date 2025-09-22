@@ -37,7 +37,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 text-white" style={{ background: "var(--red)" }}>
+          <thead className="sticky top-0 text-white" style={{ background: "var(--primary)" }}>
             <tr>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>
               <Th onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>Статус</Th>

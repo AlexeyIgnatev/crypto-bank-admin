@@ -20,9 +20,10 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`h-screen sticky top-0 border-r border-black/10 dark:border-white/10 bg-white dark:bg-neutral-900 transition-[width] duration-300 ${
+      className={`h-screen sticky top-0 border-r transition-[width,background,color,border-color] duration-300 ${
         open ? "w-64" : "w-16"
       }`}
+      style={{ background: "var(--sidebar-bg)", color: "var(--sidebar-fg)", borderColor: "var(--sidebar-border)" }}
     >
       <div className="flex items-center justify-between p-3">
         <button
@@ -42,9 +43,10 @@ export default function Sidebar() {
               <div
                 className={`mx-2 flex items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors ${
                   active
-                    ? "bg-red-600 text-white"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/10"
+                    ? "text-white"
+                    : "opacity-90 hover:opacity-100"
                 }`}
+                style={active ? { background: "var(--primary)" } : {}}
                 title={it.label}
               >
                 <span className="text-lg w-5 text-center">{it.icon}</span>
@@ -54,15 +56,8 @@ export default function Sidebar() {
           );
         })}
       </nav>
-      <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-black/10 dark:border-white/10">
-        {open && <div className="text-xs mb-2 text-neutral-500">Тема</div>}
-        <button
-          onClick={toggle}
-          className="w-full text-left px-3 py-2 rounded bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-sm"
-        >
-          {theme === "light" ? "Светлая" : "Тёмная"}
-        </button>
-        <button className="w-full mt-2 text-left px-3 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
+      <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
+        <button className="w-full text-left px-3 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 text-sm">
           Выйти
         </button>
       </div>

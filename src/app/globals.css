@@ -24,18 +24,29 @@ body {
 
 /* Palette - polished modern */
 :root {
-  --red: #e11d48;         /* rose-600 */
-  --red-hover: #be123c;   /* rose-700 */
-  --bg-soft: #eef1f5;
-  --card: #ffffff;
-  --muted: #64748b;       /* slate-500 */
+  /* Red-focused modern palette */
+  --primary: #d32f2f;        /* deep red */
+  --primary-hover: #b71c1c;  /* darker red */
+  --background: #f7f7f9;     /* page background */
+  --foreground: #0f172a;     /* text */
+  --bg-soft: #eef1f5;        /* subtle surfaces */
+  --card: #ffffff;           /* cards */
+  --muted: #64748b;          /* muted text */
+  --sidebar-bg: #ffffff;
+  --sidebar-fg: #1f2937;
+  --sidebar-border: rgba(2, 6, 23, 0.08);
 }
 :root.dark {
-  --red: #fb7185;         /* rose-400 */
-  --red-hover: #f43f5e;   /* rose-500 */
-  --bg-soft: #0b0f1a;
-  --card: #0f1220;
-  --muted: #94a3b8;       /* slate-400 */
+  --primary: #ef4444;        /* vivid red in dark */
+  --primary-hover: #dc2626;
+  --background: #0b0e14;
+  --foreground: #e5e7eb;
+  --bg-soft: #0d1117;
+  --card: #111418;
+  --muted: #94a3b8;
+  --sidebar-bg: #0f131a;
+  --sidebar-fg: #e5e7eb;
+  --sidebar-border: rgba(255,255,255,0.08);
 }
 
 /* Smooth transitions during theme switching */

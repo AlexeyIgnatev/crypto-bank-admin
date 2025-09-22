@@ -4,7 +4,7 @@ import { useTheme } from "./ThemeProvider";
 export default function Topbar({ title }: { title: string }) {
   const { theme, toggle } = useTheme();
   return (
-    <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-neutral-900/60 bg-white dark:bg-neutral-900 border-b border-black/10 dark:border-white/10">
+    <header className="sticky top-0 z-10 backdrop-blur border-b" style={{ background: "color-mix(in srgb, var(--card) 70%, transparent)", borderColor: "var(--sidebar-border)" }}>
       <div className="h-14 flex items-center justify-between px-4">
         <div className="text-lg font-semibold">{title}</div>
         <ThemeSwitch theme={theme} onToggle={toggle} />
