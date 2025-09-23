@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const items = [
   { href: "/", label: "Главная", icon: "🏠" },
@@ -14,6 +14,7 @@ const items = [
 ];
 
 export default function Sidebar() {
+  const router = useRouter();
   const [open, setOpen] = useState(true);
   const { theme, toggle } = useTheme();
   const pathname = usePathname();
@@ -43,7 +44,7 @@ export default function Sidebar() {
           return (
             <Link key={it.href} href={it.href} className="block">
               <div
-                className={`mx-2 flex items-center gap-3 rounded px-3 py-2 text-sm font-medium transition-colors ${
+                className={`mx-2 flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${open ? "gap-3 justify-start" : "justify-center"} ${
                   active
                     ? "text-white"
                     : "opacity-90 hover:opacity-100"
@@ -51,7 +52,7 @@ export default function Sidebar() {
                 style={active ? { background: "var(--primary)" } : {}}
                 title={it.label}
               >
-                <span className="text-lg w-5 text-center">{it.icon}</span>
+                <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
                 {open && <span>{it.label}</span>}
               </div>
             </Link>
@@ -59,9 +60,18 @@ export default function Sidebar() {
         })}
       </nav>
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden">
-          <span className="text-lg w-5 text-center shrink-0">🚪</span>
-          <span className={`${labelClass}`}>Выйти</span>
+        <button
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? '' : 'justify-center'}`}
+          title="Выйти"
+          onClick={async () => {
+            try {
+              await fetch('/api/logout', { method: 'POST' });
+            } catch {}
+            router.replace('/login');
+          }}
+        >
+          <span className="text-lg w-5 text-center shrink-0">🚪➡️</span>
+          {open && <span>Выйти</span>}
         </button>
       </div>
     </aside>
