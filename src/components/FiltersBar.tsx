@@ -279,6 +279,51 @@ function DateButton({ label, value, onChange, presets, active }: { label: string
   );
 }
 
+function AmountButton({ min, max, onChange, active }: { min?: number; max?: number; onChange: (min?: number, max?: number) => void; active?: boolean; }) {
+  const [open, setOpen] = useState(false);
+  const [vals, setVals] = useState<[number, number]>([min ?? 0, max ?? 1_000_000]);
+  useEffect(() => { setVals([min ?? 0, max ?? 1_000_000]); }, [min, max]);
+  const MIN = 0, MAX = 1_000_000, STEP = 1000;
+  const label = active ? `${vals[0].toLocaleString()} – ${vals[1].toLocaleString()} ₸` : "Сумма";
+  return (
+    <>
+      <button className={`btn h-9 w-full ${active ? "ring-1" : ""}`} onClick={() => setOpen(true)}>{label}</button>
+      {open && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center">
+          <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setOpen(false)} />
+          <div className="relative w-[90vw] max-w-md rounded-xl card border border-soft shadow-xl p-4">
+            <div className="font-semibold mb-2">Диапазон суммы</div>
+            <div className="px-1 py-2">
+              <Range values={vals} step={STEP} min={MIN} max={MAX} onChange={(v) => setVals([v[0], v[1]])}
+                renderTrack={({ props, children }) => (
+                  <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} style={{ ...props.style, height: "26px", display: "flex", width: "100%" }}>
+                    <div ref={props.ref as unknown as React.Ref<HTMLDivElement>} style={{ height: "6px", width: "100%", borderRadius: "9999px", background: getTrackBackground({ values: vals, colors: ["var(--border-soft)", "var(--primary)", "var(--border-soft)"], min: MIN, max: MAX }), alignSelf: "center" }}>
+                      {children}
+                    </div>
+                  </div>
+                )}
+                renderThumb={({ props }) => (<div {...props} style={{ ...props.style, height: "16px", width: "16px", borderRadius: "50%", backgroundColor: "var(--card)", border: "2px solid var(--primary)" }} />)}
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <input className="ui-input h-9" type="number" value={vals[0]} onChange={(e) => setVals([Number(e.target.value || 0), vals[1]])} />
+                <input className="ui-input h-9 text-right" type="number" value={vals[1]} onChange={(e) => setVals([vals[0], Number(e.target.value || 0)])} />
+              </div>
+            </div>
+            <div className="mt-3 flex justify-between gap-2">
+              <button className="btn btn-ghost" onClick={() => { setVals([MIN, MAX]); onChange(undefined, undefined); setOpen(false); }}>Очистить</button>
+              <div className="flex gap-2">
+                <button className="btn" onClick={() => setOpen(false)}>Отмена</button>
+                <button className="btn btn-primary" onClick={() => { onChange(vals[0], vals[1]); setOpen(false); }}>Готово</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
 // Старый инлайн-диапазон заменён на модальное окно AmountButton выше
 function AmountInline({ min, max, onChange, active }: { min: number; max: number; onChange: (min: number, max: number) => void; active?: boolean; }) {
   const [editMin, setEditMin] = useState(false);
