@@ -297,7 +297,7 @@ function AmountButton({ min, max, onChange, active }: { min?: number; max?: numb
               <Range values={vals} step={STEP} min={MIN} max={MAX} onChange={(v) => setVals([v[0], v[1]])}
                 renderTrack={({ props, children }) => (
                   <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} style={{ ...props.style, height: "26px", display: "flex", width: "100%" }}>
-                    <div ref={props.ref as unknown as React.Ref<HTMLDivElement>} style={{ height: "6px", width: "100%", borderRadius: "9999px", background: getTrackBackground({ values: vals, colors: ["var(--border-soft)", "var(--primary)", "var(--border-soft)"], min: MIN, max: MAX }), alignSelf: "center" }}>
+                            <div ref={props.ref as unknown as React.Ref<HTMLDivElement>} style={{ height: "6px", width: "100%", borderRadius: "9999px", background: getTrackBackground({ values: vals, colors: ["var(--border-soft)", "var(--primary)", "var(--border-soft)"], min: MIN, max: MAX }), alignSelf: "center" }}>
                       {children}
                     </div>
                   </div>
@@ -324,29 +324,3 @@ function AmountButton({ min, max, onChange, active }: { min?: number; max?: numb
 }
 
 
-// Старый инлайн-диапазон заменён на модальное окно AmountButton выше
-function AmountInline({ min, max, onChange, active }: { min: number; max: number; onChange: (min: number, max: number) => void; active?: boolean; }) {
-  const [editMin, setEditMin] = useState(false);
-  const [editMax, setEditMax] = useState(false);
-  const STEP = 1000, MIN = 0, MAX = 1_000_000;
-  return (
-    <div className={`w-60 px-2 py-2 card rounded-lg border border-soft ${active ? "ring-1" : ""}`}>
-      <Range values={[min, max]} step={STEP} min={MIN} max={MAX} onChange={(vals) => onChange(vals[0], vals[1])}
-        renderTrack={({ props, children }) => (
-          <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} style={{ ...props.style, height: "26px", display: "flex", width: "100%" }}>
-            <div ref={props.ref as any} style={{ height: "6px", width: "100%", borderRadius: "9999px", background: getTrackBackground({ values: [min, max], colors: ["var(--border-soft)", "var(--primary)", "var(--border-soft)"], min: MIN, max: MAX }), alignSelf: "center" }}>
-              {children}
-            </div>
-          </div>
-        )}
-        renderThumb={({ props }) => (<div {...props} style={{ ...props.style, height: "16px", width: "16px", borderRadius: "50%", backgroundColor: "var(--card)", border: "2px solid var(--primary)" }} />)}
-      />
-      <div className="mt-1 flex justify-between text-[11px] text-muted">
-        {editMin ? (<input autoFocus onBlur={() => setEditMin(false)} className="ui-input h-6 w-20" type="number" value={min} onChange={(e) => onChange(Number(e.target.value || 0), max)} />)
-                 : (<button className="underline decoration-dotted" onClick={() => setEditMin(true)}>{min.toLocaleString()} ₸</button>)}
-        {editMax ? (<input autoFocus onBlur={() => setEditMax(false)} className="ui-input h-6 w-20 text-right" type="number" value={max} onChange={(e) => onChange(min, Number(e.target.value || 0))} />)
-                 : (<button className="underline decoration-dotted" onClick={() => setEditMax(true)}>{max.toLocaleString()} ₸</button>)}
-      </div>
-    </div>
-  );
-}
