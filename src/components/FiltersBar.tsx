@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Filters as FiltersType, OperationType } from "../types";
+import { Filters as FiltersType, OperationType, TransactionStatus } from "../types";
 import { Range, getTrackBackground } from "react-range";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
@@ -32,9 +32,11 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
     { value: "exchange", label: "Обмен" },
   ];
 
-  const toggleSet = (arr: string[] | undefined, v: string) => {
-    const s = new Set(arr || []); if (s.has(v)) s.delete(v); else s.add(v); return Array.from(s);
-  };
+  function toggleSet<T extends string>(arr: T[] | undefined, v: T): T[] {
+    const s = new Set(arr || []);
+    if (s.has(v)) s.delete(v); else s.add(v);
+    return Array.from(s);
+  }
 
   const reset = () => setLocal({ q: "", statuses: [], currencies: [], operations: [], dateFrom: undefined, dateTo: undefined, minAmount: undefined, maxAmount: undefined });
 
@@ -57,44 +59,71 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
 
 
   return (
-    <section className="rounded-xl border border-soft p-3 card">
-      <header className="text-sm text-muted mb-2">Фильтры</header>
-      <div className="flex items-center gap-2">
-        <StatusDropdown
-          selected={new Set((local.statuses as string[] | undefined) || [])}
-          onToggle={(v) => setLocal({ ...local, statuses: toggleSet((local.statuses as any) || [], v) as any })}
-        />
+    <section className="rounded-xl border border-soft p-4 card">
+      <header className="text-sm text-muted mb-3">Фильтры</header>
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+        <div className="md:col-span-2">
+          <StatusDropdown
+            selected={new Set((local.statuses as string[] | undefined) || [])}
+            onToggle={(v) => setLocal({ ...local, statuses: toggleSet(local.statuses as TransactionStatus[] | undefined, v as TransactionStatus) })}
+            active={active.statuses}
+          />
+        </div>
 
-        <input className="ui-input h-8 w-[320px] min-w-[160px]" placeholder="Поиск" value={local.q}
-               onChange={(e) => setLocal({ ...local, q: e.target.value })} />
+        <div className="md:col-span-4">
+          <input
+            className="ui-input h-9 w-full"
+            placeholder="Поиск"
+            value={local.q}
+            onChange={(e) => setLocal({ ...local, q: e.target.value })}
+          />
+        </div>
 
-        <div className="shrink-0" />
+        <div className="md:col-span-2">
+          <DropdownMulti
+            label="Активы"
+            options={assets}
+            selected={new Set(local.currencies || [])}
+            onToggle={(v) => setLocal({ ...local, currencies: toggleSet(local.currencies, v) })}
+            active={active.assets}
+          />
+        </div>
 
-        <DropdownMulti label="Активы" options={assets} selected={new Set(local.currencies || [])}
-                        onToggle={(v) => setLocal({ ...local, currencies: toggleSet(local.currencies, v) })}
-                        active={active.assets} />
+        <div className="md:col-span-2">
+          <DropdownMulti
+            label="Типы"
+            options={ops}
+            selected={new Set((local.operations as string[] | undefined) || [])}
+            onToggle={(v) => setLocal({ ...local, operations: toggleSet(local.operations as OperationType[] | undefined, v as OperationType) })}
+            active={active.ops}
+          />
+        </div>
 
-        <DropdownMulti label="Типы" options={ops} selected={new Set((local.operations as string[] | undefined) || [])}
-                        onToggle={(v) => setLocal({ ...local, operations: toggleSet((local.operations as any) || [], v) as any })}
-                        active={active.ops} />
+        <div className="md:col-span-1">
+          <DateButton label="Дата от" value={local.dateFrom} onChange={(iso) => setLocal({ ...local, dateFrom: iso })} presets={presets} active={active.dates} />
+        </div>
+        <div className="md:col-span-1">
+          <DateButton label="Дата до" value={local.dateTo} onChange={(iso) => setLocal({ ...local, dateTo: iso })} presets={presets} active={active.dates} />
+        </div>
 
-        <DateButton label="Дата от" value={local.dateFrom} onChange={(iso) => setLocal({ ...local, dateFrom: iso })}
-                    presets={presets} active={active.dates} />
-        <DateButton label="Дата до" value={local.dateTo} onChange={(iso) => setLocal({ ...local, dateTo: iso })}
-                    presets={presets} active={active.dates} />
+        <div className="md:col-span-2">
+          <AmountButton
+            min={local.minAmount}
+            max={local.maxAmount}
+            onChange={(min, max) => setLocal({ ...local, minAmount: min, maxAmount: max })}
+            active={active.amount}
+          />
+        </div>
 
-        <AmountInline min={local.minAmount ?? 0} max={local.maxAmount ?? 1_000_000}
-                       onChange={(min, max) => setLocal({ ...local, minAmount: min, maxAmount: max })}
-                       active={active.amount} />
-
-        <div className="ml-auto" />
-        <button className="btn h-8 px-3" onClick={reset} title="Сбросить фильтры">↺ Сброс</button>
+        <div className="md:col-span-12 flex justify-end">
+          <button className="btn h-9 px-3" onClick={reset} title="Сбросить фильтры">↺ Сброс</button>
+        </div>
       </div>
     </section>
   );
 }
 
-function StatusDropdown({ selected, onToggle }: { selected: Set<string>; onToggle: (v: string) => void; }) {
+function StatusDropdown({ selected, onToggle, active }: { selected: Set<string>; onToggle: (v: string) => void; active?: boolean; }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
@@ -126,28 +155,23 @@ function StatusDropdown({ selected, onToggle }: { selected: Set<string>; onToggl
   }, [open]);
   return (
     <>
-      <button ref={btnRef} className={`btn h-8 ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
-        Статус{active ? ` (${selected.size})` : ""} <span className="ml-1">▾</span>
+      <button ref={btnRef} className={`btn h-9 w-full ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
+        Статус{selected.size ? ` (${selected.size})` : ""} <span className="ml-1">▾</span>
       </button>
       {open && createPortal(
         <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
           <div className="card border border-soft rounded-xl shadow-xl p-2" style={{ background: "var(--card)" }}>
-            <div className="max-h-60 overflow-auto flex flex-col gap-1">
+            <div className="max-h-60 overflow-auto">
               {options.map((opt) => {
                 const checked = selected.has(opt.value);
                 return (
-                  <button key={opt.value} className={`flex items-center justify-between px-2 py-2 rounded hover-surface ${checked ? "bg-[color:var(--hover)]/20" : ""}`} onClick={() => onToggle(opt.value)}>
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full" style={{ background: opt.color }} />
-                      <span className="text-sm">{opt.label}</span>
-                    </div>
-                    <span className={`text-lg ${checked ? "text-[color:var(--primary)]" : "opacity-40"}`}>☑</span>
-                  </button>
+                  <label key={opt.value} className="flex items-center gap-2 px-2 py-2 rounded hover-surface cursor-pointer select-none">
+                    <span className="w-2 h-2 rounded-full" style={{ background: opt.color }} />
+                    <input type="checkbox" className="accent-[var(--primary)]" checked={checked} onChange={() => onToggle(opt.value)} />
+                    <span className="text-sm">{opt.label}</span>
+                  </label>
                 );
               })}
-            </div>
-            <div className="mt-2 text-right">
-              <button className="btn btn-primary h-8" onClick={() => setOpen(false)}>Выбрать</button>
             </div>
           </div>
         </div>, document.body)}
@@ -196,28 +220,24 @@ function DropdownMulti({ label, options, selected, onToggle, active }: {
 
   return (
     <>
-      <button ref={btnRef} className={`btn h-8 ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
-        {label}{selected.size ? ` (${selected.size})` : ""}
+      <button ref={btnRef} className={`btn h-9 w-full ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
+        {label}{selected.size ? ` (${selected.size})` : ""} <span className="ml-1">▾</span>
       </button>
       {open && createPortal(
         <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
           <div className="card border border-soft rounded-xl shadow-xl p-2" style={{ background: "var(--card)" }}>
-            <div className="max-h-72 overflow-auto flex flex-col gap-1">
+            <div className="max-h-72 overflow-auto">
               {options.map((opt) => {
-                const checked = selected.has(String(opt.value));
+                const value = String(opt.value);
+                const checked = selected.has(value);
                 return (
-                  <button key={String(opt.value)} className={`flex items-center justify-between px-2 py-2 rounded hover-surface ${checked ? "bg-[color:var(--hover)]/20" : ""}`} onClick={() => onToggle(String(opt.value))}>
-                    <div className="flex items-center gap-2">
-                      {opt.icon && <span className="w-5 text-center">{opt.icon}</span>}
-                      <span className="text-sm">{opt.label}</span>
-                    </div>
-                    <span className={`text-lg ${checked ? "text-[color:var(--primary)]" : "opacity-40"}`}>☑</span>
-                  </button>
+                  <label key={value} className="flex items-center gap-2 px-2 py-2 rounded hover-surface cursor-pointer select-none">
+                    {opt.icon && <span className="w-5 text-center">{opt.icon}</span>}
+                    <input type="checkbox" className="accent-[var(--primary)]" checked={checked} onChange={() => onToggle(value)} />
+                    <span className="text-sm">{opt.label}</span>
+                  </label>
                 );
               })}
-            </div>
-            <div className="mt-2 text-right">
-              <button className="btn btn-primary h-8" onClick={() => setOpen(false)}>Выбрать</button>
             </div>
           </div>
         </div>, document.body)}
@@ -229,7 +249,7 @@ function DateButton({ label, value, onChange, presets, active }: { label: string
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button className={`btn h-8 ${active ? "ring-1" : ""}`} onClick={() => setOpen(true)}>{label}</button>
+      <button className={`btn h-9 w-full ${active ? "ring-1" : ""}`} onClick={() => setOpen(true)}>{label}</button>
       {open && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center">
           <div className="absolute inset-0" style={{ background: "color-mix(in srgb, var(--foreground) 60%, transparent)" }} onClick={() => setOpen(false)} />
@@ -259,6 +279,7 @@ function DateButton({ label, value, onChange, presets, active }: { label: string
   );
 }
 
+// Старый инлайн-диапазон заменён на модальное окно AmountButton выше
 function AmountInline({ min, max, onChange, active }: { min: number; max: number; onChange: (min: number, max: number) => void; active?: boolean; }) {
   const [editMin, setEditMin] = useState(false);
   const [editMax, setEditMax] = useState(false);
