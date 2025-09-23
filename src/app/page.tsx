@@ -1,6 +1,6 @@
 "use client";
 import Cards from "../components/Cards";
-import Filters from "../components/Filters";
+import FiltersBar from "../components/FiltersBar";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
 import { useMemo, useState } from "react";
@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col gap-4 overflow-hidden">
       <div className="shrink-0"><Cards /></div>
-      <div className="shrink-0"><Filters value={filters} onChange={setFilters} /></div>
+      <div className="shrink-0"><FiltersBar value={filters} onChange={setFilters} /></div>
       <div className="min-h-0 flex-1"><Table
         data={filtered}
         onOpen={(t) => {
