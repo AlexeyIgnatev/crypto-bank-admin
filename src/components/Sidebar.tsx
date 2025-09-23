@@ -70,7 +70,13 @@ export default function Sidebar() {
             router.replace('/login');
           }}
         >
-          <span className="text-lg w-5 text-center shrink-0">🚪➡️</span>
+          <span className="shrink-0 inline-flex items-center justify-center" style={{ color: "#2563eb" }} aria-hidden="true">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h8a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+              <path d="M14 12h6" />
+              <path d="M18 8l4 4-4 4" />
+            </svg>
+          </span>
           {open && <span>Выйти</span>}
         </button>
       </div>
