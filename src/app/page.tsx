@@ -9,7 +9,7 @@ import { Filters as FiltersType, Transaction } from "../types";
 
 export default function Home() {
   const data = useMemo(() => generateTransactions(250), []);
-  const [filters, setFilters] = useState<FiltersType>({ q: "", status: "all" });
+  const [filters, setFilters] = useState<FiltersType>({ q: "", statuses: [] });
   const filtered = useMemo(() => applyFilters(data, filters), [data, filters]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
@@ -20,10 +20,7 @@ export default function Home() {
       <div className="shrink-0"><FiltersBar value={filters} onChange={setFilters} /></div>
       <div className="min-h-0 flex-1"><Table
         data={filtered}
-        onOpen={(t) => {
-          setSelected(t);
-          setOpen(true);
-        }}
+        onOpen={(t) => { setSelected(t); setOpen(true); }}
       /></div>
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (

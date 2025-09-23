@@ -72,8 +72,9 @@ export function applyFilters(data: Transaction[], f: Filters): Transaction[] {
       t.recipient.toLowerCase().includes(q)
     );
   }
-  if (f.status !== "all") {
-    res = res.filter((t) => t.status === f.status);
+  if (f.statuses && f.statuses.length > 0) {
+    const set = new Set(f.statuses);
+    res = res.filter((t) => set.has(t.status));
   }
   if (f.dateFrom) {
     const d = new Date(f.dateFrom).getTime();

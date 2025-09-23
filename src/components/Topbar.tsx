@@ -1,15 +1,15 @@
 "use client";
 import { useTheme } from "./ThemeProvider";
 
-export default function Topbar({ title }: { title: string }) {
+export default function Topbar({ title }: { title?: string }) {
   const { theme, toggle } = useTheme();
   return (
-    <header className="sticky top-0 z-10 backdrop-blur border-b" style={{ background: "color-mix(in srgb, var(--card) 70%, transparent)", borderColor: "var(--sidebar-border)" }}>
+    <header className="relative z-10 border-b" style={{ background: "color-mix(in srgb, var(--card) 70%, transparent)", borderColor: "var(--sidebar-border)" }}>
       <div className="h-14 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className="text-xl font-semibold">Банк</div>
           <div className="text-muted">/</div>
-          <div className="text-xl font-semibold">{title}</div>
+          <div className="text-xl font-semibold">{title || "Главная"}</div>
         </div>
         <ThemeSwitch theme={theme} onToggle={toggle} />
       </div>

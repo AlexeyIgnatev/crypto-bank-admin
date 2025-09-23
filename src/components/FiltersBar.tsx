@@ -13,7 +13,6 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
   useEffect(() => { const t = setTimeout(() => onChange(local), 200); return () => clearTimeout(t); }, [local, onChange]);
 
   const statuses = useMemo(() => ([
-    { value: "all", label: "Все" },
     { value: "confirmed", label: "Подтв." },
     { value: "pending", label: "Ожидает" },
     { value: "declined", label: "Отклонено" },
@@ -37,12 +36,14 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
     const s = new Set(arr || []); if (s.has(v)) s.delete(v); else s.add(v); return Array.from(s);
   };
 
-  const reset = () => setLocal({ q: "", status: "all", currencies: [], operations: [], dateFrom: undefined, dateTo: undefined, minAmount: undefined, maxAmount: undefined });
+  const reset = () => setLocal({ q: "", statuses: [], currencies: [], operations: [], dateFrom: undefined, dateTo: undefined, minAmount: undefined, maxAmount: undefined });
 
   const active = {
     dates: !!(local.dateFrom || local.dateTo),
     assets: !!(local.currencies && local.currencies.length),
     ops: !!(local.operations && local.operations.length),
+    statuses: !!(local.statuses && local.statuses.length),
+
     amount: typeof local.minAmount === "number" || typeof local.maxAmount === "number",
   };
 
@@ -53,18 +54,21 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
     { label: "Этот месяц", month: "current" as const },
   ];
 
+
+
   return (
     <section className="rounded-xl border border-soft p-3 card">
       <header className="text-sm text-muted mb-2">Фильтры</header>
       <div className="flex items-center gap-2">
-        <Segment
-          items={statuses}
-          value={local.status || "all"}
-          onChange={(v) => setLocal({ ...local, status: v as any })}
+        <StatusDropdown
+          selected={new Set((local.statuses as string[] | undefined) || [])}
+          onToggle={(v) => setLocal({ ...local, statuses: toggleSet((local.statuses as any) || [], v) as any })}
         />
 
         <input className="ui-input h-8 w-[320px] min-w-[160px]" placeholder="Поиск" value={local.q}
                onChange={(e) => setLocal({ ...local, q: e.target.value })} />
+
+        <div className="shrink-0" />
 
         <DropdownMulti label="Активы" options={assets} selected={new Set(local.currencies || [])}
                         onToggle={(v) => setLocal({ ...local, currencies: toggleSet(local.currencies, v) })}
@@ -90,19 +94,64 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
   );
 }
 
-function Segment({ items, value, onChange }: { items: { value: string; label: string }[]; value: string; onChange: (v: string) => void; }) {
+function StatusDropdown({ selected, onToggle }: { selected: Set<string>; onToggle: (v: string) => void; }) {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
+  const options = [
+    { value: "confirmed", label: "Подтв.", color: "var(--success)" },
+    { value: "pending", label: "Ожидает", color: "var(--warning)" },
+    { value: "declined", label: "Отклонено", color: "var(--danger)" },
+  ];
+  const active = selected.size > 0;
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const r = btnRef.current?.getBoundingClientRect(); if (!r) return;
+      const width = Math.max(200, Math.min(280, r.width));
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    update();
+    const onScroll = () => update();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", update);
+    return () => { window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", update); };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => { if (e.target instanceof Node) { if (btnRef.current && btnRef.current.contains(e.target)) return; setOpen(false); } };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
   return (
-    <div className="segment">
-      {items.map((s) => {
-        const color = s.value === "confirmed" ? "var(--success)" : s.value === "pending" ? "var(--warning)" : s.value === "declined" ? "var(--danger)" : "var(--muted)";
-        return (
-          <button key={s.value} className="text-xs flex items-center gap-2" aria-pressed={String(value === s.value)} onClick={() => onChange(s.value)}>
-            <span className="dot" style={{ background: color }} />
-            {s.label}
-          </button>
-        );
-      })}
-    </div>
+    <>
+      <button ref={btnRef} className={`btn h-8 ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
+        Статус{active ? ` (${selected.size})` : ""} <span className="ml-1">▾</span>
+      </button>
+      {open && createPortal(
+        <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
+          <div className="card border border-soft rounded-xl shadow-xl p-2" style={{ background: "var(--card)" }}>
+            <div className="max-h-60 overflow-auto flex flex-col gap-1">
+              {options.map((opt) => {
+                const checked = selected.has(opt.value);
+                return (
+                  <button key={opt.value} className={`flex items-center justify-between px-2 py-2 rounded hover-surface ${checked ? "bg-[color:var(--hover)]/20" : ""}`} onClick={() => onToggle(opt.value)}>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full" style={{ background: opt.color }} />
+                      <span className="text-sm">{opt.label}</span>
+                    </div>
+                    <span className={`text-lg ${checked ? "text-[color:var(--primary)]" : "opacity-40"}`}>☑</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-2 text-right">
+              <button className="btn btn-primary h-8" onClick={() => setOpen(false)}>Выбрать</button>
+            </div>
+          </div>
+        </div>, document.body)}
+    </>
   );
 }
 
@@ -130,6 +179,7 @@ function DropdownMulti({ label, options, selected, onToggle, active }: {
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", update);
     return () => { window.removeEventListener("scroll", onScroll, true); window.removeEventListener("resize", update); };
+
   }, [open]);
 
   useEffect(() => {

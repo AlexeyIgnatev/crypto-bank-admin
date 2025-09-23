@@ -1,1601 +1,224 @@
 nohup: ignoring input
 
 > bank-admin@0.1.0 dev
-> next dev --turbopack --hostname 0.0.0.0 --port 40896 --turbopack
+> next dev --turbopack -p 40896 -H 0.0.0.0
 
    ▲ Next.js 15.5.3 (Turbopack)
    - Local:        http://localhost:40896
    - Network:      http://0.0.0.0:40896
 
  ✓ Starting...
- ✓ Ready in 992ms
- ○ Compiling / ...
- ✓ Compiled / in 2.7s
- GET / 200 in 3030ms
- GET / 200 in 92ms
- ✓ Compiled /favicon.ico in 176ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 446ms
- GET / 200 in 89ms
- GET / 200 in 82ms
- GET / 200 in 95ms
- GET / 200 in 93ms
- GET / 200 in 89ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 245ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- ✓ Compiled /_not-found/page in 257ms
- GET /admins 404 in 315ms
- GET /admins 404 in 54ms
- GET /admins 404 in 75ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 252ms
- GET / 200 in 50ms
- GET / 200 in 111ms
- GET / 200 in 95ms
- GET / 200 in 91ms
- GET /admins 404 in 49ms
- GET /admins 404 in 77ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET / 200 in 81ms
- GET / 200 in 44ms
- GET / 200 in 82ms
- GET / 200 in 96ms
- GET / 200 in 82ms
- GET / 200 in 84ms
- GET / 200 in 95ms
- GET / 200 in 87ms
- GET / 200 in 95ms
- GET / 200 in 89ms
- GET / 200 in 88ms
- GET / 200 in 99ms
- GET / 200 in 94ms
- GET / 200 in 87ms
- GET / 200 in 92ms
- GET / 200 in 102ms
- GET / 200 in 83ms
- GET / 200 in 93ms
- GET / 200 in 84ms
- GET / 200 in 83ms
- GET / 200 in 92ms
- GET / 200 in 91ms
- GET / 200 in 86ms
- GET / 200 in 78ms
- GET / 200 in 83ms
- GET / 200 in 73ms
- GET / 200 in 85ms
- GET / 200 in 105ms
- GET / 200 in 94ms
- GET / 200 in 77ms
- GET / 200 in 89ms
- GET / 200 in 82ms
- GET / 200 in 90ms
- GET / 200 in 85ms
- GET / 200 in 83ms
- GET / 200 in 83ms
- GET / 200 in 78ms
- GET / 200 in 96ms
- GET / 200 in 78ms
- GET / 200 in 1047ms
- GET / 200 in 84ms
- GET / 200 in 96ms
- GET / 200 in 89ms
- GET / 200 in 80ms
- GET / 200 in 97ms
- GET / 200 in 85ms
- GET / 200 in 78ms
- GET / 200 in 88ms
- GET / 200 in 74ms
- GET / 200 in 84ms
- GET / 200 in 82ms
- GET / 200 in 78ms
- GET / 200 in 96ms
- GET / 200 in 101ms
- GET / 200 in 97ms
- GET / 200 in 103ms
- GET / 200 in 100ms
- GET / 200 in 89ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 246ms
- GET / 200 in 89ms
- GET / 200 in 88ms
- GET / 200 in 93ms
- GET / 200 in 76ms
- GET / 200 in 81ms
- GET / 200 in 93ms
- ✓ Compiled / in 27ms
- GET / 200 in 114ms
- GET / 200 in 62ms
- ✓ Compiled in 166ms
- ✓ Compiled in 156ms
- ✓ Compiled in 165ms
- ✓ Compiled in 156ms
- ✓ Compiled in 171ms
- ✓ Compiled in 171ms
- ✓ Compiled in 156ms
- ⨯ ./src/components/Table.tsx:49:10
-Parsing ecmascript source code failed
-[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 48 |[39m
-[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- ○ Compiling /_error ...
- ⨯ ./src/components/Table.tsx:49:10
-Parsing ecmascript source code failed
-[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 48 |[39m
-[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- ✓ Compiled /_error in 1154ms
- GET / 500 in 243ms
- GET / 500 in 1332ms
- ✓ Compiled in 175ms
- ⨯ ./src/components/Table.tsx:49:10
-Parsing ecmascript source code failed
-[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 48 |[39m
-[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Table.tsx:49:10
-Parsing ecmascript source code failed
-[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 48 |[39m
-[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 53ms
- ⨯ ./src/components/Table.tsx:49:10
-Parsing ecmascript source code failed
-[0m [90m 47 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 48 |[39m
-[31m[1m>[22m[39m[90m 49 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 50 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 51 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 52 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 51ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 50ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 47ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 54ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 67ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 47ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 49ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 47ms
- ⨯ ./src/components/Table.tsx:60:10
-Parsing ecmascript source code failed
-[0m [90m 58 |[39m [32m      `[39m[33m:[39m[32m""[39m}[33m<[39m[33m/[39m[33mstyle[39m[33m>[39m
- [90m 59 |[39m
-[31m[1m>[22m[39m[90m 60 |[39m     [33m<[39m[33mdiv[39m className[33m=[39m[32m"rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card"[39m[33m>[39m
- [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 61 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"overflow-x-auto"[39m[33m>[39m
- [90m 62 |[39m         [33m<[39m[33mtable[39m className[33m=[39m[32m"w-full text-sm"[39m[33m>[39m
- [90m 63 |[39m           [33m<[39m[33mthead[39m className[33m=[39m[32m"sticky top-0 text-white"[39m style[33m=[39m{{ background[33m:[39m [32m"var(--primary)"[39m }}[33m>[39m[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Table.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Table.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ✓ Compiled in 156ms
- ✓ Compiled / in 16ms
- GET / 200 in 101ms
- ✓ Compiled in 166ms
- ✓ Compiled in 160ms
- ✓ Compiled in 163ms
- ✓ Compiled in 174ms
- ✓ Compiled in 160ms
- ✓ Compiled in 157ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Th (src/components/Table.tsx:132:155)
-  130 |   return (
-  131 |     <th
-> 132 |       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""} ${typeof col === 'number' && stickyWidths ? `col-${col}` : ''}`}
-      |                                                                                                                                                           ^
-  133 |       onClick={onClick}
-  134 |       data-col={typeof col === 'number' ? col : undefined}
-  135 |     > {
-  digest: '4294800883'
-}
- HEAD / 500 in 274ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Th (src/components/Table.tsx:132:155)
-  130 |   return (
-  131 |     <th
-> 132 |       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""} ${typeof col === 'number' && stickyWidths ? `col-${col}` : ''}`}
-      |                                                                                                                                                           ^
-  133 |       onClick={onClick}
-  134 |       data-col={typeof col === 'number' ? col : undefined}
-  135 |     > {
-  digest: '4294800883'
-}
- GET / 500 in 106ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 160ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 271ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 254ms
- GET /favicon.ico 200 in 235ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 163ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 272ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 233ms
- GET /favicon.ico 200 in 234ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 179ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 105ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 94ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 93ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 90ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 77ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 97ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 95ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:57:8)
-  55 |   return (
-  56 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 57 |       {stickyWidths && (
-     |        ^
-  58 |         <style>{`
-  59 |           .col-0{width:${stickyWidths[0]}px}
-  60 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '1578866589'
-}
- GET / 500 in 107ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 165ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:39:8)
-  37 |   return (
-  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 39 |       {stickyWidths && (
-     |        ^
-  40 |         <style>{`
-  41 |           .col-0{width:${stickyWidths[0]}px}
-  42 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '3282597726'
-}
- GET / 500 in 254ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET /favicon.ico 200 in 232ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:39:8)
-  37 |   return (
-  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 39 |       {stickyWidths && (
-     |        ^
-  40 |         <style>{`
-  41 |           .col-0{width:${stickyWidths[0]}px}
-  42 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '3282597726'
-}
- GET / 500 in 103ms
- ⨯ ReferenceError: stickyWidths is not defined
-    at Table (src/components/Table.tsx:39:8)
-  37 |   return (
-  38 |     <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-> 39 |       {stickyWidths && (
-     |        ^
-  40 |         <style>{`
-  41 |           .col-0{width:${stickyWidths[0]}px}
-  42 |           .col-1{width:${stickyWidths[1]}px} {
-  digest: '3282597726'
-}
- GET / 500 in 120ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 179ms
- GET / 200 in 240ms
- GET / 200 in 110ms
- GET / 200 in 117ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 253ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 236ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 233ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- ✓ Compiled in 156ms
- GET / 200 in 213ms
- GET / 200 in 87ms
- ✓ Compiled in 162ms
- GET / 200 in 200ms
- GET / 200 in 76ms
- GET / 200 in 106ms
- GET / 200 in 87ms
- GET / 200 in 89ms
- GET / 200 in 86ms
- GET / 200 in 113ms
- GET / 200 in 81ms
- GET / 200 in 100ms
- GET / 200 in 85ms
- GET / 200 in 85ms
- GET / 200 in 87ms
- GET / 200 in 89ms
- GET / 200 in 92ms
- GET / 200 in 82ms
- GET / 200 in 90ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 248ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET / 200 in 96ms
- GET / 200 in 98ms
- GET / 200 in 80ms
- GET / 200 in 80ms
- GET / 200 in 90ms
- GET / 200 in 84ms
- GET / 200 in 80ms
- GET / 200 in 78ms
- GET / 200 in 88ms
- GET / 200 in 85ms
- GET / 200 in 85ms
- GET / 200 in 87ms
- GET / 200 in 73ms
- GET / 200 in 81ms
- GET / 200 in 90ms
- GET / 200 in 838ms
- GET / 200 in 86ms
- GET / 200 in 96ms
- GET / 200 in 88ms
- GET / 200 in 120ms
- GET / 200 in 88ms
- GET / 200 in 88ms
- GET / 200 in 89ms
- GET / 200 in 93ms
- GET / 200 in 90ms
- GET / 200 in 115ms
- GET / 200 in 98ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 259ms
- GET / 200 in 77ms
- GET / 200 in 86ms
- GET / 200 in 91ms
- GET / 200 in 89ms
- GET / 200 in 86ms
- GET / 200 in 89ms
- GET / 200 in 97ms
- GET / 200 in 101ms
- GET / 200 in 98ms
- GET / 200 in 103ms
- GET / 200 in 118ms
- GET / 200 in 98ms
- GET / 200 in 98ms
- GET / 200 in 85ms
- GET / 200 in 108ms
- GET / 200 in 119ms
- GET / 200 in 102ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- GET / 200 in 101ms
- GET / 200 in 85ms
- ✓ Compiled in 166ms
- GET / 200 in 252ms
- ✓ Compiled in 164ms
- GET / 200 in 272ms
- ✓ Compiled in 157ms
- ✓ Compiled in 127ms
- ✓ Compiled in 125ms
- ✓ Compiled in 116ms
- GET / 200 in 234ms
- GET / 200 in 85ms
- GET / 200 in 131ms
- GET / 200 in 109ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 240ms
- GET / 200 in 86ms
- GET / 200 in 79ms
- GET / 200 in 83ms
- GET / 200 in 90ms
- GET / 200 in 85ms
- GET / 200 in 152ms
- GET / 200 in 108ms
- GET / 200 in 114ms
- GET / 200 in 101ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
- GET / 200 in 84ms
- GET / 200 in 125ms
- GET / 200 in 81ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 244ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 235ms
- GET / 200 in 106ms
- GET / 200 in 93ms
- GET / 200 in 83ms
- GET / 200 in 88ms
- GET / 200 in 86ms
- GET / 200 in 80ms
- GET / 200 in 124ms
- GET / 200 in 82ms
- GET / 200 in 76ms
- GET / 200 in 96ms
- GET / 200 in 83ms
- GET / 200 in 97ms
- GET / 200 in 85ms
- GET / 200 in 81ms
- GET / 200 in 80ms
- GET / 200 in 78ms
- GET / 200 in 86ms
- GET / 200 in 83ms
- GET / 200 in 84ms
- GET / 200 in 76ms
- GET / 200 in 82ms
- GET / 200 in 76ms
- GET / 200 in 82ms
- GET / 200 in 73ms
- GET / 200 in 88ms
- GET / 200 in 118ms
- GET / 200 in 77ms
- GET / 200 in 84ms
- GET / 200 in 133ms
- GET / 200 in 86ms
- GET / 200 in 78ms
- GET / 200 in 98ms
- GET / 200 in 91ms
- GET / 200 in 90ms
- GET / 200 in 74ms
- GET / 200 in 88ms
- GET / 200 in 86ms
- GET / 200 in 55ms
- ✓ Compiled /_not-found/page in 21ms
- GET /transactions 404 in 50ms
- GET /transactions 404 in 67ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 243ms
- GET / 200 in 45ms
- GET / 200 in 78ms
- GET / 200 in 86ms
- GET / 200 in 83ms
- GET / 200 in 80ms
- GET / 200 in 80ms
- GET / 200 in 85ms
- GET / 200 in 91ms
- GET / 200 in 77ms
- GET / 200 in 75ms
- GET / 200 in 86ms
- GET / 200 in 87ms
- GET / 200 in 82ms
- GET / 200 in 87ms
- GET / 200 in 80ms
- GET / 200 in 75ms
- GET / 200 in 83ms
- GET / 200 in 117ms
- GET / 200 in 84ms
- GET / 200 in 77ms
- GET / 200 in 80ms
- GET / 200 in 80ms
- GET / 200 in 87ms
- GET / 200 in 95ms
- ✓ Compiled in 118ms
- ✓ Compiled in 204ms
- GET / 200 in 256ms
- GET / 200 in 167ms
- GET / 200 in 106ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 244ms
- GET / 200 in 99ms
- ✓ Compiled in 138ms
- GET / 200 in 233ms
- GET / 200 in 93ms
- GET / 200 in 89ms
- GET / 200 in 106ms
- GET / 200 in 104ms
- GET / 200 in 100ms
- GET / 200 in 110ms
- GET / 200 in 105ms
- GET / 200 in 85ms
- GET / 200 in 101ms
- GET / 200 in 151ms
- GET / 200 in 85ms
- GET / 200 in 102ms
- GET / 200 in 96ms
- GET / 200 in 103ms
- GET / 200 in 95ms
- GET / 200 in 92ms
- GET / 200 in 95ms
- GET / 200 in 95ms
- GET / 200 in 85ms
- GET / 200 in 101ms
- GET / 200 in 90ms
- GET / 200 in 99ms
- GET / 200 in 80ms
- GET / 200 in 92ms
- GET / 200 in 96ms
- ✓ Compiled in 126ms
- GET / 200 in 301ms
- GET / 200 in 138ms
- GET / 200 in 98ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 253ms
- GET / 200 in 94ms
- GET / 200 in 91ms
- GET / 200 in 110ms
- GET / 200 in 86ms
- GET / 200 in 88ms
- GET / 200 in 81ms
- GET / 200 in 84ms
- GET / 200 in 80ms
- GET / 200 in 80ms
- GET / 200 in 79ms
- GET / 200 in 97ms
- GET / 200 in 93ms
- GET / 200 in 113ms
- GET / 200 in 90ms
- GET / 200 in 97ms
- GET / 200 in 94ms
- GET / 200 in 89ms
- GET / 200 in 87ms
- GET / 200 in 87ms
- GET / 200 in 105ms
- GET / 200 in 76ms
- GET / 200 in 89ms
- GET / 200 in 86ms
- GET / 200 in 85ms
- GET / 200 in 80ms
- GET / 200 in 81ms
- GET / 200 in 86ms
- GET / 200 in 78ms
- GET / 200 in 77ms
- GET / 200 in 84ms
- GET / 200 in 79ms
- GET / 200 in 80ms
- GET / 200 in 79ms
- GET / 200 in 97ms
- GET / 200 in 110ms
- GET / 200 in 89ms
- GET / 200 in 87ms
- GET / 200 in 84ms
- GET / 200 in 85ms
- GET / 200 in 89ms
- GET / 200 in 80ms
- GET / 200 in 89ms
- GET / 200 in 79ms
- GET / 200 in 94ms
- GET / 200 in 80ms
- GET / 200 in 105ms
- GET / 200 in 123ms
- GET / 200 in 97ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 243ms
- GET / 200 in 101ms
- GET / 200 in 121ms
- GET / 200 in 95ms
- GET / 200 in 93ms
- GET / 200 in 100ms
- ✓ Compiled in 219ms
- GET / 200 in 335ms
- ✓ Compiled in 125ms
- GET / 200 in 213ms
- GET / 200 in 104ms
- GET / 200 in 110ms
- GET / 200 in 95ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET / 200 in 93ms
- GET / 200 in 83ms
- ✓ Compiled in 133ms
- GET / 200 in 324ms
- GET / 200 in 86ms
- GET / 200 in 90ms
- GET / 200 in 78ms
- GET / 200 in 88ms
- GET / 200 in 94ms
- GET / 200 in 81ms
- GET / 200 in 111ms
- GET / 200 in 84ms
- GET / 200 in 85ms
- ✓ Compiled in 126ms
- GET / 200 in 216ms
- ✓ Compiled in 152ms
- GET / 200 in 262ms
- GET / 200 in 102ms
- GET / 200 in 86ms
- GET / 200 in 92ms
- GET / 200 in 81ms
- GET / 200 in 95ms
- GET / 200 in 86ms
- GET / 200 in 82ms
- GET / 200 in 91ms
- GET / 200 in 89ms
- GET / 200 in 116ms
- GET / 200 in 109ms
- GET / 200 in 110ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 238ms
- ✓ Compiled in 132ms
- GET / 200 in 272ms
- GET / 200 in 83ms
- ✓ Compiled in 127ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 66ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 59ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 51ms
- GET /favicon.ico 500 in 33ms
- ⨯ ./src/components/Filters.tsx:71:14
-Parsing ecmascript source code failed
-[0m [90m 69 |[39m
- [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
-[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 73 |[39m           [33m<[39m[33minput[39m
- [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 55ms
- ⨯ ./src/components/Filters.tsx:71:14
-Parsing ecmascript source code failed
-[0m [90m 69 |[39m
- [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
-[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 73 |[39m           [33m<[39m[33minput[39m
- [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 54ms
- ⨯ ./src/components/Filters.tsx:71:14
-Parsing ecmascript source code failed
-[0m [90m 69 |[39m
- [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
-[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 73 |[39m           [33m<[39m[33minput[39m
- [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 78ms
- ⨯ ./src/components/Filters.tsx:71:14
-Parsing ecmascript source code failed
-[0m [90m 69 |[39m
- [90m 70 |[39m       [33m<[39m[33mdiv[39m className[33m=[39m[32m"grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start"[39m
-[31m[1m>[22m[39m[90m 71 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m    |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 72 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mПоиск[39m[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 73 |[39m           [33m<[39m[33minput[39m
- [90m 74 |[39m             value[33m=[39m{local[33m.[39mq}[0m
-
-Expected ',', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 50ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 80ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 53ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 52ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 54ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 50ms
- GET /favicon.ico 500 in 38ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 54ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 50ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 47ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 50ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 51ms
- ⨯ ./src/components/Filters.tsx:188:14
-Parsing ecmascript source code failed
-[0m [90m 186 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
- [90m 187 |[39m
-[31m[1m>[22m[39m[90m 188 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"lg:col-span-2"[39m[33m>[39m
- [90m     |[39m              [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
- [90m 189 |[39m           [33m<[39m[33mlabel[39m className[33m=[39m[32m"block text-xs text-muted mb-1"[39m[33m>[39m[33mСумма[39m (ползунок)[33m<[39m[33m/[39m[33mlabel[39m[33m>[39m
- [90m 190 |[39m           [33m<[39m[33mAmountRange[39m
- [90m 191 |[39m             value[33m=[39m{[local[33m.[39mminAmount [33m?[39m[33m?[39m [35m0[39m[33m,[39m local[33m.[39mmaxAmount [33m?[39m[33m?[39m [35m1[39m_000_000]}[0m
-
-Expected '</', got 'className'
-
-Import traces:
-  Client Component Browser:
-    ./src/components/Filters.tsx [Client Component Browser]
-    ./src/app/page.tsx [Client Component Browser]
-    ./src/app/page.tsx [Server Component]
-
-  Client Component SSR:
-    ./src/components/Filters.tsx [Client Component SSR]
-    ./src/app/page.tsx [Client Component SSR]
-    ./src/app/page.tsx [Server Component]
-
-
- GET / 500 in 49ms
- ✓ Compiled in 124ms
- ✓ Compiled / in 28ms
+ ✓ Compiled middleware in 111ms
+ ✓ Ready in 998ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 2.1s
+ GET /login?next=%2F 200 in 5106ms
+ ✓ Compiled / in 296ms
 A props object containing a "key" prop is being spread into JSX:
   let props = {key: someKey, style: ..., tabIndex: ..., aria-valuemax: ..., aria-valuemin: ..., aria-valuenow: ..., draggable: ..., ref: ..., aria-label: ..., aria-labelledby: ..., role: ..., onKeyDown: ..., onKeyUp: ...};
   <div {...props} />
 React keys must be passed directly to JSX without using spread:
   let props = {style: ..., tabIndex: ..., aria-valuemax: ..., aria-valuemin: ..., aria-valuenow: ..., draggable: ..., ref: ..., aria-label: ..., aria-labelledby: ..., role: ..., onKeyDown: ..., onKeyUp: ...};
   <div key={someKey} {...props} />
- GET / 200 in 364ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 232ms
- GET / 200 in 83ms
- GET / 200 in 121ms
- GET / 200 in 885ms
- GET / 200 in 94ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET / 200 in 111ms
- GET / 200 in 90ms
- GET / 200 in 147ms
- GET / 200 in 98ms
- GET / 200 in 88ms
- GET / 200 in 84ms
- GET / 200 in 99ms
- GET / 200 in 80ms
- GET / 200 in 84ms
- GET / 200 in 109ms
- GET / 200 in 99ms
- GET / 200 in 88ms
- GET / 200 in 93ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET / 200 in 100ms
- GET / 200 in 81ms
- GET / 200 in 80ms
- GET / 200 in 92ms
- GET / 200 in 94ms
- GET / 200 in 94ms
- GET / 200 in 91ms
- GET / 200 in 110ms
- GET / 200 in 86ms
- GET / 200 in 89ms
- GET / 200 in 88ms
- GET / 200 in 81ms
- GET / 200 in 80ms
- GET / 200 in 86ms
- GET / 200 in 96ms
- GET / 200 in 85ms
- GET / 200 in 78ms
- GET / 200 in 90ms
- GET / 200 in 88ms
+ GET / 200 in 392ms
+ ✓ Compiled /favicon.ico in 152ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 416ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 66ms
  GET / 200 in 82ms
- GET / 200 in 86ms
- GET / 200 in 78ms
- GET / 200 in 83ms
- GET / 200 in 100ms
- GET / 200 in 120ms
- GET / 200 in 115ms
- GET / 200 in 98ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
- GET / 200 in 95ms
- GET / 200 in 119ms
- GET / 200 in 87ms
- GET / 200 in 86ms
- GET / 200 in 86ms
- GET / 200 in 89ms
- GET / 200 in 107ms
- ✓ Compiled in 128ms
- ✓ Compiled in 130ms
- GET / 200 in 265ms
- GET / 200 in 104ms
- GET / 200 in 132ms
- GET / 200 in 105ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 237ms
- GET / 200 in 96ms
- GET / 200 in 97ms
- GET /admins 404 in 76ms
- GET /admins 404 in 85ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 247ms
- GET / 200 in 49ms
- GET /admins 404 in 46ms
- GET /admins 404 in 66ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
- GET / 200 in 48ms
- GET / 200 in 88ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 239ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
- GET / 200 in 87ms
- GET / 200 in 105ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 236ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login 200 in 68ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 60ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 106ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 59ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 103ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 1501ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 60ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 60ms
+ GET /login?next=%2F 200 in 62ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 61ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 61ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 62ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 62ms
+ GET /login?next=%2F 200 in 58ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 78ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 1503ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 74ms
+ GET / 200 in 123ms
+ GET /login?next=%2F 200 in 86ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 244ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 62ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 60ms
+ GET /login?next=%2F 200 in 1474ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 78ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 61ms
+ GET /login?next=%2F 200 in 61ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 62ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 65ms
+ GET /login?next=%2F 200 in 70ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 66ms
+ GET /login?next=%2F 200 in 68ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 64ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 63ms
+ GET /login?next=%2F 200 in 60ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 67ms
+ GET /login?next=%2F 200 in 70ms

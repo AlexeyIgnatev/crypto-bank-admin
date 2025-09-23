@@ -14,7 +14,7 @@ export type OperationType = "bank" | "crypto" | "exchange";
 
 export interface Filters {
   q: string; // tx id or name
-  status: "all" | TransactionStatus;
+  statuses?: TransactionStatus[]; // multi-select; empty/undefined = all
   dateFrom?: string; // ISO
   dateTo?: string;   // ISO
   minAmount?: number;
