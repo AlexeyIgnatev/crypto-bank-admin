@@ -1,4 +1,4 @@
-import { Transaction, TransactionStatus, Filters } from "../types";
+import { Transaction, TransactionStatus, Filters, OperationType } from "../types";
 
 const names = [
   "Арслан Бекболотов Мамыткысымович",
@@ -10,7 +10,8 @@ const names = [
   "Мария Сидорова",
 ];
 
-const currencies = ["KGS", "USD", "EUR"] as const;
+// Expand currencies to include requested assets
+const currencies = ["COM", "SALAM", "BTC", "USDT", "ETH"] as const;
 
 function randomId() {
   const base = Math.random().toString(16).slice(2, 10) + Math.random().toString(16).slice(2, 10);
@@ -90,6 +91,15 @@ export function applyFilters(data: Transaction[], f: Filters): Transaction[] {
   }
   if (f.currencies && f.currencies.length > 0) {
     res = res.filter((t) => f.currencies!.includes(t.currency));
+  }
+  if (f.operations && f.operations.length > 0) {
+    // Mock logic: map operation types to subsets by currency for demo purposes
+    const opMap: Record<OperationType, string[]> = {
+      bank: ["COM", "SALAM"],
+      crypto: ["BTC", "ETH", "USDT"],
+      exchange: ["COM", "USDT", "USD"].filter(Boolean) as string[],
+    };
+    res = res.filter(t => f.operations!.some(op => opMap[op]?.includes(t.currency)));
   }
   return res;
 }

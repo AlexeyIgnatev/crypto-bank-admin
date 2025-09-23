@@ -24,9 +24,16 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
   ], []);
 
   const currencyOptions = [
-    { value: "KGS", label: "KGS", icon: "🇰🇬" },
-    { value: "USD", label: "USD", icon: "🇺🇸" },
-    { value: "EUR", label: "EUR", icon: "🇪🇺" },
+    { value: "COM", label: "СОМ", icon: "🪙" },
+    { value: "SALAM", label: "Салам", icon: "🧧" },
+    { value: "BTC", label: "Bitcoin", icon: "₿" },
+    { value: "USDT", label: "USDT", icon: "Ⓣ" },
+    { value: "ETH", label: "Ethereum", icon: "◆" },
+
+  const operationOptions = [
+    { value: "bank", label: "Банк" },
+    { value: "crypto", label: "Крипто" },
+    { value: "exchange", label: "Обмен" },
   ];
 
   const toggleCurrency = (v: string) => {
@@ -34,6 +41,13 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
     if (set.has(v)) set.delete(v); else set.add(v);
     setLocal({ ...local, currencies: Array.from(set) });
   };
+
+  const toggleOperation = (v: string) => {
+    const set = new Set(local.operations || []);
+    if (set.has(v as any)) set.delete(v as any); else set.add(v as any);
+    setLocal({ ...local, operations: Array.from(set) as any });
+  };
+
 
   const [dateFromOpen, setDateFromOpen] = useState(false);
   const [dateToOpen, setDateToOpen] = useState(false);
@@ -98,16 +112,57 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
         </div>
       </div>
 
-      {/* Compact header */}
-      <div className="flex flex-wrap items-center gap-2 mb-2">
-        <button className="btn btn-ghost text-xs" onClick={() => setExpanded(v => !v)}>
-          {expanded ? "Свернуть" : "Расширенные"}
-        </button>
-        <div className="flex flex-wrap gap-2">{summaryChips}</div>
+      {/* One-line toolbar */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Status inline */}
+        <div className="segment">
+          {statuses.map(s => {
+            const color = s.value === "confirmed" ? "var(--success)" : s.value === "pending" ? "var(--warning)" : s.value === "declined" ? "var(--danger)" : "var(--muted)";
+            return (
+              <button key={s.value} className="text-xs flex items-center gap-2" aria-pressed={String(local.status === s.value)} onClick={() => setLocal({ ...local, status: s.value as any })}>
+                <span className="dot" style={{ background: color }} />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search */}
+        <input className="ui-input h-8 w-44" placeholder="Поиск" value={local.q} onChange={e=>setLocal({ ...local, q: e.target.value })} />
+
+        {/* Currencies dropdown */}
+        <MultiSelect
+          label="Активы"
+          options={currencyOptions}
+          selected={new Set(local.currencies || [])}
+          onToggle={toggleCurrency}
+        />
+
+        {/* Operations dropdown */}
+        <MultiSelect
+          label="Типы"
+          options={operationOptions}
+          selected={new Set(local.operations || [])}
+          onToggle={toggleOperation}
+        />
+
+        {/* Date from/to triggers */}
+        <button className={`btn h-8 ${local.dateFrom || local.dateTo ? "ring-1" : ""}`} onClick={()=>setDateFromOpen(true)}>Дата от</button>
+        <button className={`btn h-8 ${local.dateFrom || local.dateTo ? "ring-1" : ""}`} onClick={()=>setDateToOpen(true)}>Дата до</button>
+
+        {/* Amount compact widget */}
+        <AmountCompact
+          value={[local.minAmount ?? 0, local.maxAmount ?? 1_000_000]}
+          onChange={(min, max)=>setLocal({ ...local, minAmount:min, maxAmount:max })}
+        />
+
+        <div className="ml-auto flex items-center gap-2">
+          <button className="btn btn-ghost h-8" onClick={()=>setLocal({ ...value, currencies: [], operations: [] })}>Сброс</button>
+        </div>
       </div>
 
-      {/* Filters grid (collapsible) */}
-      <div className={`grid lg:grid-cols-6 md:grid-cols-3 grid-cols-1 gap-3 items-start ${expanded ? "" : "hidden"}`}>
+      {/* Removed old grid */}
+      <div className="hidden">
         <div className="lg:col-span-2">
           <label className="block text-xs text-muted mb-1">Поиск</label>
           <input
@@ -204,6 +259,77 @@ export default function Filters({ value, onChange }: { value: FiltersType; onCha
                   className="ui-input"
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
+
+function MultiSelect({ label, options, selected, onToggle }: { label: string; options: { value: string; label: string; icon?: string }[]; selected: Set<string>; onToggle: (v: string) => void; }) {
+  const [open, setOpen] = useState(false);
+  const isActive = selected.size > 0;
+  return (
+    <div className="relative">
+      <button className={`btn h-8 ${isActive ? "ring-1" : ""}`} onClick={()=>setOpen(o=>!o)}>
+        {label}{isActive ? ` (${selected.size})` : ""}
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-2 w-60 card border border-soft rounded-xl shadow-xl p-2" style={{background:"var(--card)"}}>
+          <div className="max-h-64 overflow-auto flex flex-col gap-1">
+            {options.map(opt => {
+              const checked = selected.has(opt.value);
+              return (
+                <button key={opt.value} className={`flex items-center justify-between px-2 py-2 rounded hover-surface ${checked?"bg-[color:var(--hover)]/20": ""}`} onClick={()=>onToggle(opt.value)}>
+                  <div className="flex items-center gap-2">
+                    {opt.icon && <span className="w-5 text-center">{opt.icon}</span>}
+                    <span className="text-sm">{opt.label}</span>
+                  </div>
+                  <span className={`text-lg ${checked?"text-[color:var(--primary)]":"opacity-40"}`}>☑</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-2 text-right">
+            <button className="btn btn-primary h-8" onClick={()=>setOpen(false)}>Выбрать</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AmountCompact({ value, onChange }: { value: [number, number]; onChange: (min: number, max: number) => void }) {
+  const [min, max] = value;
+  const [editMin, setEditMin] = useState(false);
+  const [editMax, setEditMax] = useState(false);
+  const STEP = 1000; const MIN = 0; const MAX = 1_000_000;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="w-48 px-2 py-2 card rounded-lg border border-soft">
+        <Range values={[min, max]} step={STEP} min={MIN} max={MAX} onChange={(vals)=>onChange(vals[0], vals[1])}
+          renderTrack={({ props, children }) => (
+            <div onMouseDown={props.onMouseDown} onTouchStart={props.onTouchStart} style={{ ...props.style, height: "26px", display: "flex", width: "100%" }}>
+              <div ref={props.ref} style={{height:"6px",width:"100%",borderRadius:"9999px",background:getTrackBackground({ values:[min,max], colors:["var(--border-soft)","var(--primary)","var(--border-soft)"], min:MIN,max:MAX}),alignSelf:"center"}}>
+                {children}
+              </div>
+            </div>
+          )}
+          renderThumb={({ props }) => (
+            <div {...props} style={{...props.style,height:"16px",width:"16px",borderRadius:"50%",backgroundColor:"var(--card)",border:"2px solid var(--primary)"}} />
+          )}
+        />
+        <div className="mt-1 flex justify-between text-[11px] text-muted">
+          {editMin ? (
+            <input autoFocus onBlur={()=>setEditMin(false)} className="ui-input h-6 w-20" type="number" value={min} onChange={e=>onChange(Number(e.target.value||0), max)} />
+          ) : (
+            <button className="underline decoration-dotted" onClick={()=>setEditMin(true)}>{min.toLocaleString()} ₸</button>
+          )}
+          {editMax ? (
+            <input autoFocus onBlur={()=>setEditMax(false)} className="ui-input h-6 w-20 text-right" type="number" value={max} onChange={e=>onChange(min, Number(e.target.value||0))} />
+          ) : (
+            <button className="underline decoration-dotted" onClick={()=>setEditMax(true)}>{max.toLocaleString()} ₸</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
                   {presets.map(p => (
                     <button key={p.label} className="pill" onClick={() => {
                       const now = new Date();

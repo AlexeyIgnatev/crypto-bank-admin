@@ -10,6 +10,8 @@ export interface Transaction {
   recipient: string;
 }
 
+export type OperationType = "bank" | "crypto" | "exchange";
+
 export interface Filters {
   q: string; // tx id or name
   status: "all" | TransactionStatus;
@@ -17,5 +19,6 @@ export interface Filters {
   dateTo?: string;   // ISO
   minAmount?: number;
   maxAmount?: number;
-  currencies?: string[]; // e.g., ["USD","KGS"]
+  currencies?: string[]; // e.g., ["USDT","BTC"] etc.
+  operations?: OperationType[];
 }
