@@ -11,6 +11,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
   const [windowSize, setWindowSize] = useState(20); // стартовое окно: минимально достаточное, далее подстроим по высоте
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
   // выясним доступную высоту для контейнера и будем полагаться на CSS overflow
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -84,7 +85,8 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
-      <div ref={containerRef} className="table-scroll grow min-h-0 overflow-y-auto overflow-x-auto overscroll-contain bg-[var(--card)] pb-2" style={{ borderRadius: "inherit" }}>
+      {/* Непрокручиваемая шапка на всю ширину карточки */}
+      <div className="shrink-0" style={{ background: "var(--primary)" }}>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -95,7 +97,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             <col />
             <col />
           </colgroup>
-          <thead className="sticky top-0 z-10 text-white" style={{ background: "var(--primary)", position: "sticky" }}>
+          <thead className="text-white">
             <tr>
               <Th>№</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>
@@ -106,6 +108,21 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <Th>Получатель</Th>
             </tr>
           </thead>
+        </table>
+      </div>
+
+      {/* Прокручиваемое тело таблицы. Скроллбар начинается под шапкой */}
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain bg-[var(--card)]">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[72px]" />
+            <col className="w-[240px]" />
+            <col className="w-[140px]" />
+            <col className="w-[200px]" />
+            <col className="w-[160px]" />
+            <col />
+            <col />
+          </colgroup>
           <tbody>
             {pageData.map((t, idx) => (
               <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
@@ -129,8 +146,6 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
           </tbody>
         </table>
       </div>
-
-
     </div>
   );
 }
