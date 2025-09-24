@@ -40,6 +40,12 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   }, [sorted.length]);
 
 
+  // При смене сортировки/набора данных возвращаемся к начальному окну
+  useEffect(() => {
+    setWindowSize(30);
+  }, [sortKey, sortDir, data]);
+
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {

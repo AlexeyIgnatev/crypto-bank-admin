@@ -27,11 +27,11 @@ export default function Sidebar() {
       }`}
       style={{ background: "var(--sidebar-bg)", color: "var(--sidebar-fg)", borderColor: "var(--sidebar-border)" }}
     >
-      <div className="flex items-center justify-between p-3">
+      <div className={`flex items-center ${open ? "justify-between" : "justify-center"} p-3`}>
         <button
           aria-label="Toggle menu"
           onClick={() => setOpen((o) => !o)}
-          className="p-2 rounded hover:bg-black/5 dark:hover:bg-white/10"
+          className="h-10 w-10 inline-flex items-center justify-center rounded-md hover-surface transition-transform duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
           ☰
         </button>
