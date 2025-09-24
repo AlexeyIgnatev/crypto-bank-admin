@@ -24,9 +24,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 min-h-screen flex flex-col">
+      <div className="flex-1 flex flex-col" style={{ height: "100svh", overflow: "hidden" }}>
         <Topbar title="Главная" />
-        <main className="flex-1 overflow-hidden p-4 max-w-[1400px] mx-auto flex flex-col gap-4">{children}</main>
+        <main className="min-h-0 flex-1 overflow-hidden p-4 max-w-[1400px] mx-auto flex flex-col gap-4">{children}</main>
       </div>
     </div>
   );
