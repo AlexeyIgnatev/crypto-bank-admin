@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useMemo, useRef, useLayoutEffect, useEffect, useState } from "react";
 import { Transaction } from "../types";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -8,11 +8,10 @@ export type SortDir = "asc" | "desc";
 export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (t: Transaction) => void }) {
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
-  const [windowSize, setWindowSize] = useState(20); // стартовое окно: минимально достаточное, далее подстроим по высоте
-  const ensureScrollTries = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  // выясним доступную высоту для контейнера и будем полагаться на CSS overflow
+  const rowHeightRef = useRef(48);
+  const [viewportH, setViewportH] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -20,42 +19,29 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     // В текущем коде это сделано в AppShell и page.tsx
   }, []);
 
-  // Обеспечиваем, что окно рендера заполняет видимую область,
-  // и появляется скролл только когда данных больше, чем помещается
+  // Высота вьюпорта и высота строки
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const measure = () => {
-      const firstRow = el.querySelector("tbody tr") as HTMLElement | null;
-      const rowH = firstRow?.offsetHeight || 48;
-      const available = el.clientHeight;
-      if (!available || !rowH) return;
-      const rowsFit = Math.max(1, Math.floor(available / rowH));
-      const overflows = data.length > rowsFit;
-      const target = overflows ? Math.min(data.length, rowsFit + 12) : data.length;
-      setWindowSize((n) => (n !== target ? target : n));
-    };
-    const ro = new ResizeObserver(() => measure());
+    const ro = new ResizeObserver((entries) => {
+      const h = entries[0].contentRect.height;
+      setViewportH(h);
+    });
     ro.observe(el);
-    requestAnimationFrame(measure);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [data.length]);
+    setViewportH(el.clientHeight);
+    return () => ro.disconnect();
+  }, []);
 
-  // После рендера гарантируем появление скролла, если данных больше, чем помещается (пару попыток)
+  // Переизмеряем высоту строки, когда строки отрисованы
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    if (data.length > windowSize && el.scrollHeight <= el.clientHeight && ensureScrollTries.current < 3) {
-      ensureScrollTries.current += 1;
-      setWindowSize((n) => Math.min(n + 20, data.length));
-    } else if (el.scrollHeight > el.clientHeight) {
-      ensureScrollTries.current = 0;
+    const firstRow = el.querySelector("tbody tr") as HTMLElement | null;
+    if (firstRow) {
+      const h = firstRow.offsetHeight;
+      if (h && Math.abs(h - rowHeightRef.current) > 1) rowHeightRef.current = h;
     }
-  }, [windowSize, data.length]);
+  });
 
 
 
@@ -71,27 +57,43 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     });
   }, [data, sortDir, sortKey]);
 
-  const pageData = sorted.slice(0, windowSize);
+  // Виртуализация: считаем видимую «полосу» строк
+  const rowH = rowHeightRef.current || 48;
+  const overscan = 6;
+  const rowsInView = viewportH ? Math.ceil(viewportH / rowH) : 20;
+  const startIndex = Math.max(0, Math.floor(scrollTop / rowH) - overscan);
+  const endIndex = Math.min(sorted.length, startIndex + rowsInView + overscan * 2);
+  const visible = sorted.slice(startIndex, endIndex);
+  const topSpacer = startIndex * rowH;
+  const bottomSpacer = Math.max(0, (sorted.length - endIndex) * rowH);
 
-  // бесконечная подгрузка: при прокрутке вниз почти до конца увеличиваем окно
+  // Следим за скроллом контейнера и обновляем scrollTop (throttled через rAF)
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const handler = () => {
-      const threshold = 200; // px до низа, когда начинаем подгружать
-      if (el.scrollTop + el.clientHeight + threshold >= el.scrollHeight) {
-        setWindowSize((n) => Math.min(n + 20, sorted.length));
-      }
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setScrollTop(el.scrollTop);
+      });
     };
-    el.addEventListener("scroll", handler);
-    return () => el.removeEventListener("scroll", handler);
-  }, [sorted.length]);
+    el.addEventListener("scroll", onScroll, { passive: true } as any);
+    return () => {
+      el.removeEventListener("scroll", onScroll as any);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
-
-  // При смене сортировки/набора данных возвращаемся к начальному окну
+  // При смене сортировки сбрасываем позицию прокрутки
   useEffect(() => {
-    setWindowSize(20);
-  }, [sortKey, sortDir, data]);
+    const el = containerRef.current;
+    if (el) {
+      el.scrollTop = 0;
+      setScrollTop(0);
+    }
+  }, [sortKey, sortDir]);
 
 
   function toggleSort(key: SortKey) {
@@ -130,8 +132,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
         </table>
       </div>
 
-      {/* Прокручиваемое тело таблицы. Скроллбар начинается под шапкой */}
+      {/* Прокручиваемое тело таблицы c виртуализацией */}
       <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
+        <div style={{ height: topSpacer }} />
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -143,27 +146,31 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             <col />
           </colgroup>
           <tbody>
-            {pageData.map((t, idx) => (
-              <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
-                <td className="px-4 py-3 tabular-nums text-muted">{idx + 1}</td>
-                <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
-                <td className="px-4 py-3">
-                  <span className={`badge ${
-                    t.status === "confirmed" ? "badge-success" :
-                    t.status === "pending" ? "badge-warning" :
-                    "badge-danger"
-                  }`}>
-                    {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
-                  </span>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
-                <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
-                <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
-              </tr>
-            ))}
+            {visible.map((t, i) => {
+              const idx = startIndex + i;
+              return (
+                <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
+                  <td className="px-4 py-3 tabular-nums text-muted">{idx + 1}</td>
+                  <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
+                  <td className="px-4 py-3">
+                    <span className={`badge ${
+                      t.status === "confirmed" ? "badge-success" :
+                      t.status === "pending" ? "badge-warning" :
+                      "badge-danger"
+                    }`}>
+                      {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
+                  <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
+                  <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
+        <div style={{ height: bottomSpacer }} />
       </div>
     </div>
   );
