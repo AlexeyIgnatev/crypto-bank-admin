@@ -9,7 +9,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
-  const [windowSize, setWindowSize] = useState(30); // стартовое количество элементов
+  const [windowSize, setWindowSize] = useState(100); // стартовое количество элементов (чтобы точно появился скролл)
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const sorted = useMemo(() => {
@@ -42,7 +42,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
   // При смене сортировки/набора данных возвращаемся к начальному окну
   useEffect(() => {
-    setWindowSize(30);
+    setWindowSize(60);
   }, [sortKey, sortDir, data]);
 
 
@@ -55,8 +55,8 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain">
+    <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
+      <div ref={containerRef} className="flex-1 min-h-0 h-full max-h-full overflow-y-auto overflow-x-auto">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />

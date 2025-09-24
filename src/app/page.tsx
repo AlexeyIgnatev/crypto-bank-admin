@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="shrink-0"><Cards /></div>
-      <div className="min-h-0 flex-1 overflow-hidden"><Table
+      <div className="min-h-0 flex-1"><Table
         data={data}
         onOpen={(t) => { setSelected(t); setOpen(true); }}
       /></div>
