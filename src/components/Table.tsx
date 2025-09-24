@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Transaction } from "../types";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -11,6 +11,34 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
   const [windowSize, setWindowSize] = useState(100); // стартовое количество элементов (чтобы точно появился скролл)
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // выясним доступную высоту для контейнера и будем полагаться на CSS overflow
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    // Убедимся, что у всех предков min-h-0, иначе flex-дети могут не сжиматься
+    // В текущем коде это сделано в AppShell и page.tsx
+  }, []);
+
+  // Обеспечиваем, что окно рендера минимум заполняет видимую область,
+  // чтобы скролл появлялся только когда данных действительно больше
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => {
+      const firstRow = el.querySelector("tbody tr") as HTMLElement | null;
+      const rowH = firstRow?.offsetHeight || 48;
+      const available = el.clientHeight;
+      if (!available || !rowH) return;
+      const rowsFit = Math.max(1, Math.floor((available - 40) / rowH)); // 40 ~ высота заголовка
+      const target = Math.min(data.length, rowsFit + 20); // +запас
+      setWindowSize((n) => (n < target ? target : n));
+    };
+    // Подождём, пока контейнер встанет в лейаут
+    requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [data.length]);
+
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -42,7 +70,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
   // При смене сортировки/набора данных возвращаемся к начальному окну
   useEffect(() => {
-    setWindowSize(60);
+    setWindowSize(100);
   }, [sortKey, sortDir, data]);
 
 
@@ -56,7 +84,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
-      <div ref={containerRef} className="flex-1 min-h-0 h-full max-h-full overflow-y-auto overflow-x-auto">
+      <div ref={containerRef} className="table-scroll grow min-h-0 overflow-y-auto overflow-x-auto overscroll-contain bg-[var(--card)] pb-2" style={{ borderRadius: "inherit" }}>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -67,7 +95,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             <col />
             <col />
           </colgroup>
-          <thead className="sticky top-0 text-white" style={{ background: "var(--primary)" }}>
+          <thead className="sticky top-0 z-10 text-white" style={{ background: "var(--primary)", position: "sticky" }}>
             <tr>
               <Th>№</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>

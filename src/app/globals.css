@@ -1,4 +1,7 @@
 @import "tailwindcss";
+/* Ensure sticky header area doesn't get covered by vertical scrollbar */
+.table-scroll { scrollbar-gutter: stable both-edges; }
+
 
 :root {
   --background: #f6f7f9;
