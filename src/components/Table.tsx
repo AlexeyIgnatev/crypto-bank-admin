@@ -55,8 +55,8 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   }
 
   return (
-    <div className="h-full min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-auto">
+    <div className="h-full max-h-full min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
