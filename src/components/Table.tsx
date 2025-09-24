@@ -131,7 +131,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       </div>
 
       {/* Прокручиваемое тело таблицы. Скроллбар начинается под шапкой */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)]">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
