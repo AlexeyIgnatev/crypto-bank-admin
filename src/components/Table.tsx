@@ -32,7 +32,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       const rowsFit = Math.max(1, Math.floor(available / rowH));
       const overflows = data.length > rowsFit;
       const target = overflows ? Math.min(data.length, rowsFit + 12) : data.length;
-      setWindowSize(target);
+      setWindowSize((n) => (n !== target ? target : n));
     };
     const ro = new ResizeObserver(() => measure());
     ro.observe(el);
@@ -43,6 +43,15 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       window.removeEventListener("resize", measure);
     };
   }, [data.length]);
+
+  // После рендера гарантируем появление скролла, если данных больше, чем помещается
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (data.length > windowSize && el.scrollHeight <= el.clientHeight) {
+      setWindowSize((n) => Math.min(n + 20, data.length));
+    }
+  }, [windowSize, data.length]);
 
 
 
@@ -118,7 +127,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       </div>
 
       {/* Прокручиваемое тело таблицы. Скроллбар начинается под шапкой */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-auto [overscroll-behavior:contain] bg-[var(--card)]">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)]">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
