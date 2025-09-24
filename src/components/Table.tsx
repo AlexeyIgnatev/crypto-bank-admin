@@ -10,6 +10,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
   const [windowSize, setWindowSize] = useState(20); // стартовое окно: минимально достаточное, далее подстроим по высоте
+  const ensureScrollTries = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
   // выясним доступную высоту для контейнера и будем полагаться на CSS overflow
   useLayoutEffect(() => {
@@ -44,12 +45,15 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     };
   }, [data.length]);
 
-  // После рендера гарантируем появление скролла, если данных больше, чем помещается
+  // После рендера гарантируем появление скролла, если данных больше, чем помещается (пару попыток)
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    if (data.length > windowSize && el.scrollHeight <= el.clientHeight) {
+    if (data.length > windowSize && el.scrollHeight <= el.clientHeight && ensureScrollTries.current < 3) {
+      ensureScrollTries.current += 1;
       setWindowSize((n) => Math.min(n + 20, data.length));
+    } else if (el.scrollHeight > el.clientHeight) {
+      ensureScrollTries.current = 0;
     }
   }, [windowSize, data.length]);
 
