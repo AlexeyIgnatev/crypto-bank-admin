@@ -66,7 +66,7 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
           <StatusDropdown
             selected={new Set((local.statuses as string[] | undefined) || [])}
             onToggle={(v) => setLocal({ ...local, statuses: toggleSet(local.statuses as TransactionStatus[] | undefined, v as TransactionStatus) })}
-            active={active.statuses}
+            isActive={active.statuses}
           />
         </div>
 
@@ -123,7 +123,7 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
   );
 }
 
-function StatusDropdown({ selected, onToggle, active }: { selected: Set<string>; onToggle: (v: string) => void; active?: boolean; }) {
+function StatusDropdown({ selected, onToggle, isActive }: { selected: Set<string>; onToggle: (v: string) => void; isActive?: boolean; }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
@@ -132,7 +132,7 @@ function StatusDropdown({ selected, onToggle, active }: { selected: Set<string>;
     { value: "pending", label: "Ожидает", color: "var(--warning)" },
     { value: "declined", label: "Отклонено", color: "var(--danger)" },
   ];
-  const active = selected.size > 0;
+
   useEffect(() => {
     if (!open) return;
     const update = () => {
@@ -155,7 +155,7 @@ function StatusDropdown({ selected, onToggle, active }: { selected: Set<string>;
   }, [open]);
   return (
     <>
-      <button ref={btnRef} className={`btn h-9 w-full ${active ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
+      <button ref={btnRef} className={`btn h-9 w-full ${isActive ? "ring-1" : ""}`} onClick={() => setOpen((o) => !o)}>
         Статус{selected.size ? ` (${selected.size})` : ""} <span className="ml-1">▾</span>
       </button>
       {open && createPortal(

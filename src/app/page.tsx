@@ -1,25 +1,21 @@
 "use client";
 import Cards from "../components/Cards";
-import FiltersBar from "../components/FiltersBar";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
 import { useMemo, useState } from "react";
-import { applyFilters, generateTransactions } from "../lib/mockRepo";
-import { Filters as FiltersType, Transaction } from "../types";
+import { generateTransactions } from "../lib/mockRepo";
+import { Transaction } from "../types";
 
 export default function Home() {
   const data = useMemo(() => generateTransactions(250), []);
-  const [filters, setFilters] = useState<FiltersType>({ q: "", statuses: [] });
-  const filtered = useMemo(() => applyFilters(data, filters), [data, filters]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
 
   return (
     <div className="flex-1 flex flex-col gap-4 overflow-hidden">
       <div className="shrink-0"><Cards /></div>
-      <div className="shrink-0"><FiltersBar value={filters} onChange={setFilters} /></div>
       <div className="min-h-0 flex-1"><Table
-        data={filtered}
+        data={data}
         onOpen={(t) => { setSelected(t); setOpen(true); }}
       /></div>
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
