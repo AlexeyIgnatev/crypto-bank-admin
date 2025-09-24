@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { Transaction } from "../types";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -8,8 +8,9 @@ export type SortDir = "asc" | "desc";
 export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (t: Transaction) => void }) {
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
+  const [windowSize, setWindowSize] = useState(30); // стартовое количество элементов
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -22,8 +23,21 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     });
   }, [data, sortDir, sortKey]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / size));
-  const pageData = sorted.slice((page - 1) * size, page * size);
+  const pageData = sorted.slice(0, windowSize);
+
+  // бесконечная подгрузка: при прокрутке вниз почти до конца увеличиваем окно
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = () => {
+      const threshold = 200; // px до низа, когда начинаем подгружать
+      if (el.scrollTop + el.clientHeight + threshold >= el.scrollHeight) {
+        setWindowSize((n) => Math.min(n + 20, sorted.length));
+      }
+    };
+    el.addEventListener("scroll", handler);
+    return () => el.removeEventListener("scroll", handler);
+  }, [sorted.length]);
 
 
   function toggleSort(key: SortKey) {
@@ -35,10 +49,11 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   }
 
   return (
-    <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
-      <div className="overflow-x-auto">
+    <div className="h-full min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-auto">
         <table className="w-full text-sm table-fixed">
           <colgroup>
+            <col className="w-[72px]" />
             <col className="w-[240px]" />
             <col className="w-[140px]" />
             <col className="w-[200px]" />
@@ -48,6 +63,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
           </colgroup>
           <thead className="sticky top-0 text-white" style={{ background: "var(--primary)" }}>
             <tr>
+              <Th>№</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>ID/tx_hash</Th>
               <Th onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>Статус</Th>
               <Th onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>Дата</Th>
@@ -57,8 +73,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             </tr>
           </thead>
           <tbody>
-            {pageData.map((t) => (
+            {pageData.map((t, idx) => (
               <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
+                <td className="px-4 py-3 tabular-nums text-muted">{idx + 1}</td>
                 <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
                 <td className="px-4 py-3">
                   <span className={`badge ${
@@ -79,40 +96,12 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
         </table>
       </div>
 
-      <div className="flex items-center justify-between p-3">
-        <div className="text-sm text-neutral-500">Всего: {sorted.length}</div>
-        <div className="flex items-center gap-2">
-          <select value={size} onChange={(e) => { setSize(parseInt(e.target.value)); setPage(1); }} className="px-2 py-1 rounded border bg-transparent">
-            {[10, 20, 50].map((n) => <option key={n} value={n}>{n} / стр</option>)}
-          </select>
-          <nav className="flex items-center gap-2">
-            <button
-              disabled={page===1}
-              onClick={() => setPage((p) => Math.max(1, p-1))}
-              className="w-9 h-9 rounded-full border disabled:opacity-40 hover-surface flex items-center justify-center"
-              aria-label="Предыдущая страница"
-            >
-              ‹
-            </button>
-            <div className="text-sm tabular-nums min-w-[72px] text-center">
-              {page} / {totalPages}
-            </div>
-            <button
-              disabled={page===totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p+1))}
-              className="w-9 h-9 rounded-full border disabled:opacity-40 hover-surface flex items-center justify-center"
-              aria-label="Следующая страница"
-            >
-              ›
-            </button>
-          </nav>
-        </div>
-      </div>
+
     </div>
   );
 }
 
-function Th({ children, onClick, active, dir }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir: SortDir }) {
+function Th({ children, onClick, active, dir }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir?: SortDir }) {
   return (
     <th
       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""}`}
@@ -120,7 +109,7 @@ function Th({ children, onClick, active, dir }: { children: React.ReactNode; onC
     >
       <div className="flex items-center gap-1">
         <span>{children}</span>
-        {onClick && (
+        {onClick && dir && (
           <span className={`transition-transform ${active ? "opacity-100" : "opacity-40"}`}>
             {dir === "asc" ? "↑" : "↓"}
           </span>
