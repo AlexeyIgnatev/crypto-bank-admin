@@ -11,7 +11,6 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   // Для бесконечной прокрутки будем увеличивать windowSize по мере скролла
   const [windowSize, setWindowSize] = useState(20); // стартовое окно: минимально достаточное, далее подстроим по высоте
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const headerRef = useRef<HTMLDivElement | null>(null);
   // выясним доступную высоту для контейнера и будем полагаться на CSS overflow
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -20,8 +19,8 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     // В текущем коде это сделано в AppShell и page.tsx
   }, []);
 
-  // Обеспечиваем, что окно рендера минимум заполняет видимую область,
-  // чтобы скролл появлялся только когда данных действительно больше
+  // Обеспечиваем, что окно рендера заполняет видимую область,
+  // и появляется скролл только когда данных больше, чем помещается
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -30,15 +29,22 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       const rowH = firstRow?.offsetHeight || 48;
       const available = el.clientHeight;
       if (!available || !rowH) return;
-      const rowsFit = Math.max(1, Math.floor((available - 40) / rowH)); // 40 ~ высота заголовка
-      const target = Math.min(data.length, rowsFit + 20); // +запас
-      setWindowSize((n) => (n < target ? target : n));
+      const rowsFit = Math.max(1, Math.floor(available / rowH));
+      const overflows = data.length > rowsFit;
+      const target = overflows ? Math.min(data.length, rowsFit + 12) : data.length;
+      setWindowSize(target);
     };
-    // Подождём, пока контейнер встанет в лейаут
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
     requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
   }, [data.length]);
+
+
 
 
   const sorted = useMemo(() => {
@@ -86,7 +92,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
       {/* Непрокручиваемая шапка на всю ширину карточки */}
-      <div className="shrink-0" style={{ background: "var(--primary)" }}>
+      <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -112,7 +118,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       </div>
 
       {/* Прокручиваемое тело таблицы. Скроллбар начинается под шапкой */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto overscroll-contain bg-[var(--card)]">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-auto [overscroll-behavior:contain] bg-[var(--card)]">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />

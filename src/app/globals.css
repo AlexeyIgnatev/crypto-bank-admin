@@ -1,6 +1,6 @@
 @import "tailwindcss";
-/* Ensure sticky header area doesn't get covered by vertical scrollbar */
-.table-scroll { scrollbar-gutter: stable both-edges; }
+/* Ensure sticky header area doesn't get covered by vertical scrollbar (reserve space at inline-end) */
+.table-scroll { scrollbar-gutter: stable; }
 
 
 :root {
