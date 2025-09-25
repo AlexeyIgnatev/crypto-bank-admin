@@ -408,3 +408,127 @@
  GET /login?next=%2F 200 in 88ms
  GET /login?next=%2F 200 in 93ms
  GET /login?next=%2F 200 in 98ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 94ms
+ ⨯ ReferenceError: Cannot access 'filtered' before initialization
+    at Table (src/components/Table.tsx:79:7)
+  77 |       return String(va).localeCompare(String(vb)) * dir;
+  78 |     });
+> 79 |   }, [filtered, sortDir, sortKey]);
+     |       ^
+  80 |
+  81 |   // Виртуализация через @tanstack/react-virtual
+  82 |   const rowHeight = 48; {
+  digest: '1207634687'
+}
+ GET / 500 in 124ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 272ms
+ GET /favicon.ico 200 in 246ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 104ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 103ms
+ POST /api/login 200 in 268ms
+ GET / 200 in 62ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 112ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 124ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 132ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 120ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 102ms
+ GET /login?next=%2F 200 in 113ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 108ms
+ GET /login?next=%2F 200 in 114ms
+ GET /login?next=%2F 200 in 114ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 103ms
+ GET /login?next=%2F 200 in 96ms
+ ⨯ ReferenceError: Cannot access 'filtered' before initialization
+    at Table (src/components/Table.tsx:79:7)
+  77 |       return String(va).localeCompare(String(vb)) * dir;
+  78 |     });
+> 79 |   }, [filtered, sortDir, sortKey]);
+     |       ^
+  80 |
+  81 |   // Виртуализация через @tanstack/react-virtual
+  82 |   const rowHeight = 48; {
+  digest: '1207634687'
+}
+ GET / 500 in 150ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 271ms
+ GET /favicon.ico 200 in 243ms
+ GET /login?next=%2F 200 in 113ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 98ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 117ms
+ GET /login?next=%2F 200 in 125ms
+ GET /login?next=%2F 200 in 115ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 103ms
+ GET /login?next=%2F 200 in 105ms
+ ⨯ ReferenceError: Cannot access 'filtered' before initialization
+    at Table (src/components/Table.tsx:79:7)
+  77 |       return String(va).localeCompare(String(vb)) * dir;
+  78 |     });
+> 79 |   }, [filtered, sortDir, sortKey]);
+     |       ^
+  80 |
+  81 |   // Виртуализация через @tanstack/react-virtual
+  82 |   const rowHeight = 48; {
+  digest: '1207634687'
+}
+ GET / 500 in 143ms
+ GET /login?next=%2F 200 in 109ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 284ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 89ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 86ms
+ GET /login?next=%2F 200 in 108ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 97ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 106ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 97ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 112ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 86ms
+ ✓ Compiled in 153ms
+ GET /login?next=%2F 200 in 166ms
+ GET /login?next=%2F 200 in 134ms
+ GET /login?next=%2F 200 in 195ms
+ GET /login?next=%2F 200 in 144ms
+ ✓ Compiled in 148ms
+ GET /login?next=%2F 200 in 132ms
+ GET /login?next=%2F 200 in 192ms
