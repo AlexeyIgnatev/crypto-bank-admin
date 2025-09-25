@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useRef, useLayoutEffect, useEffect, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Transaction } from "../types";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -9,9 +10,6 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const rowHeightRef = useRef(48);
-  const [viewportH, setViewportH] = useState(0);
-  const [scrollTop, setScrollTop] = useState(0);
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -19,29 +17,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     // В текущем коде это сделано в AppShell и page.tsx
   }, []);
 
-  // Высота вьюпорта и высота строки
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const h = entries[0].contentRect.height;
-      setViewportH(h);
-    });
-    ro.observe(el);
-    setViewportH(el.clientHeight);
-    return () => ro.disconnect();
-  }, []);
 
-  // Переизмеряем высоту строки, когда строки отрисованы
-  useLayoutEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const firstRow = el.querySelector("tbody tr") as HTMLElement | null;
-    if (firstRow) {
-      const h = firstRow.offsetHeight;
-      if (h && Math.abs(h - rowHeightRef.current) > 1) rowHeightRef.current = h;
-    }
-  });
 
 
 
@@ -57,42 +33,19 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     });
   }, [data, sortDir, sortKey]);
 
-  // Виртуализация: считаем видимую «полосу» строк
-  const rowH = rowHeightRef.current || 48;
-  const overscan = 6;
-  const rowsInView = viewportH ? Math.ceil(viewportH / rowH) : 20;
-  const startIndex = Math.max(0, Math.floor(scrollTop / rowH) - overscan);
-  const endIndex = Math.min(sorted.length, startIndex + rowsInView + overscan * 2);
-  const visible = sorted.slice(startIndex, endIndex);
-  const topSpacer = startIndex * rowH;
-  const bottomSpacer = Math.max(0, (sorted.length - endIndex) * rowH);
+  // Виртуализация через @tanstack/react-virtual
+  const rowHeight = 48;
+  const rowVirtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => containerRef.current,
+    estimateSize: () => rowHeight,
+    overscan: 8,
+  });
 
-  // Следим за скроллом контейнера и обновляем scrollTop (throttled через rAF)
+  // При смене сортировки — прокручиваем в начало
   useEffect(() => {
     const el = containerRef.current;
-    if (!el) return;
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        setScrollTop(el.scrollTop);
-      });
-    };
-    el.addEventListener("scroll", onScroll, { passive: true } as any);
-    return () => {
-      el.removeEventListener("scroll", onScroll as any);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  // При смене сортировки сбрасываем позицию прокрутки
-  useEffect(() => {
-    const el = containerRef.current;
-    if (el) {
-      el.scrollTop = 0;
-      setScrollTop(0);
-    }
+    if (el) el.scrollTo({ top: 0 });
   }, [sortKey, sortDir]);
 
 
@@ -133,44 +86,52 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       </div>
 
       {/* Прокручиваемое тело таблицы c виртуализацией */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
-        <div style={{ height: topSpacer }} />
-        <table className="w-full text-sm table-fixed">
-          <colgroup>
-            <col className="w-[72px]" />
-            <col className="w-[240px]" />
-            <col className="w-[140px]" />
-            <col className="w-[200px]" />
-            <col className="w-[160px]" />
-            <col />
-            <col />
-          </colgroup>
-          <tbody>
-            {visible.map((t, i) => {
-              const idx = startIndex + i;
-              return (
-                <tr key={t.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(t)}>
-                  <td className="px-4 py-3 tabular-nums text-muted">{idx + 1}</td>
-                  <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
-                  <td className="px-4 py-3">
-                    <span className={`badge ${
-                      t.status === "confirmed" ? "badge-success" :
-                      t.status === "pending" ? "badge-warning" :
-                      "badge-danger"
-                    }`}>
-                      {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
-                  <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
-                  <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <div style={{ height: bottomSpacer }} />
+      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
+        <div
+          style={{ height: rowVirtualizer.getTotalSize(), position: "relative" }}
+        >
+          <table className="w-full text-sm table-fixed" style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
+            <colgroup>
+              <col className="w-[72px]" />
+              <col className="w-[240px]" />
+              <col className="w-[140px]" />
+              <col className="w-[200px]" />
+              <col className="w-[160px]" />
+              <col />
+              <col />
+            </colgroup>
+            <tbody>
+              {rowVirtualizer.getVirtualItems().map((vRow) => {
+                const t = sorted[vRow.index];
+                if (!t) return null;
+                return (
+                  <tr
+                    key={t.id}
+                    className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                    onClick={() => onOpen(t)}
+                    style={{ transform: `translateY(${vRow.start}px)` }}
+                  >
+                    <td className="px-4 py-3 tabular-nums text-muted">{vRow.index + 1}</td>
+                    <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
+                    <td className="px-4 py-3">
+                      <span className={`badge ${
+                        t.status === "confirmed" ? "badge-success" :
+                        t.status === "pending" ? "badge-warning" :
+                        "badge-danger"
+                      }`}>
+                        {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
+                    <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
+                    <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
