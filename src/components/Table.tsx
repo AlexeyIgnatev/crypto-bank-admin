@@ -196,7 +196,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "id"} dir={sortDir} />
                   <span className="px-1">ID/tx_hash</span>
-                  <button ref={idDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={idDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); idDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
@@ -206,7 +206,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "status"} dir={sortDir} />
                   <span className="px-1">Статус</span>
-                  <button ref={statusDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={statusDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); statusDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
@@ -216,8 +216,8 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
                   <span className="px-1">Дата</span>
-                  <button ref={dateDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
-                    onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !o); }}>
+                  <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !о); }}>
                     <span className="chev">▾</span>
                   </button>
                 </div>
@@ -226,7 +226,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "amount"} dir={sortDir} />
                   <span className="px-1">Сумма</span>
-                  <button ref={amountDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={amountDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); amountDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
@@ -235,7 +235,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <Th>
                 <div className="flex items-center gap-1">
                   <span className="px-1">Валюта</span>
-                  <button ref={currencyDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={currencyDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); currencyDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
@@ -244,7 +244,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <Th>
                 <div className="flex items-center gap-1">
                   <span className="px-1">Отправитель</span>
-                  <button ref={senderDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={senderDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); senderDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
@@ -253,7 +253,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <Th>
                 <div className="flex items-center gap-1">
                   <span className="px-1">Получатель</span>
-                  <button ref={recipientDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                  <button ref={recipientDD.btnRef} className="hdr-chip" aria-label="Фильтр"
                     onClick={(e) => { e.stopPropagation(); recipientDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
