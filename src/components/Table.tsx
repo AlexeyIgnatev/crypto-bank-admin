@@ -217,7 +217,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                   <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
                   <span className="px-1">Дата</span>
                   <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр"
-                    onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !о); }}>
+                    onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !o); }}>
                     <span className="chev">▾</span>
                   </button>
                 </div>
@@ -339,9 +339,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
           <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">ID/tx_hash</div>
             <input className="ui-input w-full" placeholder="Введите ID" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
-            <div className="mt-2 flex justify-end gap-2">
-              <button className="btn btn-ghost" onClick={() => setIdQuery("")}>Очистить</button>
-              <button className="btn" onClick={() => idDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setIdQuery("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => idDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -361,9 +361,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 </label>
               );
             })}
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => setStatusSet(new Set())}>Сбросить</button>
-              <button className="btn" onClick={() => statusDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => statusDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -375,9 +375,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             <Flatpickr options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian, defaultDate: dateFrom ? new Date(dateFrom) : undefined }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
             <Flatpickr options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian, defaultDate: dateTo ? new Date(dateTo) : undefined }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
-              <button className="btn" onClick={() => dateDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -390,9 +390,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               <input className="ui-input h-9" type="number" placeholder="От" value={minAmount ?? ""} onChange={(e) => setMinAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
               <input className="ui-input h-9" type="number" placeholder="До" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
             </div>
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>Сбросить</button>
-              <button className="btn" onClick={() => amountDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => amountDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -410,9 +410,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                 </label>
               );
             })}
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => setCurrencySet(new Set())}>Сбросить</button>
-              <button className="btn" onClick={() => currencyDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setCurrencySet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => currencyDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -422,9 +422,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Отправитель</div>
             <input className="ui-input w-full" placeholder="Имя" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => setSenderQ("")}>Сбросить</button>
-              <button className="btn" onClick={() => senderDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setSenderQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => senderDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -434,9 +434,9 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Получатель</div>
             <input className="ui-input w-full" placeholder="Имя" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
-            <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost" onClick={() => setRecipientQ("")}>Сбросить</button>
-              <button className="btn" onClick={() => recipientDD.setOpen(false)}>Готово</button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setRecipientQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => recipientDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}

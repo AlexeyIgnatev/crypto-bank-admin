@@ -102,9 +102,13 @@ html.theme-switching textarea::placeholder {
 .chip .icon { width:1rem; height:1rem; display:inline-flex; align-items:center; justify-content:center; }
 
 /* CTA buttons */
-.btn { padding:.5rem .875rem; border-radius:.625rem; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); transition: background .2s ease; }
+.btn { display:inline-flex; align-items:center; justify-content:center; padding:.5rem .875rem; border-radius:.625rem; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); transition: background .2s ease; line-height:1; }
 .btn:hover { background: color-mix(in srgb, var(--foreground) 8%, transparent); }
 .btn-primary { background: var(--primary); color: #fff; border-color: transparent; }
 .btn-primary:hover { background: var(--primary-hover); }
 .btn-ghost { background: transparent; }
+.btn-success { background: var(--success); color:#fff; border-color: transparent; }
+.btn-success:hover { background: color-mix(in srgb, var(--success) 85%, black); }
+.btn-danger { background: var(--danger); color:#fff; border-color: transparent; }
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 85%, black); }
 
