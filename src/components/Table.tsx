@@ -144,12 +144,12 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       if (sortKey === "amount") return (Number(va) - Number(vb)) * dir;
       return String(va).localeCompare(String(vb)) * dir;
     });
+  }, [filtered, sortDir, sortKey]);
+
   // сбрасываем скролл при изменении любого фильтра
   useEffect(() => {
     const el = containerRef.current; if (el) el.scrollTop = 0;
   }, [idQuery, statusSet, dateFrom, dateTo, minAmount, maxAmount, currencySet, senderQ, recipientQ]);
-
-  }, [filtered, sortDir, sortKey]);
 
   // Виртуализация через @tanstack/react-virtual
   const rowHeight = 48;
