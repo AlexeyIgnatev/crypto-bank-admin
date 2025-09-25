@@ -1,6 +1,12 @@
 @import "tailwindcss";
 /* Ensure sticky header area doesn't get covered by vertical scrollbar (reserve space at inline-end) */
 .table-scroll { scrollbar-gutter: stable; }
+.hdr-chip { @apply inline-flex items-center justify-center h-6 w-6 rounded-md border border-soft text-white hover:bg-white/10 active:bg-white/20; }
+.hdr-chip .chev { line-height: 1; }
+.header-dd .ui-input { @apply h-9; }
+.header-dd .btn { @apply h-8; }
+.header-dd { max-width: 320px; }
+
 
 
 :root {

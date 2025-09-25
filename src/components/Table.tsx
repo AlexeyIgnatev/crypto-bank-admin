@@ -14,19 +14,21 @@ type DropdownState = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   btnRef: React.RefObject<HTMLButtonElement>;
+  panelRef: React.RefObject<HTMLDivElement>;
   pos: { top: number; left: number; width: number };
 };
 
 function useDropdown(): DropdownState {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 240 });
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 260 });
   useEffect(() => {
     if (!open) return;
     const update = () => {
       const r = btnRef.current?.getBoundingClientRect();
       if (!r) return;
-      const width = Math.max(220, Math.min(320, r.width + 60));
+      const width = Math.max(240, Math.min(360, 260));
       const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
       setPos({ top: r.bottom + 6, left, width });
     };
@@ -35,10 +37,13 @@ function useDropdown(): DropdownState {
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", update);
     const onDoc = (e: MouseEvent) => {
-      if (e.target instanceof Node) {
-        if (btnRef.current && btnRef.current.contains(e.target)) return;
-        setOpen(false);
-      }
+      if (!(e.target instanceof Node)) return;
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      // Не закрываем при взаимодействии с календарем Flatpickr
+      const el = e.target as Element;
+      if (el.closest && el.closest(".flatpickr-calendar")) return;
+      setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => {
@@ -47,7 +52,7 @@ function useDropdown(): DropdownState {
       document.removeEventListener("mousedown", onDoc);
     };
   }, [open]);
-  return { open, setOpen, btnRef, pos } as DropdownState;
+  return { open, setOpen, btnRef, panelRef, pos } as DropdownState;
 }
 
 
@@ -139,6 +144,11 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
       if (sortKey === "amount") return (Number(va) - Number(vb)) * dir;
       return String(va).localeCompare(String(vb)) * dir;
     });
+  // сбрасываем скролл при изменении любого фильтра
+  useEffect(() => {
+    const el = containerRef.current; if (el) el.scrollTop = 0;
+  }, [idQuery, statusSet, dateFrom, dateTo, minAmount, maxAmount, currencySet, senderQ, recipientQ]);
+
   }, [filtered, sortDir, sortKey]);
 
   // Виртуализация через @tanstack/react-virtual
@@ -183,45 +193,70 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
             <tr>
               <Th>№</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>
-                <div className="flex items-center gap-2">
-                  <span>ID/tx_hash</span>
-                  <button ref={idDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); idDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <SortIcon active={sortKey === "id"} dir={sortDir} />
+                  <span className="px-1">ID/tx_hash</span>
+                  <button ref={idDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); idDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>
-                <div className="flex items-center gap-2">
-                  <span>Статус</span>
-                  <button ref={statusDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); statusDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <SortIcon active={sortKey === "status"} dir={sortDir} />
+                  <span className="px-1">Статус</span>
+                  <button ref={statusDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); statusDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>
-                <div className="flex items-center gap-2">
-                  <span>Дата</span>
-                  <button ref={dateDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
+                  <span className="px-1">Дата</span>
+                  <button ref={dateDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("amount")} active={sortKey === "amount"} dir={sortDir}>
-                <div className="flex items-center gap-2">
-                  <span>Сумма</span>
-                  <button ref={amountDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); amountDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <SortIcon active={sortKey === "amount"} dir={sortDir} />
+                  <span className="px-1">Сумма</span>
+                  <button ref={amountDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); amountDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th>
-                <div className="flex items-center gap-2">
-                  <span>Валюта</span>
-                  <button ref={currencyDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); currencyDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Валюта</span>
+                  <button ref={currencyDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); currencyDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th>
-                <div className="flex items-center gap-2">
-                  <span>Отправитель</span>
-                  <button ref={senderDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); senderDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Отправитель</span>
+                  <button ref={senderDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); senderDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th>
-                <div className="flex items-center gap-2">
-                  <span>Получатель</span>
-                  <button ref={recipientDD.btnRef} className="btn btn-ghost h-7 px-2 text-xs" onClick={(e) => { e.stopPropagation(); recipientDD.setOpen((o) => !o); }}>Фильтр ▾</button>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Получатель</span>
+                  <button ref={recipientDD.btnRef} className={`hdr-chip ${chipStyles}`} aria-label="Фильтр"
+                    onClick={(e) => { e.stopPropagation(); recipientDD.setOpen((o) => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
             </tr>
@@ -300,20 +335,20 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
       {/* Порталы фильтров в шапке */}
       {idDD.open && createPortal(
-        <HeaderDropdown pos={idDD.pos} onClose={() => idDD.setOpen(false)}>
-          <div className="p-2">
+        <HeaderDropdown pos={idDD.pos} onClose={() => idDD.setOpen(false)} portalRef={idDD.panelRef}>
+          <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">ID/tx_hash</div>
-            <input className="ui-input w-full h-9" placeholder="Введите ID" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
+            <input className="ui-input w-full" placeholder="Введите ID" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
             <div className="mt-2 flex justify-end gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => setIdQuery("")}>Очистить</button>
-              <button className="btn h-8" onClick={() => idDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => setIdQuery("")}>Очистить</button>
+              <button className="btn" onClick={() => idDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {statusDD.open && createPortal(
-        <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)}>
-          <div className="p-2">
+        <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)} portalRef={statusDD.panelRef}>
+          <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">Статусы</div>
             {(["confirmed","pending","declined"] as TransactionStatus[]).map((s) => {
               const checked = statusSet.has(s);
@@ -327,44 +362,44 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               );
             })}
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => setStatusSet(new Set())}>Сбросить</button>
-              <button className="btn h-8" onClick={() => statusDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => setStatusSet(new Set())}>Сбросить</button>
+              <button className="btn" onClick={() => statusDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {dateDD.open && createPortal(
-        <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)}>
-          <div className="p-2 w-[260px]">
+        <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-1 font-medium">Дата от</div>
             <Flatpickr options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian, defaultDate: dateFrom ? new Date(dateFrom) : undefined }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
             <Flatpickr options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian, defaultDate: dateTo ? new Date(dateTo) : undefined }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
-              <button className="btn h-8" onClick={() => dateDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
+              <button className="btn" onClick={() => dateDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {amountDD.open && createPortal(
-        <HeaderDropdown pos={amountDD.pos} onClose={() => amountDD.setOpen(false)}>
-          <div className="p-2 w-[260px]">
+        <HeaderDropdown pos={amountDD.pos} onClose={() => amountDD.setOpen(false)} portalRef={amountDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
             <div className="text-sm font-medium">Сумма</div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <input className="ui-input h-9" type="number" placeholder="От" value={minAmount ?? ""} onChange={(e) => setMinAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
               <input className="ui-input h-9" type="number" placeholder="До" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
             </div>
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>Сбросить</button>
-              <button className="btn h-8" onClick={() => amountDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>Сбросить</button>
+              <button className="btn" onClick={() => amountDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {currencyDD.open && createPortal(
-        <HeaderDropdown pos={currencyDD.pos} onClose={() => currencyDD.setOpen(false)}>
-          <div className="p-2">
+        <HeaderDropdown pos={currencyDD.pos} onClose={() => currencyDD.setOpen(false)} portalRef={currencyDD.panelRef}>
+          <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">Валюты</div>
             {availableCurrencies.map((c) => {
               const checked = currencySet.has(c);
@@ -376,39 +411,45 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
               );
             })}
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => setCurrencySet(new Set())}>Сбросить</button>
-              <button className="btn h-8" onClick={() => currencyDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => setCurrencySet(new Set())}>Сбросить</button>
+              <button className="btn" onClick={() => currencyDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {senderDD.open && createPortal(
-        <HeaderDropdown pos={senderDD.pos} onClose={() => senderDD.setOpen(false)}>
-          <div className="p-2 w-[260px]">
+        <HeaderDropdown pos={senderDD.pos} onClose={() => senderDD.setOpen(false)} portalRef={senderDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Отправитель</div>
-            <input className="ui-input h-9 w-full" placeholder="Имя" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
+            <input className="ui-input w-full" placeholder="Имя" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => setSenderQ("")}>Сбросить</button>
-              <button className="btn h-8" onClick={() => senderDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => setSenderQ("")}>Сбросить</button>
+              <button className="btn" onClick={() => senderDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
 
       {recipientDD.open && createPortal(
-        <HeaderDropdown pos={recipientDD.pos} onClose={() => recipientDD.setOpen(false)}>
-          <div className="p-2 w-[260px]">
+        <HeaderDropdown pos={recipientDD.pos} onClose={() => recipientDD.setOpen(false)} portalRef={recipientDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Получатель</div>
-            <input className="ui-input h-9 w-full" placeholder="Имя" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
+            <input className="ui-input w-full" placeholder="Имя" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
             <div className="mt-2 flex justify-between gap-2">
-              <button className="btn btn-ghost h-8" onClick={() => setRecipientQ("")}>Сбросить</button>
-              <button className="btn h-8" onClick={() => recipientDD.setOpen(false)}>Готово</button>
+              <button className="btn btn-ghost" onClick={() => setRecipientQ("")}>Сбросить</button>
+              <button className="btn" onClick={() => recipientDD.setOpen(false)}>Готово</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
     </div>
   );
+
+// стиль кнопки фильтра в шапке
+// визуально совпадает с заголовком: тонкая рамка, скругление, фон при hover/active из темы
+// только иконка-стрелка по центру
+const chipStyles = `inline-flex items-center justify-center h-6 w-6 rounded-md border border-soft text-white hover:bg-white/10 active:bg-white/20`;
+
 }
-function HeaderDropdown({ pos, children, onClose }: { pos: { top: number; left: number; width: number }; children: React.ReactNode; onClose: () => void; }) {
+function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: number; left: number; width: number }; children: React.ReactNode; onClose: () => void; portalRef: React.RefObject<HTMLDivElement>; }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
@@ -416,7 +457,7 @@ function HeaderDropdown({ pos, children, onClose }: { pos: { top: number; left: 
   }, [onClose]);
   return (
     <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
-      <div className="card border border-soft rounded-xl shadow-xl" style={{ background: "var(--card)" }}>
+      <div ref={portalRef} className="card border border-soft rounded-xl shadow-xl overflow-hidden" style={{ background: "var(--card)" }}>
         {children}
       </div>
     </div>
@@ -424,7 +465,7 @@ function HeaderDropdown({ pos, children, onClose }: { pos: { top: number; left: 
 }
 
 
-function Th({ children, onClick, active, dir }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir?: SortDir }) {
+function Th({ children, onClick }: { children: React.ReactNode; onClick?: () => void; active?: boolean; dir?: SortDir }) {
   return (
     <th
       className={`px-4 py-3 text-left text-xs font-semibold select-none whitespace-nowrap ${onClick ? "cursor-pointer" : ""}`}
@@ -432,12 +473,15 @@ function Th({ children, onClick, active, dir }: { children: React.ReactNode; onC
     >
       <div className="flex items-center gap-1">
         <span>{children}</span>
-        {onClick && dir && (
-          <span className={`transition-transform ${active ? "opacity-100" : "opacity-40"}`}>
-            {dir === "asc" ? "↑" : "↓"}
-          </span>
-        )}
       </div>
     </th>
+  );
+}
+
+function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
+  return (
+    <span className={`inline-block text-white/90 ${active ? "opacity-100" : "opacity-50"}`} style={{ width: 12 }} aria-hidden>
+      {dir === "asc" ? "↑" : "↓"}
+    </span>
   );
 }
