@@ -1,15 +1,53 @@
 
 > bank-admin@0.1.0 dev
-> next dev --turbopack
+> next dev --turbopack -p 46346 -H 0.0.0.0
 
- ⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use :::46346
-    at <unknown> (Error: listen EADDRINUSE: address already in use :::46346)
-    at new Promise (<anonymous>) {
-  code: 'EADDRINUSE',
-  errno: -98,
-  syscall: 'listen',
-  address: '::',
-  port: 46346
-}
-[?25h
+   ▲ Next.js 15.5.3 (Turbopack)
+   - Local:        http://localhost:46346
+   - Network:      http://0.0.0.0:46346
+
+ ✓ Starting...
+ ✓ Compiled middleware in 151ms
+ ✓ Ready in 1558ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 2.6s
+ GET /login 200 in 2984ms
+ GET /login 200 in 88ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 87ms
+ ✓ Compiled /favicon.ico in 180ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 461ms
+ GET /login?next=%2F 200 in 113ms
+ GET /login?next=%2F 200 in 112ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 100ms
+ GET /login?next=%2F 200 in 121ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 254ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 256ms
+ GET /login?next=%2F 200 in 90ms
+ ✓ Compiled /api/login in 172ms
+ POST /api/login 200 in 444ms
+ ✓ Compiled / in 365ms
+ GET / 200 in 433ms
+ GET /login?next=%2F 200 in 117ms
+ GET /login?next=%2F 200 in 93ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 93ms
+ GET / 200 in 89ms
+ ✓ Compiled /_not-found/page in 365ms
+ GET /admins 404 in 465ms
+ GET /login?next=%2F 200 in 121ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 5339ms
