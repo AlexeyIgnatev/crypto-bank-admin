@@ -156,68 +156,6 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     if (el) el.scrollTo({ top: 0 });
   }, [sortKey, sortDir]);
 
-  // ===== Фильтры =====
-  const [idQuery, setIdQuery] = useState("");
-  const [statusSet, setStatusSet] = useState<Set<TransactionStatus>>(new Set());
-  const [dateFrom, setDateFrom] = useState<string | undefined>();
-  const [dateTo, setDateTo] = useState<string | undefined>();
-  const [minAmount, setMinAmount] = useState<number | undefined>();
-  const [maxAmount, setMaxAmount] = useState<number | undefined>();
-  const [currencySet, setCurrencySet] = useState<Set<string>>(new Set());
-  const [senderQ, setSenderQ] = useState("");
-  const [recipientQ, setRecipientQ] = useState("");
-
-  const availableCurrencies = useMemo(() => {
-    const arr = Array.from(new Set(data.map((t) => t.currency)));
-    const order = ["COM", "SALAM", "BTC", "USDT", "ETH"]; // предпочтительный порядок
-    return arr.sort((a, b) => (order.indexOf(a) === -1 ? 999 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 999 : order.indexOf(b)));
-  }, [data]);
-
-  // выпадающие меню
-  const idDD = useDropdown();
-  const statusDD = useDropdown();
-  const dateDD = useDropdown();
-  const amountDD = useDropdown();
-  const currencyDD = useDropdown();
-  const senderDD = useDropdown();
-  const recipientDD = useDropdown();
-
-  // применяем фильтры перед сортировкой
-  const filtered = useMemo(() => {
-    let res = [...data];
-    if (idQuery) {
-      const q = idQuery.trim().toLowerCase();
-      res = res.filter((t) => t.id.toLowerCase().includes(q));
-    }
-    if (statusSet.size) {
-      const s = new Set(statusSet);
-      res = res.filter((t) => s.has(t.status));
-    }
-    if (dateFrom) {
-      const d = new Date(dateFrom).getTime();
-      res = res.filter((t) => new Date(t.createdAt).getTime() >= d);
-    }
-    if (dateTo) {
-      const d = new Date(dateTo).getTime();
-      res = res.filter((t) => new Date(t.createdAt).getTime() <= d);
-    }
-    if (typeof minAmount === "number") res = res.filter((t) => t.amount >= minAmount!);
-    if (typeof maxAmount === "number") res = res.filter((t) => t.amount <= maxAmount!);
-    if (currencySet.size) {
-      const s = new Set(currencySet);
-      res = res.filter((t) => s.has(t.currency));
-    }
-    if (senderQ) {
-      const q = senderQ.trim().toLowerCase();
-      res = res.filter((t) => t.sender.toLowerCase().includes(q));
-    }
-    if (recipientQ) {
-      const q = recipientQ.trim().toLowerCase();
-      res = res.filter((t) => t.recipient.toLowerCase().includes(q));
-    }
-    return res;
-  }, [data, idQuery, statusSet, dateFrom, dateTo, minAmount, maxAmount, currencySet, senderQ, recipientQ]);
-
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {

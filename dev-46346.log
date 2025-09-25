@@ -532,3 +532,721 @@
  ✓ Compiled in 148ms
  GET /login?next=%2F 200 in 132ms
  GET /login?next=%2F 200 in 192ms
+ GET /login?next=%2F 200 in 176ms
+ GET /login?next=%2F 200 in 173ms
+ GET /login?next=%2F 200 in 162ms
+ GET /login?next=%2F 200 in 153ms
+ GET /login?next=%2F 200 in 161ms
+ ⨯ ./src/components/Table.tsx:180:9
+Ecmascript file had an error
+[0m [90m 178 |[39m   [36mconst[39m statusDD [33m=[39m useDropdown()[33m;[39m
+ [90m 179 |[39m   [36mconst[39m dateDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m
+ [90m 182 |[39m   [36mconst[39m senderDD [33m=[39m useDropdown()[33m;[39m
+ [90m 183 |[39m   [36mconst[39m recipientDD [33m=[39m useDropdown()[33m;[39m[0m
+
+the name `amountDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:170:9
+Ecmascript file had an error
+[0m [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 169 |[39m
+[31m[1m>[22m[39m[90m 170 |[39m   [36mconst[39m availableCurrencies [33m=[39m useMemo(() [33m=>[39m {
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 171 |[39m     [36mconst[39m arr [33m=[39m [33mArray[39m[33m.[39m[36mfrom[39m([36mnew[39m [33mSet[39m(data[33m.[39mmap((t) [33m=>[39m t[33m.[39mcurrency)))[33m;[39m
+ [90m 172 |[39m     [36mconst[39m order [33m=[39m [[32m"COM"[39m[33m,[39m [32m"SALAM"[39m[33m,[39m [32m"BTC"[39m[33m,[39m [32m"USDT"[39m[33m,[39m [32m"ETH"[39m][33m;[39m [90m// предпочтительный порядок[39m
+ [90m 173 |[39m     [36mreturn[39m arr[33m.[39msort((a[33m,[39m b) [33m=>[39m (order[33m.[39mindexOf(a) [33m===[39m [33m-[39m[35m1[39m [33m?[39m [35m999[39m [33m:[39m order[33m.[39mindexOf(a)) [33m-[39m (order[33m.[39mindexOf(b) [33m===[39m [33m-[39m[35m1[39m [33m?[39m [35m999[39m [33m:[39m order[33m.[39mindexOf(b)))[33m;[39m[0m
+
+the name `availableCurrencies` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:181:9
+Ecmascript file had an error
+[0m [90m 179 |[39m   [36mconst[39m dateDD [33m=[39m useDropdown()[33m;[39m
+ [90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 182 |[39m   [36mconst[39m senderDD [33m=[39m useDropdown()[33m;[39m
+ [90m 183 |[39m   [36mconst[39m recipientDD [33m=[39m useDropdown()[33m;[39m
+ [90m 184 |[39m[0m
+
+the name `currencyDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:166:10
+Ecmascript file had an error
+[0m [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 169 |[39m[0m
+
+the name `currencySet` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:179:9
+Ecmascript file had an error
+[0m [90m 177 |[39m   [36mconst[39m idDD [33m=[39m useDropdown()[33m;[39m
+ [90m 178 |[39m   [36mconst[39m statusDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 179 |[39m   [36mconst[39m dateDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m
+ [90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m
+ [90m 182 |[39m   [36mconst[39m senderDD [33m=[39m useDropdown()[33m;[39m[0m
+
+the name `dateDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:162:10
+Ecmascript file had an error
+[0m [90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+[31m[1m>[22m[39m[90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `dateFrom` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:163:10
+Ecmascript file had an error
+[0m [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m[0m
+
+the name `dateTo` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:186:9
+Ecmascript file had an error
+[0m [90m 184 |[39m
+ [90m 185 |[39m   [90m// применяем фильтры перед сортировкой[39m
+[31m[1m>[22m[39m[90m 186 |[39m   [36mconst[39m filtered [33m=[39m useMemo(() [33m=>[39m {
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 187 |[39m     [36mlet[39m res [33m=[39m [[33m...[39mdata][33m;[39m
+ [90m 188 |[39m     [36mif[39m (idQuery) {
+ [90m 189 |[39m       [36mconst[39m q [33m=[39m idQuery[33m.[39mtrim()[33m.[39mtoLowerCase()[33m;[39m[0m
+
+the name `filtered` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:177:9
+Ecmascript file had an error
+[0m [90m 175 |[39m
+ [90m 176 |[39m   [90m// выпадающие меню[39m
+[31m[1m>[22m[39m[90m 177 |[39m   [36mconst[39m idDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 178 |[39m   [36mconst[39m statusDD [33m=[39m useDropdown()[33m;[39m
+ [90m 179 |[39m   [36mconst[39m dateDD [33m=[39m useDropdown()[33m;[39m
+ [90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m[0m
+
+the name `idDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:160:10
+Ecmascript file had an error
+[0m [90m 158 |[39m
+ [90m 159 |[39m   [90m// ===== Фильтры =====[39m
+[31m[1m>[22m[39m[90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `idQuery` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:165:10
+Ecmascript file had an error
+[0m [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m[0m
+
+the name `maxAmount` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:164:10
+Ecmascript file had an error
+[0m [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m[0m
+
+the name `minAmount` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:183:9
+Ecmascript file had an error
+[0m [90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m
+ [90m 182 |[39m   [36mconst[39m senderDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 183 |[39m   [36mconst[39m recipientDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 184 |[39m
+ [90m 185 |[39m   [90m// применяем фильтры перед сортировкой[39m
+ [90m 186 |[39m   [36mconst[39m filtered [33m=[39m useMemo(() [33m=>[39m {[0m
+
+the name `recipientDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:168:10
+Ecmascript file had an error
+[0m [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 169 |[39m
+ [90m 170 |[39m   [36mconst[39m availableCurrencies [33m=[39m useMemo(() [33m=>[39m {
+ [90m 171 |[39m     [36mconst[39m arr [33m=[39m [33mArray[39m[33m.[39m[36mfrom[39m([36mnew[39m [33mSet[39m(data[33m.[39mmap((t) [33m=>[39m t[33m.[39mcurrency)))[33m;[39m[0m
+
+the name `recipientQ` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:182:9
+Ecmascript file had an error
+[0m [90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m
+ [90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 182 |[39m   [36mconst[39m senderDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 183 |[39m   [36mconst[39m recipientDD [33m=[39m useDropdown()[33m;[39m
+ [90m 184 |[39m
+ [90m 185 |[39m   [90m// применяем фильтры перед сортировкой[39m[0m
+
+the name `senderDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:167:10
+Ecmascript file had an error
+[0m [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+[31m[1m>[22m[39m[90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 169 |[39m
+ [90m 170 |[39m   [36mconst[39m availableCurrencies [33m=[39m useMemo(() [33m=>[39m {[0m
+
+the name `senderQ` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:166:23
+Ecmascript file had an error
+[0m [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m     |[39m                       [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 169 |[39m[0m
+
+the name `setCurrencySet` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:162:20
+Ecmascript file had an error
+[0m [90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+[31m[1m>[22m[39m[90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m                    [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `setDateFrom` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:163:18
+Ecmascript file had an error
+[0m [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m                  [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m[0m
+
+the name `setDateTo` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:160:19
+Ecmascript file had an error
+[0m [90m 158 |[39m
+ [90m 159 |[39m   [90m// ===== Фильтры =====[39m
+[31m[1m>[22m[39m[90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m                   [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `setIdQuery` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:165:21
+Ecmascript file had an error
+[0m [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m                     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m[0m
+
+the name `setMaxAmount` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:164:21
+Ecmascript file had an error
+[0m [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+[31m[1m>[22m[39m[90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m     |[39m                     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m[0m
+
+the name `setMinAmount` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:168:22
+Ecmascript file had an error
+[0m [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m                      [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 169 |[39m
+ [90m 170 |[39m   [36mconst[39m availableCurrencies [33m=[39m useMemo(() [33m=>[39m {
+ [90m 171 |[39m     [36mconst[39m arr [33m=[39m [33mArray[39m[33m.[39m[36mfrom[39m([36mnew[39m [33mSet[39m(data[33m.[39mmap((t) [33m=>[39m t[33m.[39mcurrency)))[33m;[39m[0m
+
+the name `setRecipientQ` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:167:19
+Ecmascript file had an error
+[0m [90m 165 |[39m   [36mconst[39m [maxAmount[33m,[39m setMaxAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 166 |[39m   [36mconst[39m [currencySet[33m,[39m setCurrencySet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mstring[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+[31m[1m>[22m[39m[90m 167 |[39m   [36mconst[39m [senderQ[33m,[39m setSenderQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m     |[39m                   [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 168 |[39m   [36mconst[39m [recipientQ[33m,[39m setRecipientQ] [33m=[39m useState([32m""[39m)[33m;[39m
+ [90m 169 |[39m
+ [90m 170 |[39m   [36mconst[39m availableCurrencies [33m=[39m useMemo(() [33m=>[39m {[0m
+
+the name `setSenderQ` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:161:21
+Ecmascript file had an error
+[0m [90m 159 |[39m   [90m// ===== Фильтры =====[39m
+ [90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m     |[39m                     [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `setStatusSet` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:178:9
+Ecmascript file had an error
+[0m [90m 176 |[39m   [90m// выпадающие меню[39m
+ [90m 177 |[39m   [36mconst[39m idDD [33m=[39m useDropdown()[33m;[39m
+[31m[1m>[22m[39m[90m 178 |[39m   [36mconst[39m statusDD [33m=[39m useDropdown()[33m;[39m
+ [90m     |[39m         [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 179 |[39m   [36mconst[39m dateDD [33m=[39m useDropdown()[33m;[39m
+ [90m 180 |[39m   [36mconst[39m amountDD [33m=[39m useDropdown()[33m;[39m
+ [90m 181 |[39m   [36mconst[39m currencyDD [33m=[39m useDropdown()[33m;[39m[0m
+
+the name `statusDD` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/Table.tsx:161:10
+Ecmascript file had an error
+[0m [90m 159 |[39m   [90m// ===== Фильтры =====[39m
+ [90m 160 |[39m   [36mconst[39m [idQuery[33m,[39m setIdQuery] [33m=[39m useState([32m""[39m)[33m;[39m
+[31m[1m>[22m[39m[90m 161 |[39m   [36mconst[39m [statusSet[33m,[39m setStatusSet] [33m=[39m useState[33m<[39m[33mSet[39m[33m<[39m[33mTransactionStatus[39m[33m>>[39m([36mnew[39m [33mSet[39m())[33m;[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 162 |[39m   [36mconst[39m [dateFrom[33m,[39m setDateFrom] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 163 |[39m   [36mconst[39m [dateTo[33m,[39m setDateTo] [33m=[39m useState[33m<[39m[33mstring[39m [33m|[39m undefined[33m>[39m()[33m;[39m
+ [90m 164 |[39m   [36mconst[39m [minAmount[33m,[39m setMinAmount] [33m=[39m useState[33m<[39m[33mnumber[39m [33m|[39m undefined[33m>[39m()[33m;[39m[0m
+
+the name `statusSet` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./src/components/Table.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/Table.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1433ms
+ GET / 500 in 1977ms
+ GET /favicon.ico 500 in 123ms
+ GET /login?next=%2F 200 in 531ms
+ GET /login?next=%2F 200 in 150ms
+ GET /login?next=%2F 200 in 166ms
+ GET /login?next=%2F 200 in -2118ms
+ GET /login?next=%2F 200 in 166ms
+ GET /login?next=%2F 200 in 175ms
+ GET /login?next=%2F 200 in 190ms
+ GET /login?next=%2F 200 in 158ms
+ GET /login?next=%2F 200 in 175ms
+ GET /login?next=%2F 200 in 205ms
+ GET /login?next=%2F 200 in 152ms
+ GET /login?next=%2F 200 in 171ms
+ GET /login?next=%2F 200 in 151ms
+ GET /login?next=%2F 200 in 181ms
+ GET /login?next=%2F 200 in 194ms
+ GET /login?next=%2F 200 in 156ms
+ GET /login?next=%2F 200 in 177ms
+ GET /login?next=%2F 200 in 346ms
+ GET /login?next=%2F 200 in 193ms
+ GET /login?next=%2F 200 in 186ms
+ GET /login?next=%2F 200 in 161ms
+ GET /login?next=%2F 200 in 198ms
+ GET /login?next=%2F 200 in 177ms
+ ✓ Compiled in 158ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled / in 28ms
+ GET / 200 in 419ms
+ GET / 200 in 196ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 309ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 264ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 251ms
+ GET /login?next=%2F 200 in 147ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 318ms
+ GET /login?next=%2F 200 in 118ms
