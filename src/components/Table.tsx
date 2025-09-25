@@ -87,51 +87,70 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
 
       {/* Прокручиваемое тело таблицы c виртуализацией */}
       <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
-        <div
-          style={{ height: rowVirtualizer.getTotalSize(), position: "relative" }}
-        >
-          <table className="w-full text-sm table-fixed" style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
-            <colgroup>
-              <col className="w-[72px]" />
-              <col className="w-[240px]" />
-              <col className="w-[140px]" />
-              <col className="w-[200px]" />
-              <col className="w-[160px]" />
-              <col />
-              <col />
-            </colgroup>
-            <tbody>
-              {rowVirtualizer.getVirtualItems().map((vRow) => {
-                const t = sorted[vRow.index];
-                if (!t) return null;
-                return (
-                  <tr
-                    key={t.id}
-                    className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
-                    onClick={() => onOpen(t)}
-                    style={{ transform: `translateY(${vRow.start}px)` }}
-                  >
-                    <td className="px-4 py-3 tabular-nums text-muted">{vRow.index + 1}</td>
-                    <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
-                    <td className="px-4 py-3">
-                      <span className={`badge ${
-                        t.status === "confirmed" ? "badge-success" :
-                        t.status === "pending" ? "badge-warning" :
-                        "badge-danger"
-                      }`}>
-                        {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
-                    <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
-                    <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[72px]" />
+            <col className="w-[240px]" />
+            <col className="w-[140px]" />
+            <col className="w-[200px]" />
+            <col className="w-[160px]" />
+            <col />
+            <col />
+          </colgroup>
+          <tbody>
+            {/* Верхний буфер */}
+            {(() => {
+              const items = rowVirtualizer.getVirtualItems();
+              const total = rowVirtualizer.getTotalSize();
+              const paddingTop = items.length > 0 ? items[0].start : 0;
+              const paddingBottom = items.length > 0 ? total - items[items.length - 1].end : 0;
+              return (
+                <>
+                  {paddingTop > 0 && (
+                    <tr aria-hidden="true">
+                      <td colSpan={7} style={{ height: paddingTop }} />
+                    </tr>
+                  )}
+
+                  {items.map((vRow) => {
+                    const t = sorted[vRow.index];
+                    if (!t) return null;
+                    return (
+                      <tr
+                        key={t.id}
+                        className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                        onClick={() => onOpen(t)}
+                        style={{ height: vRow.size }}
+                      >
+                        <td className="px-4 py-3 tabular-nums text-muted">{vRow.index + 1}</td>
+                        <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
+                        <td className="px-4 py-3">
+                          <span className={`badge ${
+                            t.status === "confirmed" ? "badge-success" :
+                            t.status === "pending" ? "badge-warning" :
+                            "badge-danger"
+                          }`}>
+                            {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
+                        <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
+                        <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {paddingBottom > 0 && (
+                    <tr aria-hidden="true">
+                      <td colSpan={7} style={{ height: paddingBottom }} />
+                    </tr>
+                  )}
+                </>
+              );
+            })()}
+          </tbody>
+        </table>
       </div>
     </div>
   );
