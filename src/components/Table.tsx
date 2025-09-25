@@ -443,11 +443,6 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     </div>
   );
 
-// стиль кнопки фильтра в шапке
-// визуально совпадает с заголовком: тонкая рамка, скругление, фон при hover/active из темы
-// только иконка-стрелка по центру
-const chipStyles = `inline-flex items-center justify-center h-6 w-6 rounded-md border border-soft text-white hover:bg-white/10 active:bg-white/20`;
-
 }
 function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: number; left: number; width: number }; children: React.ReactNode; onClose: () => void; portalRef: React.RefObject<HTMLDivElement>; }) {
   useEffect(() => {
