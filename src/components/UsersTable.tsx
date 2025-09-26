@@ -343,48 +343,6 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
         </HeaderDropdown>
       )}
 
-          </div>
-        </HeaderDropdown>
-      )}
-
-      {dateDD.open && (
-        <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
-          <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-1 font-medium">Дата от</div>
-            <Flatpickr value={dateFrom ? new Date(dateFrom) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
-            <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
-            <Flatpickr value={dateTo ? new Date(dateTo) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
-            </div>
-          </div>
-        </HeaderDropdown>
-      )}
-
-
-      {totalDD.open && (
-        <HeaderDropdown pos={totalDD.pos} onClose={() => totalDD.setOpen(false)} portalRef={totalDD.panelRef}>
-          <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">Общий баланс</div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <div className="text-xs mb-1">Мин</div>
-                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minTotal} onChange={e => setMinTotal(e.target.value)} />
-              </div>
-              <div>
-                <div className="text-xs mb-1">Макс</div>
-                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxTotal} onChange={e => setMaxTotal(e.target.value)} />
-              </div>
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => totalDD.setOpen(false)}>Сохранить</button>
-            </div>
-          </div>
-        </HeaderDropdown>
-      )}
-
       {dateDD.open && (
         <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">

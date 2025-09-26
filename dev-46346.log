@@ -88,3 +88,8 @@ Import traces:
  GET /login?next=%2F 200 in 99ms
  GET /login?next=%2F 200 in 124ms
  GET /login?next=%2F 200 in 130ms
+ GET /login 200 in 145ms
+ ✓ Compiled in 126ms
+ GET /login 200 in 82ms
+ GET / 200 in 109ms
+ GET /login?next=%2F 200 in 131ms
