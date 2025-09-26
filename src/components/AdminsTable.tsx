@@ -45,24 +45,33 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   const [sortKey, setSortKey] = useState<AdminSortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // filters
-  const [q, setQ] = useState("");
+  // filters per column
+  const [firstQ, setFirstQ] = useState("");
+  const [lastQ, setLastQ] = useState("");
+  const [loginQ, setLoginQ] = useState("");
   const [dateFrom, setDateFrom] = useState<string | undefined>();
   const [dateTo, setDateTo] = useState<string | undefined>();
+  const [roleSet, setRoleSet] = useState<Set<string>>(new Set());
 
-  const nameDD = useDropdown();
+  const firstDD = useDropdown();
+  const lastDD = useDropdown();
   const loginDD = useDropdown();
   const dateDD = useDropdown();
+  const roleDD = useDropdown();
 
   const filtered = useMemo(() => {
     let res = [...data];
-    if (q) {
-      const s = q.trim().toLowerCase();
-      res = res.filter(a =>
-        a.firstName.toLowerCase().includes(s) ||
-        a.lastName.toLowerCase().includes(s) ||
-        a.login.toLowerCase().includes(s)
-      );
+    if (firstQ) {
+      const s = firstQ.trim().toLowerCase();
+      res = res.filter(a => a.firstName.toLowerCase().includes(s));
+    }
+    if (lastQ) {
+      const s = lastQ.trim().toLowerCase();
+      res = res.filter(a => a.lastName.toLowerCase().includes(s));
+    }
+    if (loginQ) {
+      const s = loginQ.trim().toLowerCase();
+      res = res.filter(a => a.login.toLowerCase().includes(s));
     }
     if (dateFrom) {
       const d = new Date(dateFrom).getTime();
@@ -72,8 +81,11 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
       const d = new Date(dateTo).getTime();
       res = res.filter(a => new Date(a.createdAt).getTime() <= d);
     }
+    if (roleSet.size > 0) {
+      res = res.filter(a => roleSet.has(a.role));
+    }
     return res;
-  }, [data, q, dateFrom, dateTo]);
+  }, [data, firstQ, lastQ, loginQ, dateFrom, dateTo, roleSet]);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -86,7 +98,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   }, [filtered, sortKey, sortDir]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [q, dateFrom, dateTo]);
+  useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [firstQ, lastQ, loginQ, dateFrom, dateTo, roleSet]);
 
   const rowVirtualizer = useVirtualizer({
     count: sorted.length,
@@ -119,7 +131,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "firstName"} dir={sortDir} />
                   <span className="px-1">Имя</span>
-                  <button ref={nameDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); nameDD.setOpen(o => !o); }}>
+                  <button ref={firstDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); firstDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
                   </button>
                 </div>
@@ -128,6 +140,9 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "lastName"} dir={sortDir} />
                   <span className="px-1">Фамилия</span>
+                  <button ref={lastDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); lastDD.setOpen(o => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("login")}>
@@ -151,6 +166,9 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               <Th>
                 <div className="flex items-center gap-1">
                   <span className="px-1">Роль</span>
+                  <button ref={roleDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); roleDD.setOpen(o => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
             </tr>
@@ -198,14 +216,27 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
         </table>
       </div>
 
-      {nameDD.open && (
-        <HeaderDropdown pos={nameDD.pos} onClose={() => nameDD.setOpen(false)} portalRef={nameDD.panelRef}>
+      {firstDD.open && (
+        <HeaderDropdown pos={firstDD.pos} onClose={() => firstDD.setOpen(false)} portalRef={firstDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">Имя / Фамилия</div>
-            <input className="ui-input w-full" placeholder="Поиск" value={q} onChange={e => setQ(e.target.value)} />
+            <div className="text-sm mb-2 font-medium">Имя</div>
+            <input className="ui-input w-full" placeholder="Имя содержит" value={firstQ} onChange={e => setFirstQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => nameDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setFirstQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => firstDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
+      {lastDD.open && (
+        <HeaderDropdown pos={lastDD.pos} onClose={() => lastDD.setOpen(false)} portalRef={lastDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Фамилия</div>
+            <input className="ui-input w-full" placeholder="Фамилия содержит" value={lastQ} onChange={e => setLastQ(e.target.value)} />
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setLastQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => lastDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -215,10 +246,36 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
         <HeaderDropdown pos={loginDD.pos} onClose={() => loginDD.setOpen(false)} portalRef={loginDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Логин</div>
-            <input className="ui-input w-full" placeholder="email/логин" value={q} onChange={e => setQ(e.target.value)} />
+            <input className="ui-input w-full" placeholder="email/логин" value={loginQ} onChange={e => setLoginQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setQ("")}>Сбросить</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setLoginQ("")}>Сбросить</button>
               <button className="btn btn-success w-full h-9" onClick={() => loginDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
+      {roleDD.open && (
+        <HeaderDropdown pos={roleDD.pos} onClose={() => roleDD.setOpen(false)} portalRef={roleDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Роль</div>
+            <div className="space-y-2">
+              {Array.from(new Set(data.map(a => a.role))).map(role => (
+                <label key={role} className="flex items-center gap-2">
+                  <input type="checkbox" checked={roleSet.has(role)} onChange={(e) => {
+                    setRoleSet(prev => {
+                      const next = new Set(prev);
+                      if (e.target.checked) next.add(role); else next.delete(role);
+                      return next;
+                    });
+                  }} />
+                  <span>{role}</span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => setRoleSet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => roleDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
