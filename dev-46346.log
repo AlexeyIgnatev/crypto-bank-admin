@@ -565,3 +565,72 @@ Import traces:
  GET /login?next=%2F 200 in 111ms
  GET /login?next=%2F 200 in 137ms
  GET /login?next=%2F 200 in 107ms
+ GET /login?next=%2F 200 in 117ms
+ GET /login?next=%2F 200 in 93ms
+ ⨯ ./src/app/users/page.tsx:117:57
+Parsing ecmascript source code failed
+[0m [90m 115 |[39m         [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 116 |[39m         [33m<[39m[33mdiv[39m className[33m=[39m[32m"col-span-2"[39m[33m>[39m
+[31m[1m>[22m[39m[90m 117 |[39m [36mfunction[39m [33mEditUserForm[39m({ user[33m,[39m onCancel[33m,[39m onSave }[33m:[39m { user[33m:[39m [33mUser[39m[33m;[39m onCancel[33m:[39m () [33m=>[39m [36mvoid[39m[33m;[39m onSave[33m:[39m () [33m=>[39m [36mvoid[39m[33m;[39m }) {
+ [90m     |[39m                                                         [31m[1m^[22m[39m
+ [90m 118 |[39m           [33m<[39m[33mdiv[39m className[33m=[39m[32m"text-sm mb-1"[39m[33m>[39m[33mСтатус[39m[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 119 |[39m           [33m<[39m[33mselect[39m className[33m=[39m[32m"ui-input"[39m[33m>[39m
+ [90m 120 |[39m             [33m<[39m[33moption[39m[33m>[39m[33mАктивен[39m[33m<[39m[33m/[39m[33moption[39m[33m>[39m[0m
+
+Expected '</', got ':'
+
+Import traces:
+  Client Component Browser:
+    ./src/app/users/page.tsx [Client Component Browser]
+    ./src/app/users/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/users/page.tsx [Client Component SSR]
+    ./src/app/users/page.tsx [Server Component]
+
+
+
+./src/components/UsersTable.tsx:347:10
+Parsing ecmascript source code failed
+[0m [90m 345 |[39m
+ [90m 346 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 347 |[39m         [33m<[39m[33m/[39m[33mHeaderDropdown[39m[33m>[39m
+ [90m     |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 348 |[39m       )}
+ [90m 349 |[39m
+ [90m 350 |[39m       {dateDD[33m.[39mopen [33m&&[39m ([0m
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./src/components/UsersTable.tsx [Client Component Browser]
+    ./src/app/users/page.tsx [Client Component Browser]
+    ./src/app/users/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/UsersTable.tsx [Client Component SSR]
+    ./src/app/users/page.tsx [Client Component SSR]
+    ./src/app/users/page.tsx [Server Component]
+
+
+ GET /users 500 in 118ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 130ms
+ GET /login?next=%2F 200 in 120ms
+ GET /login?next=%2F 200 in 105ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 168ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 91ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 111ms
+ GET /login?next=%2F 200 in 104ms
+ GET /login?next=%2F 200 in 128ms
+ GET /login?next=%2F 200 in 110ms
+ GET /login?next=%2F 200 in 150ms
+ GET /login?next=%2F 200 in 120ms
+ ✓ Compiled in 159ms
+ GET /login?next=%2F 200 in 131ms

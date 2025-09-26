@@ -13,7 +13,6 @@ export default function UsersPage() {
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
-
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="min-h-0 flex-1 flex flex-col">
@@ -114,7 +113,6 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
           <input className="ui-input w-full" required placeholder="email@example.com" />
         </div>
         <div className="col-span-2">
-function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => void; }) {
           <div className="text-sm mb-1">Статус</div>
           <select className="ui-input">
             <option>Активен</option>
@@ -130,6 +128,7 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
   );
 }
 
+function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => void; }) {
   return (
     <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
       <div className="grid grid-cols-2 gap-3">
@@ -172,20 +171,5 @@ function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; on
         <button className="btn btn-danger w-full h-9" onClick={onDelete}>Удалить</button>
       </div>
     </div>
-  );
-}
-
-          <div className="text-sm mb-1">Статус</div>
-          <select className="ui-input">
-            <option>Активен</option>
-            <option>Заблокирован</option>
-          </select>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-2 pt-4">
-        <button type="button" className="btn btn-danger w-full h-9" onClick={onCancel}>Сбросить</button>
-        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
-      </div>
-    </form>
   );
 }
