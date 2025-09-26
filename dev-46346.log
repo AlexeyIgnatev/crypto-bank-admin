@@ -93,3 +93,10 @@ Import traces:
  GET /login 200 in 82ms
  GET / 200 in 109ms
  GET /login?next=%2F 200 in 131ms
+ GET /login?next=%2F 200 in 158ms
+ GET /login?next=%2F 200 in -2412ms
+ GET /login?next=%2F 200 in 111ms
+ GET /login?next=%2F 200 in 122ms
+ GET /login?next=%2F 200 in 114ms
+ GET /login?next=%2F 200 in 118ms
+ GET /login?next=%2F 200 in 109ms
