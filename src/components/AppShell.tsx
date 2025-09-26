@@ -25,7 +25,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex">
       <Sidebar />
       <div className="flex-1 flex flex-col" style={{ height: "100svh", overflow: "hidden" }}>
-        <Topbar title="Главная" />
+        <Topbar title={pathname === "/" ? "Главная" : pathname === "/admins" ? "Администраторы" : pathname === "/users" ? "Пользователи" : pathname === "/transactions" ? "Транзакции" : pathname === "/control" ? "Фин. контроль" : pathname === "/rates" ? "Проценты" : ""} />
         <main className="min-h-0 flex-1 overflow-hidden p-4 max-w-[1400px] mx-auto flex flex-col gap-4">{children}</main>
       </div>
     </div>

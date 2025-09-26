@@ -112,3 +112,6 @@ html.theme-switching textarea::placeholder {
 .btn-danger { background: var(--danger); color:#fff; border-color: transparent; }
 .btn-danger:hover { background: color-mix(in srgb, var(--danger) 85%, black); }
 
+  .btn-info { background: #2563eb; color:#fff; border-color: transparent; }
+  .btn-info:hover { background: #1d4ed8; }
+

@@ -52,10 +52,16 @@ function CreateAdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Роль</div>
-          <input className="ui-input" value="Супер админ" disabled />
+          <select className="ui-input">
+            <option>Супер админ</option>
+          </select>
+        </div>
+        <div className="col-span-2">
+          <div className="text-sm mb-1">Пароль</div>
+          <input className="ui-input" required type="password" placeholder="Пароль" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 pt-2">
+      <div className="grid grid-cols-2 gap-2 pt-4">
         <button type="button" className="btn btn-danger w-full h-9" onClick={onCancel}>Сбросить</button>
         <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
       </div>
@@ -72,9 +78,9 @@ function AdminDetails({ admin, onClose }: { admin: Admin; onClose: () => void; }
       <Row label="Роль" value={admin.role} />
       <Row label="Создано" value={new Date(admin.createdAt).toLocaleString()} />
 
-      <div className="grid grid-cols-3 gap-2 pt-4">
+      <div className="grid grid-cols-3 gap-2 pt-6">
         <button className="btn w-full h-9" onClick={onClose}>Закрыть</button>
-        <button className="btn btn-primary w-full h-9">Редактировать</button>
+        <button className="btn btn-info w-full h-9">Редактировать</button>
         <button className="btn btn-danger w-full h-9">Удалить</button>
       </div>
     </div>

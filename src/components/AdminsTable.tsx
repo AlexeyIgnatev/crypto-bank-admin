@@ -108,7 +108,8 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
             <col className="w-[72px]" />
             <col className="w-[200px]" />
             <col className="w-[220px]" />
-            <col className="w-[240px]" />
+            <col className="w-[280px]" />
+            <col className="w-[200px]" />
             <col className="w-[160px]" />
           </colgroup>
           <thead className="text-white">
@@ -163,7 +164,8 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
             <col className="w-[72px]" />
             <col className="w-[200px]" />
             <col className="w-[220px]" />
-            <col className="w-[240px]" />
+            <col className="w-[280px]" />
+            <col className="w-[200px]" />
             <col className="w-[160px]" />
           </colgroup>
           <tbody>
@@ -174,7 +176,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               const paddingBottom = items.length > 0 ? total - items[items.length - 1].end : 0;
               return (
                 <>
-                  {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={5} style={{ height: paddingTop }} /></tr>)}
+                  {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={6} style={{ height: paddingTop }} /></tr>)}
                   {items.map(v => {
                     const a = sorted[v.index]; if (!a) return null;
                     return (
@@ -183,11 +185,12 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
                         <td className="px-4 py-3 whitespace-nowrap">{a.firstName}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{a.lastName}</td>
                         <td className="px-4 py-3 truncate" title={a.login}>{a.login}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{a.role}</td>
+                        <td className="px-4 py-3 whitespace-nowrap"><span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium" style={{ background: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success-text, #0a0)" }}>{a.role}</span></td>
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(a.createdAt).toLocaleString()}</td>
                       </tr>
                     );
                   })}
-                  {paddingBottom > 0 && (<tr aria-hidden="true"><td colSpan={5} style={{ height: paddingBottom }} /></tr>)}
+                  {paddingBottom > 0 && (<tr aria-hidden="true"><td colSpan={6} style={{ height: paddingBottom }} /></tr>)}
                 </>
               );
             })()}
