@@ -1,4 +1,28 @@
 import { Transaction, TransactionStatus, Filters, OperationType } from "../types";
+import { Admin } from "../types";
+function randomAdminId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+export function generateAdmins(count = 75): Admin[] {
+  const first = ["Арслан","Асан","Елена","Иван","Мария","Дмитрий","Жанна","Анна","Павел","Олег"]; 
+  const last = ["Бекболотов","Иванов","Петров","Сидоров","Ким","Ахметов","Сергеев","Орлов","Смирнов","Фёдоров"]; 
+  const out: Admin[] = [];
+  for (let i = 0; i < count; i++) {
+    const f = first[Math.floor(Math.random()*first.length)];
+    const l = last[Math.floor(Math.random()*last.length)];
+    const login = `${f.toLowerCase()}.${l.toLowerCase()}${i}@mail.com`;
+    out.push({
+      id: randomAdminId(),
+      firstName: f,
+      lastName: l,
+      login,
+      role: "Супер админ",
+      createdAt: new Date(Date.now() - Math.random()*90*24*3600*1000).toISOString(),
+    });
+  }
+  return out;
+}
+
 
 const names = [
   "Арслан Бекболотов Мамыткысымович",

@@ -22,3 +22,13 @@ export interface Filters {
   currencies?: string[]; // e.g., ["USDT","BTC"] etc.
   operations?: OperationType[];
 }
+
+// Admins
+export interface Admin {
+  id: string;
+  firstName: string;
+  lastName: string;
+  login: string; // email or username
+  role: "Супер админ"; // only one role for now
+  createdAt: string; // ISO
+}
