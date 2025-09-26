@@ -100,3 +100,19 @@ Import traces:
  GET /login?next=%2F 200 in 114ms
  GET /login?next=%2F 200 in 118ms
  GET /login?next=%2F 200 in 109ms
+ GET /login?next=%2F 200 in 113ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 116ms
+ ✓ Compiled /users in 48ms
+ GET /users 200 in 396ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 333ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 292ms
+ GET /login?next=%2F 200 in 110ms
+ GET /login?next=%2F 200 in 117ms
+ GET /login?next=%2F 200 in 109ms
+ GET /login?next=%2F 200 in 120ms
+ GET /login?next=%2F 200 in 117ms
+ GET /login?next=%2F 200 in 102ms
+ GET /login?next=%2F 200 in 118ms
+ GET /login?next=%2F 200 in 112ms
+ ✓ Compiled in 161ms
