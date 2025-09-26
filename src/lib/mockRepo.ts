@@ -1,5 +1,4 @@
-import { Transaction, TransactionStatus, Filters, OperationType } from "../types";
-import { Admin } from "../types";
+import { Transaction, TransactionStatus, Filters, OperationType, Admin, User, UserStatus } from "../types";
 function randomAdminId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -22,6 +21,44 @@ export function generateAdmins(count = 75): Admin[] {
   }
   return out;
 }
+
+export function generateUsers(count = 300): User[] {
+  const phones = ["+996 (555) 123 333", "+996 (700) 555 777", "+996 (770) 222 111", "+996 (555) 999 000"]; 
+  const emails = ["user1@gmail.com","user2@gmail.com","user3@gmail.com","user4@gmail.com"]; 
+  const fulls = [
+    "Арслан Бекболотов Мамыткасычмович",
+    "Асанов Асан Асанович",
+    "Елена Иванова",
+    "Алексей Петров",
+    "Мария Сидорова",
+    "Павел Смирнов",
+  ];
+  const arr: User[] = [];
+  for (let i = 0; i < count; i++) {
+    const fullName = fulls[Math.floor(Math.random()*fulls.length)];
+    const phone = phones[Math.floor(Math.random()*phones.length)];
+    const email = emails[Math.floor(Math.random()*emails.length)].replace("user", `user${i}`);
+    const status: UserStatus = Math.random() > 0.2 ? "Активен" : "Заблокирован";
+    const balances = {
+      COM: Math.floor(Math.random()*1_000_00000)/100,
+      SALAM: Math.floor(Math.random()*500_00000)/100,
+      BTC: Math.floor(Math.random()*10_00000)/100,
+      ETH: Math.floor(Math.random()*20_00000)/100,
+      USDT: Math.floor(Math.random()*200_00000)/100,
+    };
+    arr.push({
+      id: randomId(),
+      fullName,
+      phone,
+      email,
+      status,
+      balances,
+      createdAt: randomDateWithin(120),
+    });
+  }
+  return arr;
+}
+
 
 
 const names = [

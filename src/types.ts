@@ -32,3 +32,21 @@ export interface Admin {
   role: "Супер админ"; // only one role for now
   createdAt: string; // ISO
 }
+
+export type UserStatus = "Активен" | "Заблокирован";
+
+export interface User {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  status: UserStatus;
+  balances: {
+    COM: number;
+    SALAM: number;
+    BTC: number;
+    ETH: number;
+    USDT: number;
+  };
+  createdAt: string; // ISO
+}
