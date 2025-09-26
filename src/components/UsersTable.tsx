@@ -52,12 +52,18 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
   const [statusSet, setStatusSet] = useState<Set<UserStatus>>(new Set());
   const [dateFrom, setDateFrom] = useState<string | undefined>();
   const [dateTo, setDateTo] = useState<string | undefined>();
+  const [minCOM, setMinCOM] = useState<string>("");
+  const [maxCOM, setMaxCOM] = useState<string>("");
+  const [minTotal, setMinTotal] = useState<string>("");
+  const [maxTotal, setMaxTotal] = useState<string>("");
 
   const nameDD = useDropdown();
   const phoneDD = useDropdown();
   const emailDD = useDropdown();
   const statusDD = useDropdown();
   const dateDD = useDropdown();
+  const comDD = useDropdown();
+  const totalDD = useDropdown();
 
   const filtered = useMemo(() => {
     let res = [...data];
@@ -67,8 +73,13 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
     if (statusSet.size > 0) { res = res.filter(u => statusSet.has(u.status)); }
     if (dateFrom) { const d = new Date(dateFrom).getTime(); res = res.filter(u => new Date(u.createdAt).getTime() >= d); }
     if (dateTo) { const d = new Date(dateTo).getTime(); res = res.filter(u => new Date(u.createdAt).getTime() <= d); }
+    // balances filters
+    if (minCOM) { const v = parseFloat(minCOM.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => u.balances.COM >= v); }
+    if (maxCOM) { const v = parseFloat(maxCOM.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => u.balances.COM <= v); }
+    if (minTotal) { const v = parseFloat(minTotal.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => (u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT) >= v); }
+    if (maxTotal) { const v = parseFloat(maxTotal.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => (u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT) <= v); }
     return res;
-  }, [data, nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo]);
+  }, [data, nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -87,7 +98,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
   }, [filtered, sortKey, sortDir]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo]);
+  useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
 
   const rowVirtualizer = useVirtualizer({ count: sorted.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8 });
 
@@ -152,12 +163,18 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "balanceCOM"} dir={sortDir} />
                   <span className="px-1">Баланс СОМ</span>
+                  <button ref={comDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); comDD.setOpen(o => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("balanceTotal")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "balanceTotal"} dir={sortDir} />
                   <span className="px-1">Общий баланс</span>
+                  <button ref={totalDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); totalDD.setOpen(o => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("createdAt")}>
@@ -174,7 +191,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
         </table>
       </div>
 
-      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)]">
+      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]">
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -282,7 +299,100 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
         </HeaderDropdown>
       )}
 
+      {comDD.open && (
+        <HeaderDropdown pos={comDD.pos} onClose={() => comDD.setOpen(false)} portalRef={comDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Баланс СОМ</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs mb-1">Мин</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minCOM} onChange={e => setMinCOM(e.target.value)} />
+              </div>
+              <div>
+                <div className="text-xs mb-1">Макс</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxCOM} onChange={e => setMaxCOM(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinCOM(""); setMaxCOM(""); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => comDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
+      {totalDD.open && (
+        <HeaderDropdown pos={totalDD.pos} onClose={() => totalDD.setOpen(false)} portalRef={totalDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Общий баланс</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs mb-1">Мин</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minTotal} onChange={e => setMinTotal(e.target.value)} />
+              </div>
+              <div>
+                <div className="text-xs mb-1">Макс</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxTotal} onChange={e => setMaxTotal(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => totalDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
+          </div>
+        </HeaderDropdown>
+      )}
+
       {dateDD.open && (
+
+      {comDD.open && (
+        <HeaderDropdown pos={comDD.pos} onClose={() => comDD.setOpen(false)} portalRef={comDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Баланс СОМ</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs mb-1">Мин</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minCOM} onChange={e => setMinCOM(e.target.value)} />
+              </div>
+              <div>
+                <div className="text-xs mb-1">Макс</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxCOM} onChange={e => setMaxCOM(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinCOM(""); setMaxCOM(""); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => comDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
+      {totalDD.open && (
+        <HeaderDropdown pos={totalDD.pos} onClose={() => totalDD.setOpen(false)} portalRef={totalDD.panelRef}>
+          <div className="header-dd p-2 w-[260px]">
+            <div className="text-sm mb-2 font-medium">Общий баланс</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="text-xs mb-1">Мин</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minTotal} onChange={e => setMinTotal(e.target.value)} />
+              </div>
+              <div>
+                <div className="text-xs mb-1">Макс</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxTotal} onChange={e => setMaxTotal(e.target.value)} />
+              </div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => totalDD.setOpen(false)}>Сохранить</button>
+            </div>
+          </div>
+        </HeaderDropdown>
+      )}
+
         <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-1 font-medium">Дата от</div>

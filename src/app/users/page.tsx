@@ -10,6 +10,9 @@ export default function UsersPage() {
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
@@ -32,8 +35,18 @@ export default function UsersPage() {
 
       <Modal open={openView} onClose={() => setOpenView(false)} title="Пользователь">
         {selected && (
-          <UserDetails user={selected} onClose={() => setOpenView(false)} />
+          <UserDetails user={selected} onClose={() => setOpenView(false)} onEdit={() => { setOpenView(false); setOpenEdit(true); }} onDelete={() => { setOpenView(false); setOpenDelete(true); }} />
         )}
+      </Modal>
+
+      <Modal open={openEdit} onClose={() => setOpenEdit(false)} title="Редактировать пользователя">
+        {selected && (
+          <EditUserForm user={selected} onCancel={() => setOpenEdit(false)} onSave={() => setOpenEdit(false)} />
+        )}
+      </Modal>
+
+      <Modal open={openDelete} onClose={() => setOpenDelete(false)} title="Удалить пользователя">
+        <DeleteUserConfirm user={selected} onCancel={() => setOpenDelete(false)} onDelete={() => setOpenDelete(false)} />
       </Modal>
     </div>
   );
@@ -48,7 +61,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function UserDetails({ user, onClose }: { user: User; onClose: () => void }) {
+function UserDetails({ user, onClose, onEdit, onDelete }: { user: User; onClose: () => void; onEdit: () => void; onDelete: () => void; }) {
   const total = user.balances.COM + user.balances.SALAM + user.balances.BTC + user.balances.ETH + user.balances.USDT;
   return (
     <div className="space-y-3 text-sm">
@@ -75,8 +88,10 @@ function UserDetails({ user, onClose }: { user: User; onClose: () => void }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 pt-6">
+      <div className="grid grid-cols-3 gap-2 pt-6">
         <button className="btn w-full h-9" onClick={onClose}>Закрыть</button>
+        <button className="btn btn-info w-full h-9" onClick={onEdit}>Редактировать</button>
+        <button className="btn btn-danger w-full h-9" onClick={onDelete}>Удалить</button>
       </div>
     </div>
   );
@@ -99,6 +114,67 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
           <input className="ui-input w-full" required placeholder="email@example.com" />
         </div>
         <div className="col-span-2">
+function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => void; }) {
+          <div className="text-sm mb-1">Статус</div>
+          <select className="ui-input">
+            <option>Активен</option>
+            <option>Заблокирован</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 pt-4">
+        <button type="button" className="btn btn-danger w-full h-9" onClick={onCancel}>Сбросить</button>
+        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+      </div>
+    </form>
+  );
+}
+
+  return (
+    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2">
+          <div className="text-sm mb-1">ФИО</div>
+          <input className="ui-input w-full" defaultValue={user.fullName} required placeholder="ФИО" />
+        </div>
+        <div>
+          <div className="text-sm mb-1">Телефон</div>
+          <input className="ui-input w-full" defaultValue={user.phone} required placeholder="+996 (...) ... ..." />
+        </div>
+        <div>
+          <div className="text-sm mb-1">E-mail</div>
+          <input className="ui-input w-full" defaultValue={user.email} required placeholder="email@example.com" />
+        </div>
+        <div className="col-span-2">
+          <div className="text-sm mb-1">Статус</div>
+          <select className="ui-input" defaultValue={user.status}>
+            <option>Активен</option>
+            <option>Заблокирован</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 pt-4">
+        <button type="button" className="btn w-full h-9" onClick={onCancel}>Отмена</button>
+        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+      </div>
+    </form>
+  );
+}
+
+function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; onCancel: () => void; onDelete: () => void; }) {
+  return (
+    <div className="space-y-4 text-sm">
+      <div>
+        Вы уверены, что хотите удалить пользователя «{user ? user.fullName : ""}»?
+      </div>
+      <div className="grid grid-cols-2 gap-2 pt-2">
+        <button className="btn w-full h-9" onClick={onCancel}>Отмена</button>
+        <button className="btn btn-danger w-full h-9" onClick={onDelete}>Удалить</button>
+      </div>
+    </div>
+  );
+}
+
           <div className="text-sm mb-1">Статус</div>
           <select className="ui-input">
             <option>Активен</option>
