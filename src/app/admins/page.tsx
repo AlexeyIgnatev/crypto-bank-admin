@@ -157,7 +157,3 @@ function DeleteAdminConfirm({ admin, onCancel, onDelete }: { admin: Admin | null
     </div>
   );
 }
-
-    </div>
-  );
-}
