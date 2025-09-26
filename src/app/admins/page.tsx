@@ -43,9 +43,7 @@ export default function AdminsPage() {
         <DeleteAdminConfirm admin={selected} onCancel={() => setOpenDelete(false)} onDelete={() => setOpenDelete(false)} />
       </Modal>
 
-          <AdminDetails admin={selected} onClose={() => setOpenView(false)} />
-        )}
-      </Modal>
+          
     </div>
   );
 }

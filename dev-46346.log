@@ -17,3 +17,49 @@
  ✓ Compiled in 142ms
  ✓ Compiled in 136ms
  ✓ Compiled in 142ms
+ ✓ Compiled /login in 354ms
+ GET /login?next=%2F 200 in 485ms
+ ⨯ ./src/app/admins/page.tsx:47:10
+Parsing ecmascript source code failed
+[0m [90m 45 |[39m
+ [90m 46 |[39m           [33m<[39m[33mAdminDetails[39m admin[33m=[39m{selected} onClose[33m=[39m{() [33m=>[39m setOpenView([36mfalse[39m)} [33m/[39m[33m>[39m
+[31m[1m>[22m[39m[90m 47 |[39m         )}
+ [90m    |[39m          [31m[1m^[22m[39m
+ [90m 48 |[39m       [33m<[39m[33m/[39m[33mModal[39m[33m>[39m
+ [90m 49 |[39m     [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 50 |[39m   )[33m;[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/app/admins/page.tsx [Client Component Browser]
+    ./src/app/admins/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/admins/page.tsx [Client Component SSR]
+    ./src/app/admins/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1218ms
+ GET /admins 500 in 1423ms
+ ✓ Compiled /favicon.ico in 148ms
+ GET /favicon.ico 500 in 192ms
+ GET /login?next=%2F 200 in 109ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 86ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 78ms
+ GET /login?next=%2F 200 in 93ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 98ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 85ms
+ ✓ Compiled in 140ms
