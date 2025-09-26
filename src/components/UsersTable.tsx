@@ -348,12 +348,10 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
       )}
 
       {dateDD.open && (
-
-      {comDD.open && (
-        <HeaderDropdown pos={comDD.pos} onClose={() => comDD.setOpen(false)} portalRef={comDD.panelRef}>
+        <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">Баланс СОМ</div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="text-sm mb-1 font-medium">Дата от</div>
+            <Flatpickr value={dateFrom ? new Date(dateFrom) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
               <div>
                 <div className="text-xs mb-1">Мин</div>
                 <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minCOM} onChange={e => setMinCOM(e.target.value)} />
@@ -393,6 +391,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
         </HeaderDropdown>
       )}
 
+      {dateDD.open && (
         <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-1 font-medium">Дата от</div>
