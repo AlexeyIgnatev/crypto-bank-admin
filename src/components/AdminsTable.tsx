@@ -154,19 +154,19 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
                   </button>
                 </div>
               </Th>
+              <Th>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Роль</span>
+                  <button ref={roleDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); roleDD.setOpen(o => !o); }}>
+                    <span className="chev">▾</span>
+                  </button>
+                </div>
+              </Th>
               <Th onClick={() => toggleSort("createdAt")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
                   <span className="px-1">Создано</span>
                   <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); dateDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
-                  </button>
-                </div>
-              </Th>
-              <Th>
-                <div className="flex items-center gap-1">
-                  <span className="px-1">Роль</span>
-                  <button ref={roleDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); roleDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
                   </button>
                 </div>

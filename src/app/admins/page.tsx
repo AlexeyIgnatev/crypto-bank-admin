@@ -15,13 +15,19 @@ export default function AdminsPage() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-      <div className="flex items-center justify-between">
-        <div className="text-xl font-semibold">Администраторы</div>
-        <button className="btn btn-success" onClick={() => setOpenCreate(true)}>Добавить администратора</button>
-      </div>
+
       <div className="min-h-0 flex-1 flex flex-col">
         <AdminsTable data={data} onOpen={(a) => { setSelected(a); setOpenView(true); }} />
       </div>
+
+      <button
+        className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-xl bg-[var(--primary)] text-white hover:opacity-90"
+        onClick={() => setOpenCreate(true)}
+        aria-label="Добавить администратора"
+        title="Добавить администратора"
+      >
+        +
+      </button>
 
       <Modal open={openCreate} onClose={() => setOpenCreate(false)} title="Создать администратора">
         <CreateAdminForm onCancel={() => setOpenCreate(false)} onSave={() => setOpenCreate(false)} />
