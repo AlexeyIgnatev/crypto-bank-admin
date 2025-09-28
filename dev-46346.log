@@ -686,3 +686,34 @@
  GET /favicon.ico 200 in 249ms
  GET /login?next=%2F 200 in 95ms
  GET /login?next=%2F 200 in 85ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 154ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |
+  51 |   return ( {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 599ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |
+  51 |   return ( {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 351ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 264ms
+ GET /favicon.ico 200 in 240ms

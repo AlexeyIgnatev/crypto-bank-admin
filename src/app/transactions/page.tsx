@@ -197,8 +197,6 @@ function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum"
   );
 }
 
-}
-
 // ------- Chart -------
 
 type BucketPoint = { label: string; ts: number; value: number };
