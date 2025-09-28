@@ -109,6 +109,10 @@ html.theme-switching textarea::placeholder {
 .btn-ghost { background: transparent; }
 .btn-success { background: var(--success); color:#fff; border-color: transparent; }
 .btn-success:hover { background: color-mix(in srgb, var(--success) 85%, black); }
+
+/* Neutral edit button consistent in light/dark */
+.btn-edit { background: color-mix(in srgb, var(--foreground) 8%, transparent); color: var(--foreground); border-color: var(--border-soft); }
+.btn-edit:hover { background: color-mix(in srgb, var(--foreground) 14%, transparent); }
 .btn-danger { background: var(--danger); color:#fff; border-color: transparent; }
 .btn-danger:hover { background: color-mix(in srgb, var(--danger) 85%, black); }
 
