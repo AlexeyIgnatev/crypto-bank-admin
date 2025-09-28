@@ -98,7 +98,23 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
   }, [filtered, sortKey, sortDir]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const [headerPadRight, setHeaderPadRight] = useState(0);
   useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => {
+      const pr = el.offsetWidth - el.clientWidth; // scrollbar width
+      setHeaderPadRight(pr > 0 ? pr : 0);
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    return () => { ro.disconnect(); window.removeEventListener('resize', update); };
+  }, [sorted.length]);
 
   const rowVirtualizer = useVirtualizer({ count: sorted.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8 });
 
@@ -109,7 +125,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
 
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm">
-      <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
+      <div ref={headerRef} className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)", paddingRight: headerPadRight }}>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -177,15 +193,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
                   </button>
                 </div>
               </Th>
-              <Th onClick={() => toggleSort("createdAt")}>
-                <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
-                  <span className="px-1">Создано</span>
-                  <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); dateDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
-                  </button>
-                </div>
-              </Th>
+
             </tr>
           </thead>
         </table>

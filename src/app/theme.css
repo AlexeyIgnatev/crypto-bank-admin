@@ -88,12 +88,24 @@ html.theme-switching textarea::placeholder {
 .badge-danger { color: var(--danger); background: var(--danger-bg); }
 
 /* Pills and segmented controls */
-.pill { display:inline-flex; gap:.5rem; align-items:center; padding:.375rem .75rem; border-radius:9999px; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); cursor:pointer; }
+.pill { display:inline-flex; gap:.5rem; align-items:center; padding:.375rem .75rem; border-radius:9999px; border:1px solid var(--border-soft); background:transparent; color:var(--foreground); cursor:pointer; min-height: 2rem; }
 .pill[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 15%, transparent); border-color: var(--primary); }
 .pill .dot { width:.5rem; height:.5rem; border-radius:50%; background: currentColor; opacity:.7; }
 
 .segment { display:inline-flex; border:1px solid var(--border-soft); border-radius:.75rem; overflow:hidden; }
 .segment button { padding:.5rem .75rem; background:transparent; color:var(--foreground); }
+.segment button:focus { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); border-radius:.5rem; }
+
+/* Status coloring helpers */
+.status-confirmed { color: var(--success); border-color: color-mix(in srgb, var(--success) 50%, var(--border-soft)); }
+.status-pending { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 50%, var(--border-soft)); }
+.status-declined { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 50%, var(--border-soft)); }
+.pill.status[aria-pressed="true"] { background: color-mix(in srgb, currentColor 16%, transparent); }
+
+/* Truncation helpers */
+.min-w-0 { min-width: 0; }
+.break-any { overflow-wrap:anywhere; word-break: break-word; }
+
 .segment button[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 15%, transparent); color: var(--foreground); }
 
 /* Icon chips */

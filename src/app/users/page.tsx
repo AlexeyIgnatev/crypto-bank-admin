@@ -4,6 +4,7 @@ import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import { User } from "../../types";
 import { generateUsers } from "../../lib/mockRepo";
+import UserDetailsCard from "../../components/UserDetails";
 
 export default function UsersPage() {
   const data = useMemo(() => generateUsers(400), []);
@@ -34,7 +35,7 @@ export default function UsersPage() {
 
       <Modal open={openView} onClose={() => setOpenView(false)} title="Пользователь">
         {selected && (
-          <UserDetails user={selected} onClose={() => setOpenView(false)} onEdit={() => { setOpenView(false); setOpenEdit(true); }} onDelete={() => { setOpenView(false); setOpenDelete(true); }} />
+          <UserDetailsCard user={selected} onClose={() => setOpenView(false)} onEdit={() => { setOpenView(false); setOpenEdit(true); }} onDelete={() => { setOpenView(false); setOpenDelete(true); }} />
         )}
       </Modal>
 

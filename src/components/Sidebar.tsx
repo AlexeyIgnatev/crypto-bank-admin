@@ -53,7 +53,7 @@ export default function Sidebar() {
                 title={it.label}
               >
                 <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
-                {open && <span>{it.label}</span>}
+                {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}
               </div>
             </Link>
           );

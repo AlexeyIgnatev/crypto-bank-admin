@@ -119,29 +119,96 @@ export default function TransactionsAnalytics() {
   const insights = useMemo(() => buildInsights(filtered), [filtered]);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden w-full">
       <div className="card border border-soft rounded-xl p-3">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           <DateRange from={dateFrom} to={dateTo} onFrom={setDateFrom} onTo={setDateTo} />
 
           <Field label="Статус">
-            <MultiChips
-              options={[
-                { key: "confirmed", label: "Подтверждено" },
-                { key: "pending", label: "В ожидании" },
-                { key: "declined", label: "Отклонено" },
-              ]}
-              selected={statuses as unknown as Set<string>}
-              onToggle={(k) => toggleSet(setStatuses, k as TransactionStatus)}
-            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "confirmed", label: "Подтверждено", cls: "status-confirmed" },
+                { key: "pending", label: "В ожидании", cls: "status-pending" },
+                { key: "declined", label: "Отклонено", cls: "status-declined" },
+              ].map(opt => (
+                <button key={opt.key}
+                  className={`pill status ${opt.cls}`}
+                  aria-pressed={(statuses as unknown as Set<string>).has(opt.key)}
+                  onClick={() => toggleSet(setStatuses, opt.key as TransactionStatus)}
+                >
+                  <span className="dot" />{opt.label}
+                </button>
+              ))}
+            </div>
           </Field>
 
           <Field label="Валюты">
-            <MultiChips options={currencyOptions as any} selected={currencies} onToggle={(k) => toggleSet(setCurrencies, k)} />
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { key: "COM", label: "СОМ", icon: "som" },
+                  { key: "SALAM", label: "САЛАМ", icon: "som" },
+                  { key: "BTC", label: "BTC", icon: "btc" },
+                  { key: "ETH", label: "ETH", icon: "eth" },
+                  { key: "USDT", label: "USDT", icon: "usdt" },
+                ] as {key:string; label:string; icon: "som"|"btc"|"eth"|"usdt"}[]
+              ).map(opt => (
+                <button key={opt.key} className="chip" aria-pressed={currencies.has(opt.key)} onClick={() => toggleSet(setCurrencies, opt.key)}>
+                  <span className="icon" aria-hidden>
+                    {opt.icon === "som" ? (
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="M8 12h8M12 7v10" />
+                      </svg>
+                    ) : opt.icon === "btc" ? (
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" fill="#F7931A" />
+                        <text x="12" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#fff">₿</text>
+                      </svg>
+                    ) : opt.icon === "eth" ? (
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <defs>
+                          <linearGradient id="ethg" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stopColor="#627EEA" />
+                            <stop offset="100%" stopColor="#4C6EF5" />
+                          </linearGradient>
+                        </defs>
+                        <polygon points="12,2 19,12 12,16 5,12" fill="url(#ethg)" />
+                        <polygon points="12,22 19,14 12,18 5,14" fill="#6C8CFF" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" fill="#26A17B" />
+                        <rect x="7" y="10.5" width="10" height="2" rx="1" fill="#fff" />
+                        <rect x="11" y="6" width="2" height="8" rx="1" fill="#fff" />
+                      </svg>
+                    )}
+                  </span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
           </Field>
 
           <Field label="Тип операции">
-            <MultiChips options={operationOptions as any} selected={operations as unknown as Set<string>} onToggle={(k) => toggleSet(setOperations, k as OperationType)} />
+            <div className="flex flex-wrap gap-2">
+              {([
+                { key: "bank", label: "Банк (СОМ/САЛАМ)", svg: (
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10l9-6 9 6"/><path d="M9 22V12h6v10"/><path d="M21 22H3"/></svg>
+                ) },
+                { key: "crypto", label: "Крипто", svg: (
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 2l9 5v10l-9 5-9-5V7l9-5zm0 3.2L6 8v8l6 3.2 6-3.2V8l-6-2.8z"/></svg>
+                ) },
+                { key: "exchange", label: "Обмен", svg: (
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h11l-3-3"/><path d="M20 17H9l3 3"/></svg>
+                ) },
+              ] as {key: OperationType; label: string; svg: JSX.Element}[]).map(opt => (
+                <button key={opt.key} className="chip" aria-pressed={operations.has(opt.key)} onClick={() => toggleSet(setOperations, opt.key)}>
+                  <span className="icon" aria-hidden>{opt.svg}</span>
+                  <span>{opt.label}</span>
+                </button>
+              ))}
+            </div>
           </Field>
 
           <Field label="Метрика">
@@ -153,8 +220,8 @@ export default function TransactionsAnalytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-0">
-        <div className="lg:col-span-4 card border border-soft rounded-xl p-4 flex flex-col min-h-[460px]">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-0 flex-1">
+        <div className="lg:col-span-4 card border border-soft rounded-xl p-3 flex flex-col min-h-[460px]">
           <div className="flex items-center justify-between mb-3">
             <div className="text-lg font-semibold">Статистика</div>
             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
@@ -163,14 +230,14 @@ export default function TransactionsAnalytics() {
             <InteractiveChart data={buckets} metric={metric} />
           </div>
         </div>
-        <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+        <div className="lg:col-span-1 card border border-soft rounded-xl p-3 space-y-3">
           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
           <Stat label="Общее количество" value={filtered.length.toLocaleString()} />
           <div className="grid grid-cols-2 gap-3">
             <Stat label="Топ валюта по сумме" value={`${insights.topCurrencyBySum.label}`} />
             <Stat label="Топ валюта по количеству" value={`${insights.topCurrencyByCount.label}`} />
             <Stat label="Наиболее активный день" value={`${insights.topDay.label}`} />
-            <Stat label="Средний чек" value={`${insights.avgAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} />
+            <Stat label="Средний чек" value={`${Math.round(insights.avgAmount).toLocaleString()}`} />
           </div>
         </div>
       </div>
@@ -240,9 +307,9 @@ function Segment<T extends string>({ value, onChange, options }: { value: T; onC
 
 function Stat({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
-    <div className="p-3 rounded-xl border border-soft">
-      <div className="text-xs text-muted mb-1">{label}</div>
-      <div className="text-2xl font-semibold">
+    <div className="p-2 rounded-xl border border-soft">
+      <div className="text-[11px] text-muted mb-1 leading-none">{label}</div>
+      <div className="text-xl font-semibold break-any leading-tight">
         {value}
         {suffix ? ` ${suffix}` : ""}
       </div>
@@ -255,9 +322,25 @@ type BucketPoint = { label: string; ts: number; value: number };
 
 function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum" | "count" }) {
   const yLabel = metric === "sum" ? "Сумма" : "Кол-во";
+
+  // Compact for big sums; integers for count. This stabilizes widths.
+  const useCompact = metric === "sum";
+  const fmt = (v: number) =>
+    useCompact
+      ? new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(v)
+      : new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(v);
+
+  // Dynamic Y-axis width from the widest formatted value
+  const maxV = data.length ? Math.max(...data.map((p) => p.value)) : 0;
+  const yAxisWidth = Math.min(120, Math.max(40, fmt(maxV).length * 8 + 16));
+
+  const chartMargins = { top: 8, right: 16, bottom: 32, left: 16 } as const;
+  // Вернул позиционирование подписи "Дата" как было
+  const xLabelOffset = -6;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <RCAreaChart data={data} margin={{ top: 10, right: 16, bottom: 28, left: 8 }}>
+      <RCAreaChart data={data} margin={chartMargins}>
         <defs>
           <linearGradient id="rcGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
@@ -265,19 +348,42 @@ function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum"
           </linearGradient>
         </defs>
         <CartesianGrid stroke="var(--border-soft)" vertical={false} />
-        <XAxis dataKey="label" tickMargin={8} stroke="var(--muted)" label={{ value: "Дата", position: "insideBottomRight", offset: -18, fill: "var(--muted)" }} />
-        <YAxis
+        <XAxis
+          dataKey="label"
           tickMargin={8}
           stroke="var(--muted)"
-          width={64}
-          tickFormatter={(v) => (metric === "sum" ? Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 }) : v)}
-          label={{ value: yLabel, angle: -90, position: "insideLeft", offset: 10, fill: "var(--muted)" }}
+          interval="preserveStartEnd"
+          minTickGap={36}
+          label={{ value: "Дата", position: "insideBottom", offset: xLabelOffset, fill: "var(--muted)" }}
         />
-        <Tooltip formatter={(v: any) => (metric === "sum" ? Number(v).toLocaleString(undefined, { minimumFractionDigits: 2 }) : v)} labelClassName="text-sm" />
-        <Legend />
+        <YAxis
+          tickMargin={6}
+          stroke="var(--muted)"
+          width={yAxisWidth}
+          interval="preserveStartEnd"
+          tickFormatter={(v) => fmt(Number(v))}
+          label={{ value: yLabel, angle: -90, position: "insideLeft", offset: -4, fill: "var(--muted)" }}
+        />
+        <Tooltip content={<ChartTooltip labelKey={yLabel} fmt={fmt} />} />
+        {/* Legend is not needed for single series */}
         <Area type="monotone" dataKey="value" name={yLabel} stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} fill="url(#rcGrad)" />
       </RCAreaChart>
     </ResponsiveContainer>
+  );
+}
+
+function ChartTooltip({ active, payload, label, labelKey, fmt }: any) {
+  if (!active || !payload || !payload.length) return null;
+  const v = payload[0].value as number;
+  return (
+    <div style={{ background: "var(--card)", color: "var(--foreground)", border: "1px solid var(--border-soft)", borderRadius: 8, padding: "8px 10px", boxShadow: "0 4px 14px rgba(0,0,0,.08)", minWidth: 160, whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: 12, opacity: .7, marginBottom: 4 }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ width: 10, height: 10, background: "var(--primary)", borderRadius: 999 }} />
+        <span style={{ fontSize: 12, opacity: .8 }}>{labelKey}:</span>
+        <strong style={{ fontSize: 14, fontVariantNumeric: 'tabular-nums' }}>{fmt(v)}</strong>
+      </div>
+    </div>
   );
 }
 
