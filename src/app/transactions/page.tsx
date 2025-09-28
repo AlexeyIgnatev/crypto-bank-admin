@@ -5,6 +5,7 @@ import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { Transaction, TransactionStatus, Filters, OperationType } from "@/types";
 import { applyFilters, generateTransactions } from "@/lib/mockRepo";
+import { ResponsiveContainer, AreaChart as RCAreaChart, Area, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from "recharts";
 
 const currencyOptions = [
   { key: "COM", label: "СОМ" },
@@ -92,12 +93,12 @@ export default function TransactionsAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-4 card border border-soft rounded-xl p-4">
+        <div className="lg:col-span-4 card border border-soft rounded-xl p-4 min-h-[420px]">
           <div className="flex items-center justify-between mb-3">
             <div className="text-lg font-semibold">Статистика</div>
             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
           </div>
-          <AreaChart data={buckets} metric={metric} />
+          <InteractiveChart data={buckets} metric={metric} />
         </div>
         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" />
@@ -171,6 +172,31 @@ function Stat({ label, value, suffix }: { label: string; value: string; suffix?:
       <div className="text-2xl font-semibold">{value}{suffix ? ` ${suffix}` : ""}</div>
     </div>
   );
+
+function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum" | "count" }) {
+  const yLabel = metric === "sum" ? "Сумма" : "Кол-во";
+  return (
+    <div className="w-full h-[340px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <RCAreaChart data={data} margin={{ top: 10, right: 16, bottom: 24, left: 0 }}>
+          <defs>
+            <linearGradient id="rcGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--border-soft)" vertical={false} />
+          <XAxis dataKey="label" tickMargin={8} stroke="var(--muted)" />
+          <YAxis tickMargin={8} stroke="var(--muted)" width={60} tickFormatter={(v) => metric === 'sum' ? Number(v).toLocaleString() : v} />
+          <Tooltip formatter={(v: any) => metric === 'sum' ? Number(v).toLocaleString(undefined,{minimumFractionDigits:2}) : v} labelClassName="text-sm" />
+          <Legend />
+          <Area type="monotone" dataKey="value" name={yLabel} stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} fill="url(#rcGrad)" />
+        </RCAreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 }
 
 // ------- Chart -------

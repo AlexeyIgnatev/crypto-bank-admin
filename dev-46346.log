@@ -541,3 +541,148 @@
  GET / 200 in 130ms
  GET /login?next=%2F 200 in 103ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 305ms
+ GET /login 200 in 95ms
+ POST /api/login 200 in 294ms
+ GET / 200 in 74ms
+ ✓ Compiled /transactions in 251ms
+ GET /transactions 200 in 354ms
+ GET /login?next=%2F 200 in 87ms
+ GET / 200 in 114ms
+ GET /login?next=%2F 200 in 118ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 254ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 75ms
+ GET /transactions 200 in 57ms
+ GET /login?next=%2F 200 in 103ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 86ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 89ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 91ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 75ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 69ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 78ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 91ms
+ GET /login?next=%2F 200 in 88ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 89ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 98ms
+ GET / 200 in 127ms
+ GET /login?next=%2F 200 in 111ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 255ms
+ GET /login?next=%2F 200 in 111ms
+ GET /login?next=%2F 200 in 73ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 105ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 97ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 93ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 76ms
+ GET /login?next=%2F 200 in 89ms
+ GET /login?next=%2F 200 in 92ms
+ GET /login?next=%2F 200 in 106ms
+ GET / 200 in 102ms
+ GET /login?next=%2F 200 in 128ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 251ms
+ GET /login?next=%2F 200 in 100ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 98ms
+ GET /login?next=%2F 200 in 78ms
+ GET /login?next=%2F 200 in 139ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 105ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 93ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 93ms
+ ✓ Compiled in 142ms
+ ✓ Compiled in 150ms
+ GET /login?next=%2F 200 in 102ms
+ GET / 200 in 123ms
+ GET /login?next=%2F 200 in 147ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 298ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 438ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:101:12)
+   99 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  100 |           </div>
+> 101 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  102 |         </div>
+  103 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  104 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '1705264108'
+}
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:101:12)
+   99 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  100 |           </div>
+> 101 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  102 |         </div>
+  103 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  104 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '1705264108'
+}
+ GET /transactions 500 in 911ms
+ GET /transactions 500 in 916ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 253ms
+ GET /favicon.ico 200 in 249ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 85ms
