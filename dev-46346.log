@@ -333,3 +333,18 @@
  GET /rates 200 in 367ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 251ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
+ GET /login?next=%2F 200 in 72ms
+ GET / 200 in 106ms
+ GET /login?next=%2F 200 in 134ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 284ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 96ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 95ms
+ GET /login?next=%2F 200 in 94ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 83ms
+ ✓ Compiled in 139ms

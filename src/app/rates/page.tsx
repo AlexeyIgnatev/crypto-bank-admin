@@ -52,7 +52,7 @@ export default function RatesPage() {
             </header>
             <div className="p-4 space-y-3">
               <SettingRow label="Курс САЛАМ за 1 USD" value={`${fmt2(settings.esom_per_usd)} САЛАМ`} onEdit={() => openEdit("esom_per_usd", "Курс САЛАМ за 1 USD", { step: "0.01" })} />
-              <SettingRow label="Конвертация SOM ↔ САЛАМ" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию SOM ↔ САЛАМ (%)", { suffix: "%", step: "0.01" })} />
+              <SettingRow label="Конвертация СОМ ↔ САЛАМ" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию СОМ ↔ САЛАМ (%)", { suffix: "%", step: "0.01" })} />
               <div className="pt-2 text-sm font-medium text-muted">Торговля</div>
               <SettingRow label="BTC торговая комиссия" value={`${fmtPct(settings.btc_trade_fee_pct)}`} onEdit={() => openEdit("btc_trade_fee_pct", "BTC торговая комиссия (%)", { suffix: "%", step: "0.01" })} />
               <SettingRow label="ETH торговая комиссия" value={`${fmtPct(settings.eth_trade_fee_pct)}`} onEdit={() => openEdit("eth_trade_fee_pct", "ETH торговая комиссия (%)", { suffix: "%", step: "0.01" })} />
