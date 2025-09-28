@@ -885,3 +885,285 @@
  GET /transactions 500 in 775ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 270ms
  GET /favicon.ico 200 in 242ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  51 | {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 419ms
+ GET /login?next=%2F 200 in 91ms
+ GET / 200 in 114ms
+ GET /login?next=%2F 200 in 117ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 249ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  51 | {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 387ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 275ms
+ GET /favicon.ico 200 in 240ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 85ms
+ GET /login?next=%2F 200 in 94ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 146ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]); // eslint-disable-line @typescript-eslint/no-use-before-define
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  51 | {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 711ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:48:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:48:26)
+  46 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  47 |
+> 48 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]); // eslint-disable-line @typescript-eslint/no-use-before-define
+     |                                 ^
+  49 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  50 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  51 | {
+  digest: '2053770384'
+}
+ GET /transactions 500 in 329ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 252ms
+ GET /favicon.ico 200 in 241ms
+ GET /login?next=%2F 200 in 113ms
+ GET / 200 in 132ms
+ GET /login?next=%2F 200 in 167ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 319ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 140ms
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:70:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:70:26)
+  68 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  69 |
+> 70 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]); // eslint-disable-line @typescript-eslint/no-use-before-define
+     |                                 ^
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  73 | {
+  digest: '932504250'
+}
+ ⨯ ReferenceError: bucketize is not defined
+    at <unknown> (src/app/transactions/page.tsx:70:33)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:70:26)
+  68 |   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  69 |
+> 70 |   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]); // eslint-disable-line @typescript-eslint/no-use-before-define
+     |                                 ^
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  73 | {
+  digest: '932504250'
+}
+ GET /transactions 500 in 822ms
+ GET /transactions 500 in 824ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 249ms
+ GET /favicon.ico 200 in 238ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 135ms
+ ⨯ ReferenceError: buildInsights is not defined
+    at <unknown> (src/app/transactions/page.tsx:72:34)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:72:27)
+  70 |   const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+> 72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+     |                                  ^
+  73 |
+  74 |   return (
+  75 |     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden"> {
+  digest: '4142874433'
+}
+ ⨯ ReferenceError: buildInsights is not defined
+    at <unknown> (src/app/transactions/page.tsx:72:34)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:72:27)
+  70 |   const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+> 72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+     |                                  ^
+  73 |
+  74 |   return (
+  75 |     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden"> {
+  digest: '4142874433'
+}
+ GET /transactions 500 in 695ms
+ GET /transactions 500 in 699ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 256ms
+ GET /favicon.ico 200 in 243ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 132ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:124:12)
+  122 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  123 |           </div>
+> 124 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  125 |         </div>
+  126 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  127 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '2808986630'
+}
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:124:12)
+  122 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  123 |           </div>
+> 124 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  125 |         </div>
+  126 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  127 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '2808986630'
+}
+ GET /transactions 500 in 363ms
+ GET /transactions 500 in 368ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 247ms
+ GET /favicon.ico 200 in 241ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 147ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:124:12)
+  122 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  123 |           </div>
+> 124 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  125 |         </div>
+  126 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  127 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '2808986630'
+}
+ GET /transactions 500 in 295ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:124:12)
+  122 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  123 |           </div>
+> 124 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  125 |         </div>
+  126 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  127 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '2808986630'
+}
+ GET /transactions 500 in 138ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 248ms
+ GET /favicon.ico 200 in 248ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 138ms
+ ⨯ ReferenceError: buildInsights is not defined
+    at <unknown> (src/app/transactions/page.tsx:72:34)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:72:27)
+  70 |   const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+> 72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+     |                                  ^
+  73 |
+  74 |   return (
+  75 |     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden"> {
+  digest: '4142874433'
+}
+ ⨯ ReferenceError: buildInsights is not defined
+    at <unknown> (src/app/transactions/page.tsx:72:34)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:72:27)
+  70 |   const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+> 72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+     |                                  ^
+  73 |
+  74 |   return (
+  75 |     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden"> {
+  digest: '4142874433'
+}
+ GET /transactions 500 in 816ms
+ GET /transactions 500 in 820ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 271ms
+ GET /favicon.ico 200 in 240ms
+ ⨯ ReferenceError: buildInsights is not defined
+    at <unknown> (src/app/transactions/page.tsx:72:34)
+    at TransactionsAnalytics (src/app/transactions/page.tsx:72:27)
+  70 |   const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
+  71 |   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+> 72 |   const insights = useMemo(() => buildInsights(filtered), [filtered]);
+     |                                  ^
+  73 |
+  74 |   return (
+  75 |     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden"> {
+  digest: '4142874433'
+}
+ GET /transactions 500 in 267ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 141ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:147:12)
+  145 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  146 |           </div>
+> 147 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  148 |         </div>
+  149 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  150 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '3990882306'
+}
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:147:12)
+  145 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  146 |           </div>
+> 147 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  148 |         </div>
+  149 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  150 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '3990882306'
+}
+ GET /transactions 500 in 455ms
+ GET /transactions 500 in 452ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 262ms
+ GET /favicon.ico 200 in 239ms
+ ⨯ ReferenceError: InteractiveChart is not defined
+    at TransactionsAnalytics (src/app/transactions/page.tsx:147:12)
+  145 |             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
+  146 |           </div>
+> 147 |           <InteractiveChart data={buckets} metric={metric} />
+      |            ^
+  148 |         </div>
+  149 |         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
+  150 |           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" /> {
+  digest: '3990882306'
+}
+ GET /transactions 500 in 116ms
+ ✓ Compiled in 151ms
+ GET /login?next=%2F 200 in 105ms
+ GET / 200 in 133ms
+ GET /login?next=%2F 200 in 127ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 51ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 50ms
+ GET /login?next=%2F 200 in 91ms

@@ -20,6 +20,51 @@ const operationOptions: { key: OperationType; label: string }[] = [
   { key: "crypto", label: "Крипто" },
   { key: "exchange", label: "Обмен" },
 ];
+function buildInsights(data: Transaction[]) {
+  const byCurrency = new Map<string, { sum: number; count: number }>();
+  const byDay = new Map<string, { label: string; count: number }>();
+  let sum = 0;
+  for (const t of data) {
+    sum += t.amount;
+    const c = byCurrency.get(t.currency) || { sum: 0, count: 0 };
+    c.sum += t.amount; c.count += 1; byCurrency.set(t.currency, c);
+    const day = new Date(t.createdAt).toISOString().slice(0,10);
+    const d = byDay.get(day) || { label: day.split('-').reverse().join('.'), count: 0 };
+    d.count += 1; byDay.set(day, d);
+  }
+  const topCurrencyBySumKey = Array.from(byCurrency.entries()).sort((a,b)=>b[1].sum-a[1].sum)[0]?.[0] || "—";
+  const topCurrencyByCountKey = Array.from(byCurrency.entries()).sort((a,b)=>b[1].count-a[1].count)[0]?.[0] || "—";
+  const topDay = Array.from(byDay.values()).sort((a,b)=>b.count-a.count)[0] || { label:"—", count:0 };
+  return {
+    avgAmount: data.length ? sum / data.length : 0,
+    topCurrencyBySum: { key: topCurrencyBySumKey, label: (currencyOptions as any).find((x:any)=>x.key===topCurrencyBySumKey)?.label || topCurrencyBySumKey },
+    topCurrencyByCount: { key: topCurrencyByCountKey, label: (currencyOptions as any).find((x:any)=>x.key===topCurrencyByCountKey)?.label || topCurrencyByCountKey },
+    topDay,
+  };
+}
+
+
+// Local bucketing helper placed before component to avoid hoisting issues
+function mkBuckets(data: Transaction[], mode: "day"|"week"|"month", metric: "sum"|"count") {
+  if (!data.length) return [] as {label:string;ts:number;value:number}[];
+  const norm = data.slice().sort((a,b) => +new Date(a.createdAt) - +new Date(b.createdAt));
+  const map = new Map<string, { label: string; ts: number; value: number }>();
+  for (const t of norm) {
+    const d = new Date(t.createdAt);
+    const key = mode === "day"
+      ? d.toISOString().slice(0,10)
+      : mode === "week"
+        ? (() => { const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const dayNum = (dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-dayNum); const jan4 = new Date(Date.UTC(dt.getUTCFullYear(),0,4)); const week = 1 + Math.round(((dt.getTime()-jan4.getTime())/86400000-3)/7); return `${dt.getUTCFullYear()}-W${String(week).padStart(2,'0')}`; })()
+        : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const ts = mode === "day" ? new Date(key).getTime() : mode === "week" ? (()=>{ const wd=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const n=(wd.getUTCDay()+6)%7; wd.setUTCDate(wd.getUTCDate()-n); return wd.getTime(); })() : new Date(`${key}-01T00:00:00Z`).getTime();
+    const label = mode === "day" ? key.split('-').reverse().join('.') : mode === "week" ? `Неделя ${key.split('-W')[1]} ${key.slice(0,4)}` : `${key.split('-')[1]}.${key.split('-')[0]}`;
+    const bp = map.get(key) || { label, ts, value: 0 };
+    bp.value += (metric === "sum" ? t.amount : 1);
+    map.set(key, bp);
+  }
+  return Array.from(map.values()).sort((a,b)=>a.ts-b.ts);
+}
+
 
 export default function TransactionsAnalytics() {
   const data = useMemo(() => generateTransactions(500), []);
@@ -45,7 +90,7 @@ export default function TransactionsAnalytics() {
     return applyFilters(data, f);
   }, [data, dateFrom, dateTo, statuses, currencies, operations]);
 
-  const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
+  const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
   const insights = useMemo(() => buildInsights(filtered), [filtered]);
 
@@ -136,6 +181,30 @@ function DateRange({ from, to, onFrom, onTo }: { from?: string; to?: string; onF
           value={from ? new Date(from) : null}
           options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }}
           onChange={([d]) => onFrom(d ? new Date(d).toISOString() : undefined)}
+function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum" | "count" }) {
+  const yLabel = metric === "sum" ? "Сумма" : "Кол-во";
+  return (
+    <div className="w-full h-[340px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <RCAreaChart data={data} margin={{ top: 10, right: 16, bottom: 24, left: 0 }}>
+          <defs>
+            <linearGradient id="rcGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--border-soft)" vertical={false} />
+          <XAxis dataKey="label" tickMargin={8} stroke="var(--muted)" />
+          <YAxis tickMargin={8} stroke="var(--muted)" width={60} tickFormatter={(v) => metric === 'sum' ? Number(v).toLocaleString() : v} />
+          <Tooltip formatter={(v: any) => metric === 'sum' ? Number(v).toLocaleString(undefined,{minimumFractionDigits:2}) : v} labelClassName="text-sm" />
+          <Legend />
+          <Area type="monotone" dataKey="value" name={yLabel} stroke="var(--primary)" strokeWidth={2} dot={{ r: 3 }} fill="url(#rcGrad)" />
+        </RCAreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
         />
       </div>
       <div>
@@ -209,86 +278,6 @@ function InteractiveChart({ data, metric }: { data: BucketPoint[]; metric: "sum"
 
 type BucketPoint = { label: string; ts: number; value: number };
 
-function AreaChart({ data, metric }: { data: BucketPoint[]; metric: "sum" | "count" }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [w, setW] = useState(600);
-  const h = 320;
-  const pad = { l: 36, r: 20, t: 16, b: 28 };
-
-  useEffect(() => {
-    const ro = new ResizeObserver(entries => {
-      for (const e of entries) setW(Math.max(300, Math.floor(e.contentRect.width)));
-    });
-    if (ref.current) ro.observe(ref.current);
-    return () => ro.disconnect();
-  }, []);
-
-  const maxV = Math.max(1, ...data.map(d => d.value));
-  const minTs = data.length ? data[0].ts : 0;
-  const maxTs = data.length ? data[data.length-1].ts : 1;
-
-  const X = (ts: number) => pad.l + (w - pad.l - pad.r) * ((ts - minTs) / Math.max(1, maxTs - minTs));
-  const Y = (v: number) => h - pad.b - (h - pad.t - pad.b) * (v / maxV);
-
-  let path = "";
-  data.forEach((p, i) => {
-    const x = X(p.ts), y = Y(p.value);
-    path += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
-  });
-  // area
-  let area = path;
-  if (data.length) {
-    const lastX = X(data[data.length-1].ts);
-    area += ` L ${lastX} ${Y(0)} L ${X(data[0].ts)} ${Y(0)} Z`;
-  }
-
-  return (
-    <div ref={ref} style={{ width: "100%" }}>
-      <svg width={w} height={h}>
-        {/* grid */}
-        {Array.from({length:4}).map((_,i) => {
-          const yy = pad.t + (h - pad.t - pad.b) * (i/4);
-          return <line key={i} x1={pad.l} y1={yy} x2={w-pad.r} y2={yy} stroke="var(--border-soft)" strokeWidth={1} />
-        })}
-        {/* axes */}
-        <line x1={pad.l} y1={h-pad.b} x2={w-pad.r} y2={h-pad.b} stroke="var(--border-soft)" />
-        <line x1={pad.l} y1={pad.t} x2={pad.l} y2={h-pad.b} stroke="var(--border-soft)" />
-
-        {/* area fill */}
-        <path d={area} fill="url(#grad)" opacity={0.4} />
-        {/* line */}
-        <path d={path} fill="none" stroke="var(--primary)" strokeWidth={2} />
-
-        {/* points */}
-        {data.map((p,i) => (
-          <circle key={i} cx={X(p.ts)} cy={Y(p.value)} r={3} fill="var(--primary)" />
-        ))}
-
-        <defs>
-          <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.05} />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-}
-
-function bucketize(data: Transaction[], mode: "day"|"week"|"month", metric: "sum"|"count"): BucketPoint[] {
-  if (!data.length) return [];
-  const norm = data.slice().sort((a,b) => +new Date(a.createdAt) - +new Date(b.createdAt));
-  const map = new Map<string, BucketPoint>();
-  for (const t of norm) {
-    const d = new Date(t.createdAt);
-    const key = mode === "day" ? d.toISOString().slice(0,10) : mode === "week" ? yearWeek(d) : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const ts = mode === "day" ? new Date(key).getTime() : mode === "week" ? weekStartTs(d) : new Date(`${key}-01T00:00:00Z`).getTime();
-    const bp = map.get(key) || { label: keyLabel(key, mode), ts, value: 0 };
-    bp.value += (metric === "sum" ? t.amount : 1);
-    map.set(key, bp);
-  }
-  return Array.from(map.values()).sort((a,b) => a.ts - b.ts);
-}
 
 function keyLabel(key: string, mode: "day"|"week"|"month") {
   if (mode === "day") return key.split("-").reverse().join(".");
