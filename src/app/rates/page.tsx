@@ -18,7 +18,7 @@ type Settings = {
 
 export default function RatesPage() {
   const [settings, setSettings] = useState<Settings>({
-    esom_per_usd: "1.000000000000000000",
+    esom_per_usd: "1.00",
     esom_som_conversion_fee_pct: "0.50",
     btc_trade_fee_pct: "0.20",
     eth_trade_fee_pct: "0.20",
@@ -51,8 +51,8 @@ export default function RatesPage() {
               <div className="text-lg font-semibold">Комиссии (в процентах)</div>
             </header>
             <div className="p-4 space-y-3">
-              <SettingRow label="Курс eSOM за 1 USD" value={`${fmt(settings.esom_per_usd)} eSOM`} onEdit={() => openEdit("esom_per_usd", "Курс eSOM за 1 USD", { step: "0.000000000000000001" })} />
-              <SettingRow label="Конвертация SOM ↔ eSOM" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию SOM ↔ eSOM (%)", { suffix: "%", step: "0.01" })} />
+              <SettingRow label="Курс САЛАМ за 1 USD" value={`${fmt2(settings.esom_per_usd)} САЛАМ`} onEdit={() => openEdit("esom_per_usd", "Курс САЛАМ за 1 USD", { step: "0.01" })} />
+              <SettingRow label="Конвертация SOM ↔ САЛАМ" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию SOM ↔ САЛАМ (%)", { suffix: "%", step: "0.01" })} />
               <div className="pt-2 text-sm font-medium text-muted">Торговля</div>
               <SettingRow label="BTC торговая комиссия" value={`${fmtPct(settings.btc_trade_fee_pct)}`} onEdit={() => openEdit("btc_trade_fee_pct", "BTC торговая комиссия (%)", { suffix: "%", step: "0.01" })} />
               <SettingRow label="ETH торговая комиссия" value={`${fmtPct(settings.eth_trade_fee_pct)}`} onEdit={() => openEdit("eth_trade_fee_pct", "ETH торговая комиссия (%)", { suffix: "%", step: "0.01" })} />
@@ -146,5 +146,6 @@ function EditModal({ open, onClose, onSave, title, value, suffix, step, fieldKey
 }
 
 function fmt(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return n.toLocaleString(); } catch {} return x; }
+function fmt2(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch {} return x; }
 function fmtPct(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return `${n.toLocaleString()}%`; } catch {} return `${x}%`; }
 function sanitizeNumber(x: string) { return x.replace(/[^0-9.,-]/g, "").replace(",", "."); }

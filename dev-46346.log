@@ -288,3 +288,48 @@
  GET /login?next=%2F 200 in 120ms
  GET /favicon.ico?favicon.0b3bf435.ico 200 in 258ms
  GET /login?next=%2F 200 in 91ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 106ms
+ GET /login?next=%2F 200 in 101ms
+ GET /login?next=%2F 200 in 79ms
+ GET /login?next=%2F 200 in 109ms
+ GET /login?next=%2F 200 in 91ms
+ GET /login?next=%2F 200 in 104ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 99ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 74ms
+ GET /login?next=%2F 200 in 83ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 72ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 84ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 82ms
+ GET /login?next=%2F 200 in 87ms
+ GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 90ms
+ GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 79ms
+ GET / 200 in 115ms
+ GET /login?next=%2F 200 in 98ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 256ms
+ GET /login?next=%2F 200 in 85ms
+ GET /rates 200 in 102ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 246ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
+ ✓ Compiled in 140ms
+ ✓ Compiled in 138ms
+ GET /login?next=%2F 200 in 100ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 145ms
+ GET /rates 200 in 364ms
+ GET /rates 200 in 367ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 251ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
