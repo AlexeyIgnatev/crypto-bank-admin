@@ -47,6 +47,7 @@ export default function TransactionsAnalytics() {
 
   const buckets = useMemo(() => bucketize(filtered, bucket, metric), [filtered, bucket, metric]);
   const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
+  const insights = useMemo(() => buildInsights(filtered), [filtered]);
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
@@ -103,6 +104,13 @@ export default function TransactionsAnalytics() {
         <div className="lg:col-span-1 card border border-soft rounded-xl p-4 space-y-3">
           <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined,{minimumFractionDigits:2})} suffix="" />
           <Stat label="Общее количество" value={filtered.length.toLocaleString()} />
+          <div className="grid grid-cols-2 gap-3">
+            <Stat label="Топ валюта по сумме" value={`${insights.topCurrencyBySum.label}`} />
+            <Stat label="Топ валюта по количеству" value={`${insights.topCurrencyByCount.label}`} />
+            <Stat label="Наиболее активный день" value={`${insights.topDay.label}`} />
+            <Stat label="Средний чек" value={`${insights.avgAmount.toLocaleString(undefined,{minimumFractionDigits:2})}`} />
+          </div>
+
         </div>
       </div>
     </div>
@@ -303,6 +311,29 @@ function weekStartTs(d: Date) {
   const dayNum = (date.getUTCDay() + 6) % 7;
   date.setUTCDate(date.getUTCDate() - dayNum);
   return date.getTime();
+}
+
+function buildInsights(data: Transaction[]) {
+  const byCurrency = new Map<string, { sum: number; count: number }>();
+  const byDay = new Map<string, { label: string; count: number }>();
+  let sum = 0;
+  for (const t of data) {
+    sum += t.amount;
+    const c = byCurrency.get(t.currency) || { sum: 0, count: 0 };
+    c.sum += t.amount; c.count += 1; byCurrency.set(t.currency, c);
+    const day = new Date(t.createdAt).toISOString().slice(0,10);
+    const d = byDay.get(day) || { label: day.split('-').reverse().join('.'), count: 0 };
+    d.count += 1; byDay.set(day, d);
+  }
+  const topCurrencyBySumKey = Array.from(byCurrency.entries()).sort((a,b)=>b[1].sum-a[1].sum)[0]?.[0] || "—";
+  const topCurrencyByCountKey = Array.from(byCurrency.entries()).sort((a,b)=>b[1].count-a[1].count)[0]?.[0] || "—";
+  const topDay = Array.from(byDay.values()).sort((a,b)=>b.count-a.count)[0] || { label:"—", count:0 };
+  return {
+    avgAmount: data.length ? sum / data.length : 0,
+    topCurrencyBySum: { key: topCurrencyBySumKey, label: (currencyOptions as any).find((x:any)=>x.key===topCurrencyBySumKey)?.label || topCurrencyBySumKey },
+    topCurrencyByCount: { key: topCurrencyByCountKey, label: (currencyOptions as any).find((x:any)=>x.key===topCurrencyByCountKey)?.label || topCurrencyByCountKey },
+    topDay,
+  };
 }
 
 function toggleSet<T>(setter: React.Dispatch<React.SetStateAction<Set<T>>>, key: T) {
