@@ -280,3 +280,11 @@
  ✓ Compiled in 149ms
  ✓ Compiled in 152ms
  ✓ Compiled in 224ms
+ POST /api/login 200 in 289ms
+ GET /rates 200 in 149ms
+ GET /rates 200 in 224ms
+ GET /login?next=%2F 200 in 103ms
+ GET / 200 in 105ms
+ GET /login?next=%2F 200 in 120ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 258ms
+ GET /login?next=%2F 200 in 91ms
