@@ -163,7 +163,7 @@ function StatusBadge({ status }: { status: TransactionStatus }) {
 
 export function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-3 gap-3 items-center">
       <div className="text-muted">{label}</div>
       <div className={`col-span-2 ${mono ? "font-mono" : ""}`}>{value}</div>
     </div>
@@ -174,49 +174,50 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
   const [value, setValue] = useState<TransactionStatus>(tx.status);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const [pos, setPos] = useState({ top: 0, left: 0, width: 220 });
 
   useEffect(() => setValue(tx.status), [tx.status]);
 
   useEffect(() => {
     if (!open) return;
-    const update = () => {
-      const r = btnRef.current?.getBoundingClientRect();
-      if (!r) return;
-      const width = 220;
-      let left = r.left;
-      if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
-      setPos({ top: r.bottom + 6, left, width });
-    };
-    update();
     const onDoc = (e: MouseEvent) => {
       if (!(e.target instanceof Node)) return;
       if (btnRef.current && btnRef.current.contains(e.target)) return;
       if (panelRef.current && panelRef.current.contains(e.target)) return;
       setOpen(false);
     };
-    window.addEventListener("resize", update);
     document.addEventListener("mousedown", onDoc);
-    return () => {
-      window.removeEventListener("resize", update);
-      document.removeEventListener("mousedown", onDoc);
-    };
+    return () => document.removeEventListener("mousedown", onDoc);
   }, [open]);
 
   const dirty = value !== tx.status;
 
   return (
     <div className="flex items-center gap-2 min-w-0">
-      <button
-        ref={btnRef}
-        className="inline-flex items-center gap-2 px-2 h-8 rounded-lg border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 hover:bg-white/80 max-w-[220px]"
-        onClick={() => setOpen(o => !o)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <StatusBadge status={value} />
-        <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5H5z" fill="currentColor"/></svg>
-      </button>
+      <div className="relative inline-flex items-center gap-2">
+        <button
+          ref={btnRef}
+          className="inline-flex items-center gap-2 px-2 h-8 rounded-lg border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 hover:bg-white/80 max-w-[220px]"
+          onClick={() => setOpen(o => !o)}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <StatusBadge status={value} />
+          <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5H5z" fill="currentColor"/></svg>
+        </button>
+        {open && (
+          <div ref={panelRef} className="absolute z-50 mt-1 bg-white dark:bg-[#0b0b0b] border border-black/10 dark:border-white/10 rounded-lg shadow-lg p-2 w-[220px]">
+            <div className="space-y-1">
+              {(["confirmed","pending","declined"] as TransactionStatus[]).map(s => (
+                <button key={s} className={`w-full text-left px-2 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
+                  onClick={() => { setValue(s); setOpen(false); }}>
+                  <StatusBadge status={s} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {dirty && (
         <button
           className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
@@ -228,19 +229,6 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
             <path fill="#fff" fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
         </button>
-      )}
-
-      {open && (
-        <div ref={panelRef} className="fixed z-50 header-dd p-2" style={{ top: pos.top, left: pos.left, width: pos.width, maxWidth: 260 }}>
-          <div className="space-y-1">
-            {(["confirmed","pending","declined"] as TransactionStatus[]).map(s => (
-              <button key={s} className={`w-full text-left px-2 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
-                onClick={() => { setValue(s); setOpen(false); }}>
-                <StatusBadge status={s} />
-              </button>
-            ))}
-          </div>
-        </div>
       )}
     </div>
   );
