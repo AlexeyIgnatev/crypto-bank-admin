@@ -1,79 +1,64 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 
-type Rule = {
-  id: string;
-  category: "Обязательный контроль" | "Поведение клиента";
-  condition: string;
-  threshold: string;
-};
+// Правила и их параметры. Никаких вызовов API — чистый клиент,
+// чтобы потом легко подменить на реальный бекенд с параметрами.
+
+type Category = "Обязательный контроль" | "Поведение клиента";
+
+type RuleBase = { id: string; category: Category; condition: string };
+
+type RuleParams =
+  | ({ type: "fiatOpsThreshold"; amountSom: number })
+  | ({ type: "singleDeal"; amountSom: number })
+  | ({ type: "frequentOps"; count: number; days: number; perOpMinSom: number })
+  | ({ type: "withdrawAfterLargeIncome"; percent: number; baseAmountSom: number; days: number })
+  | ({ type: "splitFiatAmounts"; amountSom: number; days: number })
+  | ({ type: "thirdPartyDeposits"; count: number; days: number; totalSom: number })
+  | ({ type: "accountActivityAfterInactivity"; months: number })
+  | ({ type: "manyTransfersFromDifferentPersons"; persons: number });
+
+type Rule = RuleBase & { params: RuleParams };
+
+type EditState = { open: boolean; rule: Rule | null };
 
 export default function ControlPage() {
-  const [rules, setRules] = useState<Rule[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<{ open: boolean; id: string | null; title: string }>(() => ({ open: false, id: null, title: "" }));
-  const [value, setValue] = useState("");
+  const [rules, setRules] = useState<Rule[]>(() => initialRules());
+  const [edit, setEdit] = useState<EditState>({ open: false, rule: null });
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await fetch("/api/control", { cache: "no-store" });
-        const j = await r.json();
-        setRules(j.rules || []);
-      } catch {}
-      setLoading(false);
-    })();
-  }, []);
+  const groups = useMemo(() => ({
+    required: rules.filter(r => r.category === "Обязательный контроль"),
+    behavior: rules.filter(r => r.category === "Поведение клиента"),
+  }), [rules]);
 
-  const groups = useMemo(() => {
-    return {
-      required: rules.filter(r => r.category === "Обязательный контроль"),
-      behavior: rules.filter(r => r.category === "Поведение клиента"),
-    };
-  }, [rules]);
-
-  const openEdit = (id: string, title: string, init: string) => {
-    setModal({ open: true, id, title });
-    setValue(init);
-  };
-  const closeEdit = () => setModal({ open: false, id: null, title: "" });
-  const saveEdit = async () => {
-    if (!modal.id) return;
-    const next = value.trim();
-    try {
-      const r = await fetch("/api/control", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: modal.id, threshold: next }) });
-      const j = await r.json();
-      if (j && j.rule) {
-        setRules(prev => prev.map(x => x.id === j.rule.id ? j.rule : x));
-      }
-    } catch {}
+  const openEdit = (rule: Rule) => setEdit({ open: true, rule: clone(rule) });
+  const closeEdit = () => setEdit({ open: false, rule: null });
+  const saveEdit = () => {
+    if (!edit.rule) return;
+    setRules(prev => prev.map(r => r.id === edit.rule!.id ? edit.rule! : r));
     closeEdit();
   };
 
   return (
     <div className="flex-1 min-h-0 flex">
       <div className="m-auto w-full max-w-5xl">
-        <div className="text-xl font-semibold mb-4">Финансовый контроль</div>
-        {loading ? (
-          <div className="p-6 text-muted">Загрузка…</div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Section title="Обязательный контроль">
-              {groups.required.map(rule => (
-                <RuleRow key={rule.id} label={rule.condition} value={rule.threshold} onEdit={() => openEdit(rule.id, rule.condition, rule.threshold)} />
-              ))}
-            </Section>
-            <Section title="Поведение клиента">
-              {groups.behavior.map(rule => (
-                <RuleRow key={rule.id} label={rule.condition} value={rule.threshold} onEdit={() => openEdit(rule.id, rule.condition, rule.threshold)} />
-              ))}
-            </Section>
-          </div>
-        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Section title="Обязательный контроль">
+            {groups.required.map(rule => (
+              <RuleRow key={rule.id} label={rule.condition} value={formatSummary(rule.params)} onEdit={() => openEdit(rule)} />
+            ))}
+          </Section>
+          <Section title="Поведение клиента">
+            {groups.behavior.map(rule => (
+              <RuleRow key={rule.id} label={rule.condition} value={formatSummary(rule.params)} onEdit={() => openEdit(rule)} />
+            ))}
+          </Section>
+        </div>
       </div>
 
-      <EditModal open={modal.open} title={modal.title} value={value} onChange={setValue} onClose={closeEdit} onSave={saveEdit} />
+      <EditModal open={edit.open} rule={edit.rule} onChange={setEdit} onClose={closeEdit} onSave={saveEdit} />
     </div>
   );
 }
@@ -94,26 +79,162 @@ function RuleRow({ label, value, onEdit }: { label: string; value: string; onEdi
     <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-soft bg-[var(--card)]">
       <div className="min-w-0">
         <div className="text-sm font-medium truncate" title={label}>{label}</div>
-        <div className="text-muted text-sm truncate" title={value}>Порог / Период / Количество: {value}</div>
+        <div className="text-muted text-sm truncate" title={value}>{value}</div>
       </div>
       <button className="btn btn-edit whitespace-nowrap" onClick={onEdit}>✎ Изменить</button>
     </div>
   );
 }
 
-function EditModal({ open, onClose, onSave, value, onChange, title }: { open: boolean; onClose: () => void; onSave: () => void; value: string; onChange: (v: string) => void; title: string; }) {
+function EditModal({ open, rule, onChange, onClose, onSave }: { open: boolean; rule: Rule | null; onChange: (s: EditState) => void; onClose: () => void; onSave: () => void; }) {
+  if (!open || !rule) return null;
+
+  const setParams = (patch: Partial<RuleParams>) => {
+    onChange({ open: true, rule: { ...rule, params: { ...(rule.params as any), ...patch } as RuleParams } });
+  };
+
+  const err = validate(rule.params);
+  const disabled = !!err;
+
   return (
-    <Modal open={open} onClose={onClose} title={`Изменить: ${title}`}>
+    <Modal open={open} onClose={onClose} title={`Изменить: ${rule.condition}`}>
       <div className="space-y-3">
-        <label className="block text-sm">
-          <span className="text-muted">Порог / Период / Количество</span>
-          <input className="ui-input w-full mt-1" value={value} onChange={e => onChange(e.target.value)} placeholder="Например: ≥ 3 операции за 30 дней…" />
-        </label>
+        {rule.params.type === "fiatOpsThreshold" && (
+          <NumberField label="Сумма, сом" value={rule.params.amountSom} onChange={(v) => setParams({ amountSom: v })} min={0} step="1000" />
+        )}
+        {rule.params.type === "singleDeal" && (
+          <NumberField label="Сумма сделки, сом" value={rule.params.amountSom} onChange={(v) => setParams({ amountSom: v })} min={0} step="1000" />
+        )}
+        {rule.params.type === "frequentOps" && (
+          <>
+            <IntegerField label="Кол-во операций" value={rule.params.count} onChange={(v) => setParams({ count: v })} min={1} />
+            <IntegerField label="Период, дней" value={rule.params.days} onChange={(v) => setParams({ days: v })} min={1} max={365} />
+            <NumberField label="Мин. сумма одной операции, сом" value={rule.params.perOpMinSom} onChange={(v) => setParams({ perOpMinSom: v })} min={0} step="1000" />
+          </>
+        )}
+        {rule.params.type === "withdrawAfterLargeIncome" && (
+          <>
+            <NumberField label="Процент от крупного поступления, %" value={rule.params.percent} onChange={(v) => setParams({ percent: v })} min={0} max={100} step="0.1" />
+            <NumberField label="Крупное поступление от, сом" value={rule.params.baseAmountSom} onChange={(v) => setParams({ baseAmountSom: v })} min={0} step="1000" />
+            <IntegerField label="Период после поступления, дней" value={rule.params.days} onChange={(v) => setParams({ days: v })} min={1} max={365} />
+          </>
+        )}
+        {rule.params.type === "splitFiatAmounts" && (
+          <>
+            <NumberField label="Сумма изменений, сом" value={rule.params.amountSom} onChange={(v) => setParams({ amountSom: v })} min={0} step="1000" />
+            <IntegerField label="Период, дней" value={rule.params.days} onChange={(v) => setParams({ days: v })} min={1} max={365} />
+          </>
+        )}
+        {rule.params.type === "thirdPartyDeposits" && (
+          <>
+            <IntegerField label="Кол-во разных лиц" value={rule.params.count} onChange={(v) => setParams({ count: v })} min={1} />
+            <IntegerField label="Период, дней" value={rule.params.days} onChange={(v) => setParams({ days: v })} min={1} max={365} />
+            <NumberField label="Общая сумма, сом" value={rule.params.totalSom} onChange={(v) => setParams({ totalSom: v })} min={0} step="1000" />
+          </>
+        )}
+        {rule.params.type === "accountActivityAfterInactivity" && (
+          <IntegerField label="Неактивность, месяцев" value={rule.params.months} onChange={(v) => setParams({ months: v })} min={1} max={120} />
+        )}
+        {rule.params.type === "manyTransfersFromDifferentPersons" && (
+          <IntegerField label="Кол-во физлиц за месяц" value={rule.params.persons} onChange={(v) => setParams({ persons: v })} min={1} />
+        )}
+
+        {err && <div className="text-sm text-red-500">{err}</div>}
+
         <div className="grid grid-cols-2 gap-2 pt-1">
           <button className="btn h-9" onClick={onClose}>Отмена</button>
-          <button className="btn btn-primary h-9" onClick={onSave}>Сохранить</button>
+          <button className="btn btn-primary h-9" disabled={disabled} onClick={onSave}>Сохранить</button>
         </div>
       </div>
     </Modal>
   );
+}
+
+function NumberField({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; step?: string; }) {
+  return (
+    <label className="block text-sm">
+      <span className="text-muted">{label}</span>
+      <input className="ui-input w-full mt-1" type="number" inputMode="decimal" step={step || "0.01"} value={Number.isFinite(value) ? String(value) : ""} onChange={e => onChange(safeNum(e.target.value))} min={min as any} max={max as any} />
+    </label>
+  );
+}
+function IntegerField({ label, value, onChange, min, max }: { label: string; value: number; onChange: (v: number) => void; min?: number; max?: number; }) {
+  return (
+    <label className="block text-sm">
+      <span className="text-muted">{label}</span>
+      <input className="ui-input w-full mt-1" type="number" inputMode="numeric" step="1" value={Number.isFinite(value) ? String(value) : ""} onChange={e => onChange(Math.trunc(safeNum(e.target.value)))} min={min as any} max={max as any} />
+    </label>
+  );
+}
+
+function formatSummary(p: RuleParams): string {
+  switch (p.type) {
+    case "fiatOpsThreshold":
+      return `Порог: ≥ ${fmt(p.amountSom)} сом`;
+    case "singleDeal":
+      return `Разовая сумма: ≥ ${fmt(p.amountSom)} сом`;
+    case "frequentOps":
+      return `≥ ${p.count} операций за ${p.days} дн.; каждая ≥ ${fmt(p.perOpMinSom)} сом`;
+    case "withdrawAfterLargeIncome":
+      return `Вывод ≥ ${fmt(p.percent)}% от поступления ≥ ${fmt(p.baseAmountSom)} сом в ${p.days} дн.`;
+    case "splitFiatAmounts":
+      return `Изменения баланса ≥ ${fmt(p.amountSom)} сом за ${p.days} дн.`;
+    case "thirdPartyDeposits":
+      return `≥ ${p.count} лиц за ${p.days} дн.; общая сумма ≥ ${fmt(p.totalSom)} сом`;
+    case "accountActivityAfterInactivity":
+      return `После неактивности ≥ ${p.months} мес.`;
+    case "manyTransfersFromDifferentPersons":
+      return `Переводы от ≥ ${p.persons} физлиц за месяц`;
+  }
+}
+
+function validate(p: RuleParams): string | null {
+  const gt0 = (n: number) => Number.isFinite(n) && n > 0;
+  const ge0 = (n: number) => Number.isFinite(n) && n >= 0;
+  switch (p.type) {
+    case "fiatOpsThreshold":
+    case "singleDeal":
+      return ge0(p.amountSom) ? null : "Сумма должна быть ≥ 0";
+    case "frequentOps":
+      if (!gt0(p.count)) return "Кол-во операций должно быть > 0";
+      if (!gt0(p.days)) return "Период в днях должен быть > 0";
+      if (!ge0(p.perOpMinSom)) return "Мин. сумма операции должна быть ≥ 0";
+      return null;
+    case "withdrawAfterLargeIncome":
+      if (!(p.percent >= 0 && p.percent <= 100)) return "Процент должен быть от 0 до 100";
+      if (!ge0(p.baseAmountSom)) return "Крупное поступление должно быть ≥ 0";
+      if (!gt0(p.days)) return "Период должен быть > 0";
+      return null;
+    case "splitFiatAmounts":
+      if (!ge0(p.amountSom)) return "Сумма должна быть ≥ 0";
+      if (!gt0(p.days)) return "Период должен быть > 0";
+      return null;
+    case "thirdPartyDeposits":
+      if (!gt0(p.count)) return "Кол-во лиц должно быть > 0";
+      if (!gt0(p.days)) return "Период должен быть > 0";
+      if (!ge0(p.totalSom)) return "Сумма должна быть ≥ 0";
+      return null;
+    case "accountActivityAfterInactivity":
+      return gt0(p.months) ? null : "Месяцы должны быть > 0";
+    case "manyTransfersFromDifferentPersons":
+      return gt0(p.persons) ? null : "Кол-во физлиц должно быть > 0";
+  }
+}
+
+function fmt(x: number) { try { return Number(x).toLocaleString(); } catch { return String(x); } }
+function safeNum(v: string): number { const x = Number(v.replace(/,/g, ".")); return Number.isFinite(x) ? x : 0; }
+function clone<T>(x: T): T { return JSON.parse(JSON.stringify(x)); }
+
+function initialRules(): Rule[] {
+  return [
+    { id: "req-1", category: "Обязательный контроль", condition: "(внесение, снятие, обмен) с фиата", params: { type: "fiatOpsThreshold", amountSom: 1_000_000 } },
+    { id: "req-2", category: "Обязательный контроль", condition: "Разовая сделка", params: { type: "singleDeal", amountSom: 2_800_000 } },
+
+    { id: "beh-1", category: "Поведение клиента", condition: "Частые внесения/снятия", params: { type: "frequentOps", count: 3, days: 30, perOpMinSom: 100_000 } },
+    { id: "beh-2", category: "Поведение клиента", condition: "Вывод в фиат после крупного поступления", params: { type: "withdrawAfterLargeIncome", percent: 50, baseAmountSom: 1_000_000, days: 7 } },
+    { id: "beh-3", category: "Поведение клиента", condition: "Дробление сумм перевода с фиата", params: { type: "splitFiatAmounts", amountSom: 1_000_000, days: 14 } },
+    { id: "beh-4", category: "Поведение клиента", condition: "Внесение третьими лицами на кошелёк", params: { type: "thirdPartyDeposits", count: 3, days: 30, totalSom: 1_000_000 } },
+    { id: "beh-5", category: "Поведение клиента", condition: "Активность счёта", params: { type: "accountActivityAfterInactivity", months: 6 } },
+    { id: "beh-6", category: "Поведение клиента", condition: "Много переводов от разных физлиц на один счёт за месяц", params: { type: "manyTransfersFromDifferentPersons", persons: 10 } },
+  ];
 }

@@ -1,18 +1,21 @@
 "use client";
+/* eslint-disable react/jsx-key */
+
 import Cards from "../components/Cards";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
 import { useMemo, useState } from "react";
 import { generateTransactions, generateUsers } from "../lib/mockRepo";
-import { Transaction, User } from "../types";
+import { Transaction, TransactionStatus, User } from "../types";
 import UserDetailsCard from "../components/UserDetails";
 
 export default function Home() {
-  const data = useMemo(() => generateTransactions(250), []);
+  const [txs, setTxs] = useState<Transaction[]>(() => generateTransactions(250));
   const users = useMemo(() => generateUsers(600), []);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
   const [openUser, setOpenUser] = useState(false);
+  const [openUserEdit, setOpenUserEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   function openUserModalByName(name: string) {
@@ -43,26 +46,45 @@ export default function Home() {
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="shrink-0"><Cards /></div>
       <div className="min-h-0 flex-1 flex flex-col"><Table
-        data={data}
+        data={txs}
         onOpen={(t) => { setSelected(t); setOpen(true); }}
       /></div>
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="Статус" value={selected.status} />
+            <Row label="Статус" value={
+                  <div className="flex items-center gap-3">
+                    <StatusBadge status={selected.status} />
+                    <select
+                      className="ui-input h-8 px-2 py-1"
+                      value={selected.status}
+                      onChange={(e) => {
+                        const next = e.target.value as TransactionStatus;
+                        setSelected(prev => prev ? { ...prev, status: next } : prev);
+                        setTxs(prev => prev.map(t => t.id === selected.id ? { ...t, status: next } : t));
+                      }}
+                    >
+                      <option value="confirmed">Подтверждено</option>
+                      <option value="pending">В ожидании</option>
+                      <option value="declined">Отклонено</option>
+                    </select>
+                  </div>
+                } />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
             <Row label="Сумма" value={`${selected.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${selected.currency}`} />
             <Row label="Отправитель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.sender}>{selected.sender}</span>
                 <button
-                  className="btn btn-info h-7 w-7 p-0 rounded-full ml-auto shrink-0"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
                   onClick={() => openUserModalByName(selected.sender)}
                   aria-label="Открыть профиль"
                   title="Открыть профиль"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 110-8 4 4 0 010 8z" fill="none" stroke="#fff" strokeWidth="2"/><path d="M4 20c0-3.5 3.8-5.5 8-5.5s8 2 8 5.5" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
+                    <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
                 </button>
               </div>
             } />
@@ -70,29 +92,90 @@ export default function Home() {
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.recipient}>{selected.recipient}</span>
                 <button
-                  className="btn btn-info h-7 w-7 p-0 rounded-full ml-auto shrink-0"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
                   onClick={() => openUserModalByName(selected.recipient)}
                   aria-label="Открыть профиль"
                   title="Открыть профиль"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 110-8 4 4 0 010 8z" fill="none" stroke="#fff" strokeWidth="2"/><path d="M4 20c0-3.5 3.8-5.5 8-5.5s8 2 8 5.5" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round"/></svg>
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
+                    <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
                 </button>
               </div>
             } />
           </div>
         )}
       </Modal>
+function StatusBadge({ status }: { status: TransactionStatus }) {
+  const cls = status === "confirmed" ? "badge-success" : status === "pending" ? "badge-warning" : "badge-danger";
+  const text = status === "confirmed" ? "Подтверждено" : status === "pending" ? "В ожидании" : "Отклонено";
+  return <span className={`badge ${cls}`}>{text}</span>;
+}
+
 
       <Modal open={openUser} onClose={() => setOpenUser(false)} title="Пользователь">
         {selectedUser && (
-          <UserDetailsCard user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => setOpenUser(false)} onDelete={() => setOpenUser(false)} />
+          <UserDetailsCard user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => { setOpenUser(false); setOpenUserEdit(true); }} onDelete={() => setOpenUser(false)} />
+        )}
+      </Modal>
+
+      <Modal open={openUserEdit} onClose={() => setOpenUserEdit(false)} title="Редактировать пользователя">
+        {selectedUser && (
+          <EditUserInline user={selectedUser} onCancel={() => setOpenUserEdit(false)} onSave={(next) => { setSelectedUser(next); setOpenUserEdit(false); }} />
         )}
       </Modal>
     </div>
   );
 }
 
-function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
+function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: (u: User) => void; }) {
+  const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
+  const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
+  const [middleName, setMiddleName] = useState(user.fullName.split(" ")[2] || "");
+  const [phone, setPhone] = useState(user.phone);
+  const [email, setEmail] = useState(user.email);
+  const [status, setStatus] = useState(user.status);
+
+  return (
+    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave({ ...user, fullName: [lastName, firstName, middleName].filter(Boolean).join(" "), phone, email, status }); }}>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="text-sm mb-1">Фамилия</div>
+          <input className="ui-input w-full" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+        </div>
+        <div>
+          <div className="text-sm mb-1">Имя</div>
+          <input className="ui-input w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+        </div>
+        <div className="col-span-2">
+          <div className="text-sm mb-1">Отчество</div>
+          <input className="ui-input w-full" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="(необязательно)" />
+        </div>
+        <div>
+          <div className="text-sm mb-1">Телефон</div>
+          <input className="ui-input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+        </div>
+        <div>
+          <div className="text-sm mb-1">E-mail</div>
+          <input className="ui-input w-full" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
+        </div>
+        <div className="col-span-2">
+          <div className="text-sm mb-1">Статус</div>
+          <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
+            <option>Активен</option>
+            <option>Заблокирован</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2 pt-4">
+        <button type="button" className="btn w-full h-9" onClick={onCancel}>Отмена</button>
+        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+      </div>
+    </form>
+  );
+}
+
+export function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <div className="text-muted">{label}</div>
