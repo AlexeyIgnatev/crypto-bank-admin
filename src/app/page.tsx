@@ -205,7 +205,7 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
           <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5H5z" fill="currentColor"/></svg>
         </button>
         {open && (
-          <div ref={panelRef} className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-[#0b0b0b] border border-black/20 dark:border-white/15 rounded-lg shadow-xl p-2 w-[220px]">
+          <div ref={panelRef} className="absolute z-50 top-full left-0 mt-1 card border border-soft rounded-lg shadow-xl p-2 w-[220px]">
             <div className="space-y-1">
               {(["confirmed","pending","declined"] as TransactionStatus[]).map(s => (
                 <button key={s} className={`w-full text-left px-2 py-2 rounded transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
