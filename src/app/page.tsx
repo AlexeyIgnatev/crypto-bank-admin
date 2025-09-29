@@ -4,7 +4,7 @@
 import Cards from "../components/Cards";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { generateTransactions, generateUsers } from "../lib/mockRepo";
 import { Transaction, TransactionStatus, User } from "../types";
 import UserDetailsCard from "../components/UserDetails";
@@ -53,24 +53,10 @@ export default function Home() {
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="Статус" value={
-                  <div className="flex items-center gap-3">
-                    <StatusBadge status={selected.status} />
-                    <select
-                      className="ui-input h-8 px-2 py-1"
-                      value={selected.status}
-                      onChange={(e) => {
-                        const next = e.target.value as TransactionStatus;
-                        setSelected(prev => prev ? { ...prev, status: next } : prev);
-                        setTxs(prev => prev.map(t => t.id === selected.id ? { ...t, status: next } : t));
-                      }}
-                    >
-                      <option value="confirmed">Подтверждено</option>
-                      <option value="pending">В ожидании</option>
-                      <option value="declined">Отклонено</option>
-                    </select>
-                  </div>
-                } />
+            <Row label="Статус" value={<StatusEditor tx={selected} onSave={(next) => {
+                  setTxs(prev => prev.map(t => t.id === next.id ? next : t));
+                  setSelected(next);
+                }} />} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
             <Row label="Сумма" value={`${selected.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${selected.currency}`} />
             <Row label="Отправитель" value={
@@ -169,10 +155,10 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
 }
 
 
-function StatusBadge({ status }: { status: any }) {
+function StatusBadge({ status }: { status: TransactionStatus }) {
   const cls = status === "confirmed" ? "badge-success" : status === "pending" ? "badge-warning" : "badge-danger";
   const text = status === "confirmed" ? "Подтверждено" : status === "pending" ? "В ожидании" : "Отклонено";
-  return <span className={`badge ${cls}`}>{text}</span>;
+  return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
 
 export function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
@@ -181,5 +167,84 @@ export function Row({ label, value, mono = false }: { label: string; value: Reac
       <div className="text-muted">{label}</div>
       <div className={`col-span-2 ${mono ? "font-mono" : ""}`}>{value}</div>
     </div>
+  );
+}
+function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction) => void }) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<TransactionStatus>(tx.status);
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 220 });
+
+  useEffect(() => setValue(tx.status), [tx.status]);
+
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const width = 220;
+      let left = r.left;
+      if (left + width > window.innerWidth - 8) left = window.innerWidth - width - 8;
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    update();
+    const onDoc = (e: MouseEvent) => {
+      if (!(e.target instanceof Node)) return;
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    window.addEventListener("resize", update);
+    document.addEventListener("mousedown", onDoc);
+    return () => {
+      window.removeEventListener("resize", update);
+      document.removeEventListener("mousedown", onDoc);
+    };
+  }, [open]);
+
+  const dirty = value !== tx.status;
+
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <button
+        ref={btnRef}
+        className="inline-flex items-center gap-2 px-2 h-8 rounded-lg border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 hover:bg-white/80 max-w-[220px]"
+        onClick={() => setOpen(o => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <StatusBadge status={value} />
+        <svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 7l5 5 5-5H5z" fill="currentColor"/></svg>
+      </button>
+      {dirty && (
+        <button
+          className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
+          onClick={() => { onSave({ ...tx, status: value }); setOpen(false); }}
+          title="Сохранить"
+          aria-label="Сохранить"
+        >
+          <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
+            <path fill="#fff" fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </button>
+      )}
+
+      {open && (
+        <div ref={panelRef} className="fixed z-50 header-dd p-2" style={{ top: pos.top, left: pos.left, width: pos.width, maxWidth: 260 }}>
+          <div className="space-y-1">
+            {(["confirmed","pending","declined"] as TransactionStatus[]).map(s => (
+              <button key={s} className={`w-full text-left px-2 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
+                onClick={() => { setValue(s); setOpen(false); }}>
+                <StatusBadge status={s} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
   );
 }
