@@ -3,109 +3,76 @@
 > next dev --turbopack
 
    ▲ Next.js 15.5.3 (Turbopack)
-   - Local:        http://localhost:44888
-   - Network:      http://172.17.0.3:44888
+   - Local:        http://localhost:46346
+   - Network:      http://172.17.0.3:46346
 
  ✓ Starting...
- ✓ Compiled middleware in 111ms
- ✓ Ready in 1136ms
+ ✓ Compiled middleware in 134ms
+ ✓ Ready in 1180ms
  ○ Compiling /login ...
- ✓ Compiled /login in 2.2s
- GET /login?next=%2F 200 in 2497ms
- ✓ Compiled / in 228ms
- GET / 200 in 346ms
- ✓ Compiled /favicon.ico in 139ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 418ms
- GET /login?next=%2F 200 in 75ms
- GET /login?next=%2F 200 in 77ms
- GET / 200 in 87ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 248ms
- GET /favicon.ico?favicon.0b3bf435.ico 200 in 243ms
- GET /login?next=%2F 200 in 82ms
+ ✓ Compiled /login in 2.3s
+ GET /login 200 in 2562ms
+ GET /login?next=%2F 200 in 156ms
+ ✓ Compiled / in 278ms
+ ⨯ ./src/app/page.tsx:109:42
+Parsing ecmascript source code failed
+[0m [90m 107 |[39m         )}
+ [90m 108 |[39m       [33m<[39m[33m/[39m[33mModal[39m[33m>[39m
+[31m[1m>[22m[39m[90m 109 |[39m [36mfunction[39m [33mStatusBadge[39m({ status }[33m:[39m { status[33m:[39m [33mTransactionStatus[39m }) {
+ [90m     |[39m                                          [31m[1m^[22m[39m
+ [90m 110 |[39m   [36mconst[39m cls [33m=[39m status [33m===[39m [32m"confirmed"[39m [33m?[39m [32m"badge-success"[39m [33m:[39m status [33m===[39m [32m"pending"[39m [33m?[39m [32m"badge-warning"[39m [33m:[39m [32m"badge-danger"[39m[33m;[39m
+ [90m 111 |[39m   [36mconst[39m text [33m=[39m status [33m===[39m [32m"confirmed"[39m [33m?[39m [32m"Подтверждено"[39m [33m:[39m status [33m===[39m [32m"pending"[39m [33m?[39m [32m"В ожидании"[39m [33m:[39m [32m"Отклонено"[39m[33m;[39m
+ [90m 112 |[39m   [36mreturn[39m [33m<[39m[33mspan[39m className[33m=[39m{[32m`badge ${cls}`[39m}[33m>[39m{text}[33m<[39m[33m/[39m[33mspan[39m[33m>[39m[33m;[39m[0m
+
+Expected '</', got ':'
+
+
  GET /login?next=%2F 200 in 96ms
- GET /login?next=%2F 200 in 89ms
- GET /login?next=%2F 200 in 88ms
- GET /login?next=%2F 200 in 85ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 77ms
- GET /login?next=%2F 200 in 68ms
- GET /login?next=%2F 200 in 85ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 80ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 74ms
- GET /login?next=%2F 200 in 80ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 85ms
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1088ms
+ GET / 500 in 1554ms
  GET /login?next=%2F 200 in 93ms
- GET /login?next=%2F 200 in 78ms
- GET /login?next=%2F 200 in 67ms
- GET /login?next=%2F 200 in 65ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 75ms
- GET /login?next=%2F 200 in 86ms
- GET /login?next=%2F 200 in 78ms
- GET /login?next=%2F 200 in 90ms
- GET /login?next=%2F 200 in 71ms
+ GET /login?next=%2F 200 in 84ms
+ ⨯ ./src/app/page.tsx:109:42
+Parsing ecmascript source code failed
+[0m [90m 107 |[39m         )}
+ [90m 108 |[39m       [33m<[39m[33m/[39m[33mModal[39m[33m>[39m
+[31m[1m>[22m[39m[90m 109 |[39m [36mfunction[39m [33mStatusBadge[39m({ status }[33m:[39m { status[33m:[39m [33mTransactionStatus[39m }) {
+ [90m     |[39m                                          [31m[1m^[22m[39m
+ [90m 110 |[39m   [36mconst[39m cls [33m=[39m status [33m===[39m [32m"confirmed"[39m [33m?[39m [32m"badge-success"[39m [33m:[39m status [33m===[39m [32m"pending"[39m [33m?[39m [32m"badge-warning"[39m [33m:[39m [32m"badge-danger"[39m[33m;[39m
+ [90m 111 |[39m   [36mconst[39m text [33m=[39m status [33m===[39m [32m"confirmed"[39m [33m?[39m [32m"Подтверждено"[39m [33m:[39m status [33m===[39m [32m"pending"[39m [33m?[39m [32m"В ожидании"[39m [33m:[39m [32m"Отклонено"[39m[33m;[39m
+ [90m 112 |[39m   [36mreturn[39m [33m<[39m[33mspan[39m className[33m=[39m{[32m`badge ${cls}`[39m}[33m>[39m{text}[33m<[39m[33m/[39m[33mspan[39m[33m>[39m[33m;[39m[0m
+
+Expected '</', got ':'
+
+
+ GET / 500 in 59ms
+ ✓ Compiled /favicon.ico in 134ms
+ GET /favicon.ico 500 in 158ms
  GET /login?next=%2F 200 in 79ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 65ms
- GET /login?next=%2F 200 in 81ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 77ms
+ GET /login?next=%2F 200 in 104ms
  GET /login?next=%2F 200 in 67ms
- GET /login?next=%2F 200 in 71ms
- GET /login?next=%2F 200 in 80ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 69ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 71ms
- GET /login?next=%2F 200 in 80ms
- GET /login?next=%2F 200 in 71ms
- GET /login?next=%2F 200 in 80ms
+ GET /login?next=%2F 200 in 73ms
  GET /login?next=%2F 200 in 89ms
- GET /login?next=%2F 200 in 76ms
- GET /login?next=%2F 200 in 80ms
- GET /login?next=%2F 200 in 79ms
- GET /login?next=%2F 200 in 77ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 66ms
- GET /login?next=%2F 200 in 72ms
+ ○ Compiling /transactions ...
+ ✓ Compiled /transactions in 645ms
+ GET /transactions 200 in 860ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 48ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 49ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 65ms
+ GET /favicon.ico 500 in 63ms
+ GET /favicon.ico?favicon.0b3bf435.ico 500 in 52ms
  GET /login?next=%2F 200 in 83ms
- GET /login?next=%2F 200 in 69ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 79ms
- GET /login?next=%2F 200 in 77ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 65ms
- GET /login?next=%2F 200 in 65ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 74ms
- GET /login?next=%2F 200 in 69ms
- GET /login?next=%2F 200 in 66ms
- GET /login?next=%2F 200 in 67ms
- GET /login?next=%2F 200 in 75ms
- GET /login?next=%2F 200 in 67ms
- GET /login?next=%2F 200 in 75ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 78ms
- GET /login?next=%2F 200 in 67ms
- GET /login?next=%2F 200 in 78ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 70ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 76ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 68ms
- GET /login?next=%2F 200 in 73ms
- GET /login?next=%2F 200 in 66ms
- GET /login?next=%2F 200 in 86ms
- GET /login?next=%2F 200 in 82ms
- GET /login?next=%2F 200 in 74ms
- GET /login?next=%2F 200 in 72ms
- GET /login?next=%2F 200 in 70ms
+ ✓ Compiled in 140ms
+ ✓ Compiled / in 57ms
+ GET /transactions 200 in 347ms
+ GET / 200 in 353ms
+ GET / 200 in 129ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 300ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 241ms
+ GET /favicon.ico?favicon.0b3bf435.ico 200 in 242ms
+ ✓ Compiled in 145ms
+ ✓ Compiled in 139ms
+ GET /login?next=%2F 200 in 91ms

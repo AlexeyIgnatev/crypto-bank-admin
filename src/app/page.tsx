@@ -106,13 +106,6 @@ export default function Home() {
           </div>
         )}
       </Modal>
-function StatusBadge({ status }: { status: TransactionStatus }) {
-  const cls = status === "confirmed" ? "badge-success" : status === "pending" ? "badge-warning" : "badge-danger";
-  const text = status === "confirmed" ? "Подтверждено" : status === "pending" ? "В ожидании" : "Отклонено";
-  return <span className={`badge ${cls}`}>{text}</span>;
-}
-
-
       <Modal open={openUser} onClose={() => setOpenUser(false)} title="Пользователь">
         {selectedUser && (
           <UserDetailsCard user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => { setOpenUser(false); setOpenUserEdit(true); }} onDelete={() => setOpenUser(false)} />
@@ -173,6 +166,13 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
       </div>
     </form>
   );
+}
+
+
+function StatusBadge({ status }: { status: any }) {
+  const cls = status === "confirmed" ? "badge-success" : status === "pending" ? "badge-warning" : "badge-danger";
+  const text = status === "confirmed" ? "Подтверждено" : status === "pending" ? "В ожидании" : "Отклонено";
+  return <span className={`badge ${cls}`}>{text}</span>;
 }
 
 export function Row({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {

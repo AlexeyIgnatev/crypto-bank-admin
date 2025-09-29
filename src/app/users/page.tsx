@@ -130,24 +130,38 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
 }
 
 function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => void; }) {
+  const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
+  const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
+  const [middleName, setMiddleName] = useState(user.fullName.split(" ")[2] || "");
+  const [phone, setPhone] = useState(user.phone);
+  const [email, setEmail] = useState(user.email);
+  const [status, setStatus] = useState(user.status);
   return (
     <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
       <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="text-sm mb-1">Фамилия</div>
+          <input className="ui-input w-full" value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Фамилия" />
+        </div>
+        <div>
+          <div className="text-sm mb-1">Имя</div>
+          <input className="ui-input w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Имя" />
+        </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">ФИО</div>
-          <input className="ui-input w-full" defaultValue={user.fullName} required placeholder="ФИО" />
+          <div className="text-sm mb-1">Отчество</div>
+          <input className="ui-input w-full" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="(необязательно)" />
         </div>
         <div>
           <div className="text-sm mb-1">Телефон</div>
-          <input className="ui-input w-full" defaultValue={user.phone} required placeholder="+996 (...) ... ..." />
+          <input className="ui-input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} required placeholder="+996 (...) ... ..." />
         </div>
         <div>
           <div className="text-sm mb-1">E-mail</div>
-          <input className="ui-input w-full" defaultValue={user.email} required placeholder="email@example.com" />
+          <input className="ui-input w-full" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="email@example.com" />
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Статус</div>
-          <select className="ui-input" defaultValue={user.status}>
+          <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
             <option>Активен</option>
             <option>Заблокирован</option>
           </select>
