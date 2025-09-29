@@ -245,6 +245,3 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
     </div>
   );
 }
-
-  );
-}
