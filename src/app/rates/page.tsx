@@ -16,31 +16,48 @@ type Settings = {
   min_withdraw_usdt_trc20: string;
 };
 
+import { getSettings, putSettings } from "@/lib/api";
+
 export default function RatesPage() {
-  const [settings, setSettings] = useState<Settings>({
-    esom_per_usd: "1.00",
-    esom_som_conversion_fee_pct: "0.50",
-    btc_trade_fee_pct: "0.20",
-    eth_trade_fee_pct: "0.20",
-    usdt_trade_fee_pct: "0.10",
-    btc_withdraw_fee_fixed: "0.00015",
-    eth_withdraw_fee_fixed: "0.002",
-    usdt_withdraw_fee_fixed: "1.5",
-    min_withdraw_btc: "0.0003",
-    min_withdraw_eth: "0.004",
-    min_withdraw_usdt_trc20: "10",
-  });
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const s = await getSettings();
+        if (alive) setSettings(s as unknown as Settings);
+      } catch {
+        setError("Не удалось загрузить настройки");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const [modal, setModal] = useState<{ open: boolean; key: keyof Settings | null; title: string; suffix?: string; step?: string }>({ open: false, key: null, title: "" });
-  const value = useMemo(() => (modal.key ? settings[modal.key] : ""), [modal.key, settings]);
+  const value = useMemo(() => (modal.key && settings ? settings[modal.key] : ""), [modal.key, settings]);
 
   const openEdit = (key: keyof Settings, title: string, opts?: { suffix?: string; step?: string }) => setModal({ open: true, key, title, suffix: opts?.suffix, step: opts?.step });
   const closeEdit = () => setModal({ open: false, key: null, title: "" });
-  const saveValue = (next: string) => {
-    if (!modal.key) return;
-    setSettings(prev => ({ ...prev, [modal.key!]: sanitizeNumber(next) }));
+  const saveValue = async (next: string) => {
+    if (!modal.key || !settings) return;
+    const updated = { ...settings, [modal.key]: sanitizeNumber(next) } as Settings;
+    setSettings(updated);
     closeEdit();
+    try {
+      await putSettings(updated as any);
+    } catch {
+      // revert on failure?
+    }
   };
+
+  if (loading) return <div className="flex-1 grid place-items-center text-muted">Загрузка...</div>;
+  if (error) return <div className="flex-1 grid place-items-center text-red-500">{error}</div>;
+  if (!settings) return <div className="flex-1 grid place-items-center text-muted">Нет данных</div>;
 
   return (
     <div className="flex-1 min-h-0 flex">

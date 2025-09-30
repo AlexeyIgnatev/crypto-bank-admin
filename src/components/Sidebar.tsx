@@ -65,7 +65,7 @@ export default function Sidebar() {
           title="Выйти"
           onClick={async () => {
             try {
-              await fetch('/api/logout', { method: 'POST' });
+              await fetch('/api/auth/logout', { method: 'POST' });
             } catch {}
             router.replace('/login');
           }}

@@ -8,9 +8,22 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { generateTransactions, generateUsers } from "../lib/mockRepo";
 import { Transaction, TransactionStatus, User } from "../types";
 import UserDetailsCard from "../components/UserDetails";
+import { getTransactions } from "@/lib/api";
 
 export default function Home() {
-  const [txs, setTxs] = useState<Transaction[]>(() => generateTransactions(250));
+  const [txs, setTxs] = useState<Transaction[]>([]);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await getTransactions({ offset: 0, limit: 50 });
+        if (alive) setTxs(res.items);
+      } catch {
+        if (alive) setTxs(generateTransactions(250));
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
   const users = useMemo(() => generateUsers(600), []);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
@@ -208,7 +221,7 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
           <div ref={panelRef} className="absolute z-50 top-full left-0 mt-1 card border border-soft rounded-lg shadow-xl p-2 w-[220px]">
             <div className="space-y-1">
               {(["confirmed","pending","declined"] as TransactionStatus[]).map(s => (
-                <button key={s} className={`w-full text-left px-2 py-2 rounded transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
+                <button key={s} className={`w-full text-left px-2 py-2 rounded transition-colors duration-150 hover:bg-slate-100 dark:hover:bg-white/10 ${value===s?"bg-black/5 dark:bg-white/10":""}`}
                   onClick={() => { setValue(s); setOpen(false); }}>
                   <StatusBadge status={s} />
                 </button>

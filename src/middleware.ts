@@ -5,8 +5,10 @@ const PUBLIC_PATHS = [
   "/login",
   "/_next",
   "/favicon.ico",
-  "/api/login",
-  "/api/logout",
+  "/api/auth",
+  "/api/auth/login",
+  "/api/auth/refresh",
+  "/api/auth/logout",
 ];
 
 export function middleware(req: NextRequest) {
@@ -17,7 +19,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const isAuthed = req.cookies.get("admin_auth")?.value === "1";
+  const isAuthed = Boolean(req.cookies.get("accessToken")?.value || req.cookies.get("admin_auth")?.value === "1");
   if (!isAuthed) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";

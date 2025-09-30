@@ -1,13 +1,30 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import { User } from "../../types";
-import { generateUsers } from "../../lib/mockRepo";
 import UserDetailsCard from "../../components/UserDetails";
+import { getUsers, createUser, updateUser, deleteUser } from "@/lib/api";
 
 export default function UsersPage() {
-  const data = useMemo(() => generateUsers(400), []);
+  const [data, setData] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function reload() {
+    try {
+      setError(null);
+      const res = await getUsers({ offset: 0, limit: 200 });
+      setData(res.items);
+    } catch (e) {
+      setError("Не удалось загрузить пользователей");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { reload(); }, []);
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
@@ -17,7 +34,13 @@ export default function UsersPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="min-h-0 flex-1 flex flex-col">
-        <UsersTable data={data} onOpen={(u) => { setSelected(u); setOpenView(true); }} />
+        {loading ? (
+          <div className="m-auto text-muted">Загрузка...</div>
+        ) : error ? (
+          <div className="m-auto text-red-500">{error}</div>
+        ) : (
+          <UsersTable data={data} onOpen={(u) => { setSelected(u); setOpenView(true); }} />
+        )}
       </div>
 
       <button
@@ -98,32 +121,59 @@ function UserDetails({ user, onClose, onEdit, onDelete }: { user: User; onClose:
 }
 
 function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: () => void; }) {
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"Активен"|"Заблокирован">("Активен");
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+    <form className="space-y-3" onSubmit={async (e) => {
+      e.preventDefault(); setErr(null); setSubmitting(true);
+      try {
+        await createUser({ firstName, lastName, middleName, phone, email, status });
+        onSave();
+      } catch {
+        setErr("Не удалось создать пользователя");
+      } finally {
+        setSubmitting(false);
+      }
+    }}>
       <div className="grid grid-cols-2 gap-3">
+        <div>
+          <div className="text-sm mb-1">Фамилия</div>
+          <input className="ui-input w-full" required placeholder="Фамилия" value={lastName} onChange={e=>setLastName(e.target.value)} />
+        </div>
+        <div>
+          <div className="text-sm mb-1">Имя</div>
+          <input className="ui-input w-full" required placeholder="Имя" value={firstName} onChange={e=>setFirstName(e.target.value)} />
+        </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">ФИО</div>
-          <input className="ui-input w-full" required placeholder="ФИО" />
+          <div className="text-sm mb-1">Отчество</div>
+          <input className="ui-input w-full" placeholder="(необязательно)" value={middleName} onChange={e=>setMiddleName(e.target.value)} />
         </div>
         <div>
           <div className="text-sm mb-1">Телефон</div>
-          <input className="ui-input w-full" required placeholder="+996 (...) ... ..." />
+          <input className="ui-input w-full" required placeholder="+996 (...) ... ..." value={phone} onChange={e=>setPhone(e.target.value)} />
         </div>
         <div>
           <div className="text-sm mb-1">E-mail</div>
-          <input className="ui-input w-full" required placeholder="email@example.com" />
+          <input className="ui-input w-full" required placeholder="email@example.com" value={email} onChange={e=>setEmail(e.target.value)} />
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Статус</div>
-          <select className="ui-input">
+          <select className="ui-input" value={status} onChange={e=>setStatus(e.target.value as any)}>
             <option>Активен</option>
             <option>Заблокирован</option>
           </select>
         </div>
       </div>
+      {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-4">
         <button type="button" className="btn btn-danger w-full h-9" onClick={onCancel}>Сбросить</button>
-        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+        <button type="submit" className="btn btn-success w-full h-9" disabled={submitting}>{submitting?"Сохранение...":"Сохранить"}</button>
       </div>
     </form>
   );
@@ -136,8 +186,20 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState(user.status);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave(); }}>
+    <form className="space-y-3" onSubmit={async (e) => {
+      e.preventDefault(); setErr(null); setSubmitting(true);
+      try {
+        await updateUser(user.id, { firstName, lastName, middleName, phone, email, status });
+        onSave();
+      } catch {
+        setErr("Не удалось сохранить пользователя");
+      } finally {
+        setSubmitting(false);
+      }
+    }}>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="text-sm mb-1">Фамилия</div>
@@ -167,23 +229,31 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
           </select>
         </div>
       </div>
+      {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-4">
         <button type="button" className="btn w-full h-9" onClick={onCancel}>Отмена</button>
-        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+        <button type="submit" className="btn btn-success w-full h-9" disabled={submitting}>{submitting?"Сохранение...":"Сохранить"}</button>
       </div>
     </form>
   );
 }
 
 function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; onCancel: () => void; onDelete: () => void; }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   return (
     <div className="space-y-4 text-sm">
       <div>
         Вы уверены, что хотите удалить пользователя «{user ? user.fullName : ""}»?
       </div>
+      {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-2">
         <button className="btn w-full h-9" onClick={onCancel}>Отмена</button>
-        <button className="btn btn-danger w-full h-9" onClick={onDelete}>Удалить</button>
+        <button className="btn btn-danger w-full h-9" disabled={submitting} onClick={async ()=>{
+          if (!user) return;
+          setErr(null); setSubmitting(true);
+          try { await deleteUser(user.id); onDelete(); } catch(e){ setErr("Не удалось удалить пользователя"); } finally { setSubmitting(false); }
+        }}>Удалить</button>
       </div>
     </div>
   );
