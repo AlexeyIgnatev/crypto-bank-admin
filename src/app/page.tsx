@@ -4,7 +4,7 @@
 import Cards from "../components/Cards";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Transaction } from "../types";
 
 export default function Home() {
