@@ -260,7 +260,12 @@ export default function TransactionsAnalytics() {
         <div className="lg:col-span-1 card border border-soft rounded-xl p-3 space-y-3">
           <Stat label="Общая сумма" value={stats.totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
           <Stat label="Общее количество" value={stats.totalCount.toLocaleString()} />
-          {/* Дополнительные статистики можно добавить на основании расширенного ответа /transactions/stats */}
+          <div className="grid grid-cols-2 gap-3">
+            <Stat label="Топ валюта по сумме" value={stats.topCurrencyBySumLabel || "—"} />
+            <Stat label="Топ валюта по количеству" value={stats.topCurrencyByCountLabel || "—"} />
+            <Stat label="Наиболее активный день" value={stats.mostActiveDayLabel || "—"} />
+            <Stat label="Средний чек" value={Math.round(stats.averageCheck).toLocaleString()} />
+          </div>
         </div>
       </div>
     </div>

@@ -247,22 +247,50 @@ export async function getTransactionsStats(params: {
   operations?: ("bank"|"crypto"|"exchange")[];
   metric?: "sum"|"count";
   bucket?: "day"|"week"|"month";
-}): Promise<{ points: { ts: number; label: string; value: number }[]; totalSum: number; totalCount: number; }> {
+}): Promise<{
+  points: { ts: number; label: string; value: number }[];
+  totalSum: number;
+  totalCount: number;
+  topCurrencyBySumLabel: string;
+  topCurrencyByCountLabel: string;
+  mostActiveDayLabel: string;
+  averageCheck: number;
+}> {
+  const opMap: Record<string, string> = { bank: "BANK_TO_BANK", crypto: "WALLET_TO_WALLET", exchange: "CONVERSION" };
   const q = new URLSearchParams();
   if (params.dateFrom) q.set("date_from", params.dateFrom);
   if (params.dateTo) q.set("date_to", params.dateTo);
   if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
   if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
-  if (params.operations && params.operations.length) for (const o of params.operations) q.append("operation", o);
+  if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", opMap[o] || o);
   if (params.metric) q.set("metric", params.metric);
-  if (params.bucket) q.set("bucket", params.bucket);
+  if (params.bucket) q.set("group_by", params.bucket);
   const res = await fetch(`/api/transactions/stats?${q.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load transactions stats");
   const d = await res.json();
-  const points = (d.points || d.items || []).map((p: any) => ({ ts: Number(p.ts ?? p.time ?? 0), label: p.label || String(p.ts ?? p.time), value: Number(p.value ?? p.count ?? p.sum ?? 0) }));
-  const totalSum = Number(d.total_sum ?? d.totalSum ?? 0);
-  const totalCount = Number(d.total_count ?? d.totalCount ?? 0);
-  return { points, totalSum, totalCount };
+  const series = Array.isArray(d.series) ? d.series : [];
+  const summary = d.summary || {};
+  const points = series.map((p: any) => {
+    const iso = String(p.date);
+    const ts = Date.parse(iso);
+    const label = isNaN(ts) ? String(p.date) : new Date(iso).toISOString().slice(0, 10).split("-").reverse().join(".");
+    return { ts: isNaN(ts) ? 0 : ts, label, value: Number(p.value ?? 0) };
+  });
+  const mapCurrencyToDisplay = (x?: string) => {
+    const display = mapCurrency(x);
+    if (display === "COM") return "СОМ";
+    if (display === "SALAM") return "САЛАМ";
+    return display;
+  };
+  const totalSum = Number(summary.total_sum_som ?? 0);
+  const totalCount = Number(summary.total_count ?? 0);
+  const topCurrencyBySumLabel = mapCurrencyToDisplay(summary.top_currency_by_sum);
+  const topCurrencyByCountLabel = mapCurrencyToDisplay(summary.top_currency_by_count);
+  const mostActiveDayLabel = typeof summary.most_active_day === "string" && summary.most_active_day
+    ? summary.most_active_day.slice(0, 10).split("-").reverse().join(".")
+    : "—";
+  const averageCheck = Number(summary.average_check_som ?? 0);
+  return { points, totalSum, totalCount, topCurrencyBySumLabel, topCurrencyByCountLabel, mostActiveDayLabel, averageCheck };
 }
 
 export async function getSettings(): Promise<Record<string, string>> {
