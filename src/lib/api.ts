@@ -369,6 +369,7 @@ export async function getAntifraudCases(params: {
   currencies?: string[];
   operations?: string[];
   caseStatus?: AntiFraudCaseStatus;
+  caseStatuses?: AntiFraudCaseStatus[];
 }): Promise<{ items: AntiFraudCaseItem[]; total: number; offset: number; limit: number; }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
@@ -386,6 +387,7 @@ export async function getAntifraudCases(params: {
   if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
   if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", o);
   if (params.caseStatus) q.set("case_status", params.caseStatus);
+  if (params.caseStatuses && params.caseStatuses.length) for (const s of params.caseStatuses) q.append("case_status", s);
 
   const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load antifraud cases");
