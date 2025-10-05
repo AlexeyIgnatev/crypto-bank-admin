@@ -305,6 +305,24 @@ export async function putSettings(payload: Record<string, string>) {
   return res.json();
 }
 
+// Helpers for assets mapping between backend codes and UI labels
+function mapAssetToDisplay(x?: string): string {
+  switch (x) {
+    case "SOM": return "COM";
+    case "ESOM": return "SALAM";
+    case "USDT_TRC20": return "USDT";
+    default: return x || "COM";
+  }
+}
+function mapDisplayToAsset(x?: string): string {
+  switch (x) {
+    case "COM": return "SOM";
+    case "SALAM": return "ESOM";
+    case "USDT": return "USDT_TRC20";
+    default: return x || "SOM";
+  }
+}
+
 // ===== Antifraud =====
 export type AntiFraudRule = {
   id: number;
@@ -374,15 +392,14 @@ export async function getAntifraudCases(params: {
   const data = await res.json();
   const items: AntiFraudCaseItem[] = (data.items || []).map((it: any) => {
     const tx = it.transaction || {};
-    const displayId = String(tx.tx_hash || tx.bank_op_id || it.id);
     const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
     const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
     return {
       id: String(it.id),
-      status: (it.status || "OPEN") as AntiFraudCaseStatus,
+      status: (it.status || it.case_status || "OPEN") as AntiFraudCaseStatus,
       createdAt: tx.createdAt || it.createdAt,
       amount: Number(tx.amount ?? 0),
-      currency: mapCurrency(tx.asset),
+      currency: mapAssetToDisplay(tx.asset),
       sender: senderLabel,
       recipient: receiverLabel,
       txId: String(tx.id || ""),
