@@ -20,28 +20,51 @@ function statusBadge(status: ControlCaseStatus) {
   return <span className={`badge ${cls}`}>{text}</span>;
 }
 
+import { useEffect } from "react";
+import { getAntifraudCases, approveAntifraudCase, rejectAntifraudCase } from "@/lib/api";
+
 export default function ControlCasesPage() {
-  // Временные данные для вёрстки до интеграции API
-  const [items, setItems] = useState<ControlCase[]>(() => [
-    { id: "0x9f2a...a12", status: "OPEN", createdAt: new Date().toISOString(), amount: 15230.15, currency: "COM", sender: "Иванов Иван", recipient: "Петров Пётр" },
-    { id: "0x1bc3...9f0", status: "APPROVED", createdAt: new Date(Date.now()-86400000).toISOString(), amount: 200, currency: "USDT", sender: "wallet_1", recipient: "wallet_2" },
-    { id: "0x7aa0...0ee", status: "REJECTED", createdAt: new Date(Date.now()-2*86400000).toISOString(), amount: 0.0512, currency: "BTC", sender: "wallet_a", recipient: "wallet_b" },
-  ]);
+  const [items, setItems] = useState<ControlCase[]>([]);
   const [selected, setSelected] = useState<ControlCase | null>(null);
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ open: boolean; action: "approve"|"reject"|null }>({ open: false, action: null });
 
   const total = items.length;
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await getAntifraudCases({ limit: 50, sortBy: "createdAt", sortDir: "desc" });
+        const mapped: ControlCase[] = res.items.map(it => ({
+          id: it.id,
+          status: it.status,
+          createdAt: it.createdAt,
+          amount: it.amount,
+          currency: it.currency,
+          sender: it.sender,
+          recipient: it.recipient,
+        }));
+        setItems(mapped);
+      } catch {
+        setItems([]);
+      }
+    })();
+  }, []);
+
   function openDetails(t: ControlCase) { setSelected(t); setOpen(true); }
   function closeDetails() { setOpen(false); }
 
-  function doChangeStatus(action: "approve"|"reject") {
+  async function doChangeStatus(action: "approve"|"reject") {
     if (!selected) return;
-    const nextStatus: ControlCaseStatus = action === "approve" ? "APPROVED" : "REJECTED";
-    setItems(prev => prev.map(it => it.id === selected.id ? { ...it, status: nextStatus } : it));
-    setSelected(s => s ? { ...s, status: nextStatus } : s);
-    setConfirm({ open: false, action: null });
+    try {
+      if (action === "approve") await approveAntifraudCase(selected.id);
+      else await rejectAntifraudCase(selected.id);
+      const nextStatus: ControlCaseStatus = action === "approve" ? "APPROVED" : "REJECTED";
+      setItems(prev => prev.map(it => it.id === selected.id ? { ...it, status: nextStatus } : it));
+      setSelected(s => s ? { ...s, status: nextStatus } : s);
+    } finally {
+      setConfirm({ open: false, action: null });
+    }
   }
 
   return (

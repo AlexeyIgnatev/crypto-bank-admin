@@ -2,8 +2,7 @@
 import { useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 
-// Правила и их параметры. Никаких вызовов API — чистый клиент,
-// чтобы потом легко подменить на реальный бекенд с параметрами.
+// Экран подключен к API /antifraud/rules для чтения/сохранения правил.
 
 type Category = "Обязательный контроль" | "Поведение клиента";
 
@@ -13,6 +12,62 @@ type RuleParams =
   | ({ type: "fiatOpsThreshold"; amountSom: number })
   | ({ type: "singleDeal"; amountSom: number })
   | ({ type: "frequentOps"; count: number; days: number; perOpMinSom: number })
+import { useEffect } from "react";
+import { getAntifraudRules, updateAntifraudRule, type AntiFraudRule } from "@/lib/api";
+
+function ApiRulesManager() {
+  const [rules, setRules] = useState<AntiFraudRule[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await getAntifraudRules();
+        setRules(list);
+      } catch (e) {
+        setError("Не удалось загрузить правила");
+      }
+    })();
+  }, []);
+
+  async function toggleEnabled(rule: AntiFraudRule) {
+    setSaving(rule.key);
+    try {
+      const next = await updateAntifraudRule(rule.key, { enabled: !rule.enabled });
+      setRules(prev => (prev || []).map(r => r.key === rule.key ? next : r));
+    } catch {
+      setError("Не удалось обновить правило");
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  if (error) return <div className="p-3 text-sm text-red-500">{error}</div>;
+  if (!rules) return <div className="p-3 text-sm text-muted">Загрузка правил…</div>;
+
+  return (
+    <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
+      <header className="p-4 border-b border-soft flex items-center justify-between">
+        <div className="text-lg font-semibold">Правила антифрода (API)</div>
+      </header>
+      <div className="p-2 divide-y divide-soft">
+        {rules.map(r => (
+          <div key={r.key} className="flex items-center justify-between gap-3 p-2">
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">{r.key}</div>
+              <div className="text-xs text-muted truncate">обновлено: {new Date(r.updatedAt).toLocaleString()}</div>
+            </div>
+            <button className="btn h-8" disabled={saving===r.key} onClick={() => toggleEnabled(r)}>
+              {r.enabled ? "Отключить" : "Включить"}
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
   | ({ type: "withdrawAfterLargeIncome"; percent: number; baseAmountSom: number; days: number })
   | ({ type: "splitFiatAmounts"; amountSom: number; days: number })
   | ({ type: "thirdPartyDeposits"; count: number; days: number; totalSom: number })
@@ -43,6 +98,8 @@ export default function ControlPage() {
   return (
     <div className="flex-1 min-h-0 flex">
       <div className="m-auto w-full max-w-5xl">
+
+        <div className="mb-4"><ApiRulesManager /></div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Section title="Обязательный контроль">
