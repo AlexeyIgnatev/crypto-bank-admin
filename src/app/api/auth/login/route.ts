@@ -1,26 +1,26 @@
 import { NextResponse } from "next/server";
 import { upstreamFetch } from "@/lib/http";
+import { isProd } from "@/lib/config";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  // Try upstream first
-  try {
-    const upstreamBody = { email: (body as any).email || (body as any).login, password: (body as any).password };
-    const upstream = await upstreamFetch("/admin-management/auth/login", { method: "POST", body: JSON.stringify(upstreamBody), auth: false });
-    const data = await upstream.json().catch(() => null) as any;
-    if (upstream.ok && data?.accessToken && data?.refreshToken) {
-      const res = NextResponse.json({ ok: true });
-      res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax" });
-      res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax" });
-      return res;
-    }
-  } catch {}
+  const email = (body as any).email;
+  const password = (body as any).password;
+  if (!email || !password) {
+    return NextResponse.json({ message: "Email и пароль обязательны" }, { status: 400 });
+  }
 
-  // Fallback demo auth (no backend): admin/admin
-  if (body?.login === "admin" && body?.password === "admin") {
-    const res = NextResponse.json({ ok: true, demo: true });
-    res.cookies.set("admin_auth", "1", { httpOnly: true, path: "/", sameSite: "lax" });
+  const upstream = await upstreamFetch("/admin-management/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+    auth: false,
+  });
+  const data = await upstream.json().catch(() => null as any);
+  if (upstream.ok && data?.accessToken && data?.refreshToken) {
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
+    res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
     return res;
   }
-  return NextResponse.json({ message: "Ошибка авторизации" }, { status: 401 });
+  return NextResponse.json({ message: data?.message || "Ошибка авторизации" }, { status: upstream.status || 401 });
 }

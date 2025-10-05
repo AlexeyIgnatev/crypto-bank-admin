@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { API_BASE } from "@/lib/config";
+import { API_BASE, isProd } from "@/lib/config";
 
 export async function POST() {
   const cookieStore = cookies();
@@ -10,7 +10,7 @@ export async function POST() {
   const data = await upstream.json().catch(() => null) as any;
   if (!upstream.ok || !data?.accessToken || !data?.refreshToken) return NextResponse.json({ message: "Refresh failed" }, { status: 401 });
   const res = NextResponse.json({ ok: true });
-  res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax" });
-  res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax" });
+  res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
+  res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
   return res;
 }

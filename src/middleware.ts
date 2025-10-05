@@ -19,7 +19,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const isAuthed = Boolean(req.cookies.get("accessToken")?.value || req.cookies.get("admin_auth")?.value === "1");
+  const isAuthed = Boolean(req.cookies.get("accessToken")?.value);
   if (!isAuthed) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
