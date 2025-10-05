@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="w-full h-full grid place-items-center">
       <form onSubmit={handleSubmit} className="w-[360px] p-6 rounded-2xl border border-soft card shadow-sm">
         <div className="text-2xl font-semibold mb-1">Вход администратора</div>
-        <div className="text-sm text-muted mb-4">Введите логин и пароль</div>
+        <div className="text-sm text-muted mb-4">Введите email и пароль</div>
         <label className="text-sm mb-1 block">Email</label>
         <input className="ui-input w-full mb-3" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@example.com" />
         <label className="text-sm mb-1 block">Пароль</label>

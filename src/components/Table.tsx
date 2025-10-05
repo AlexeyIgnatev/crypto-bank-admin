@@ -56,18 +56,21 @@ function useDropdown(): DropdownState {
 }
 
 
-export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (t: Transaction) => void }) {
+import { getTransactions } from "@/lib/api";
+
+export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) {
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+  const [items, setItems] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    // Убедимся, что у всех предков min-h-0, иначе flex-дети могут не сжиматься
-    // В текущем коде это сделано в AppShell и page.tsx
   }, []);
-
-
 
   // ===== Фильтры =====
   const [idQuery, setIdQuery] = useState("");
@@ -80,11 +83,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const [senderQ, setSenderQ] = useState("");
   const [recipientQ, setRecipientQ] = useState("");
 
-  const availableCurrencies = useMemo(() => {
-    const arr = Array.from(new Set(data.map((t) => t.currency)));
-    const order = ["COM", "SALAM", "BTC", "USDT", "ETH"]; // предпочтительный порядок
-    return arr.sort((a, b) => (order.indexOf(a) === -1 ? 999 : order.indexOf(a)) - (order.indexOf(b) === -1 ? 999 : order.indexOf(b)));
-  }, [data]);
+  const availableCurrencies = ["COM", "SALAM", "BTC", "ETH", "USDT"];
 
   // выпадающие меню
   const idDD = useDropdown();
@@ -95,78 +94,58 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
   const senderDD = useDropdown();
   const recipientDD = useDropdown();
 
-  // применяем фильтры перед сортировкой
-  const filtered = useMemo(() => {
-    let res = [...data];
-    if (idQuery) {
-      const q = idQuery.trim().toLowerCase();
-      res = res.filter((t) => t.id.toLowerCase().includes(q));
-    }
-    if (statusSet.size) {
-      const s = new Set(statusSet);
-      res = res.filter((t) => s.has(t.status));
-    }
-    if (dateFrom) {
-      const d = new Date(dateFrom).getTime();
-      res = res.filter((t) => new Date(t.createdAt).getTime() >= d);
-    }
-    if (dateTo) {
-      const d = new Date(dateTo).getTime();
-      res = res.filter((t) => new Date(t.createdAt).getTime() <= d);
-    }
-    if (typeof minAmount === "number") res = res.filter((t) => t.amount >= minAmount!);
-    if (typeof maxAmount === "number") res = res.filter((t) => t.amount <= maxAmount!);
-    if (currencySet.size) {
-      const s = new Set(currencySet);
-      res = res.filter((t) => s.has(t.currency));
-    }
-    if (senderQ) {
-      const q = senderQ.trim().toLowerCase();
-      res = res.filter((t) => t.sender.toLowerCase().includes(q));
-    }
-    if (recipientQ) {
-      const q = recipientQ.trim().toLowerCase();
-      res = res.filter((t) => t.recipient.toLowerCase().includes(q));
-    }
-    return res;
-  }, [data, idQuery, statusSet, dateFrom, dateTo, minAmount, maxAmount, currencySet, senderQ, recipientQ]);
-
-
-
-
-
-  const sorted = useMemo(() => {
-    const dir = sortDir === "asc" ? 1 : -1;
-    return [...filtered].sort((a, b) => {
-      const va: any = (a as any)[sortKey];
-      const vb: any = (b as any)[sortKey];
-      if (sortKey === "createdAt") return (new Date(va).getTime() - new Date(vb).getTime()) * dir;
-      if (sortKey === "amount") return (Number(va) - Number(vb)) * dir;
-      return String(va).localeCompare(String(vb)) * dir;
-    });
-  }, [filtered, sortDir, sortKey]);
-
-  // сбрасываем скролл при изменении любого фильтра
+  // Запрос на бэкенд
   useEffect(() => {
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await getTransactions({
+          offset,
+          limit,
+          sortBy: sortKey === "id" ? "createdAt" : sortKey,
+          sortDir,
+          txHash: idQuery || undefined,
+          id: idQuery || undefined,
+          sender: senderQ || undefined,
+          receiver: recipientQ || undefined,
+          dateFrom,
+          dateTo,
+          minAmount,
+          maxAmount,
+          statuses: statusSet.size ? Array.from(statusSet) : undefined,
+          currencies: currencySet.size ? Array.from(currencySet) : undefined,
+        });
+        if (!alive) return;
+        setItems(res.items || []);
+        setTotal(res.total ?? res.items.length);
+      } catch {
+        if (!alive) return;
+        setItems([]);
+        setTotal(0);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    // сброс скролла при изменении фильтров/сортировки/страницы
     const el = containerRef.current; if (el) el.scrollTop = 0;
-  }, [idQuery, statusSet, dateFrom, dateTo, minAmount, maxAmount, currencySet, senderQ, recipientQ]);
+    return () => { alive = false; };
+  }, [offset, limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
 
   // Виртуализация через @tanstack/react-virtual
   const rowHeight = 48;
   const rowVirtualizer = useVirtualizer({
-    count: sorted.length,
+    count: items.length,
     getScrollElement: () => containerRef.current,
     estimateSize: () => rowHeight,
     overscan: 8,
   });
 
-  // При смене сортировки — прокручиваем в начало
-  useEffect(() => {
-    const el = containerRef.current;
-    if (el) el.scrollTo({ top: 0 });
-  }, [sortKey, sortDir]);
+  const canPrev = offset > 0;
+  const canNext = offset + limit < total;
 
   function toggleSort(key: SortKey) {
+    if (key === "id") return; // сортировка по id не поддерживается бекендом
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
@@ -178,6 +157,18 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
       {/* Непрокручиваемая шапка на всю ширину карточки */}
       <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
+        <div className="flex items-center justify-between px-4 py-2 text-white text-sm">
+          <div>
+            {loading ? "Загрузка..." : `Показано ${items.length} из ${total}`}
+          </div>
+          <div className="flex items-center gap-2">
+            <select className="ui-input h-8" value={limit} onChange={(e) => { setOffset(0); setLimit(Number(e.target.value)); }}>
+              {[20, 50, 100].map(n => <option key={n} value={n}>{n} / стр.</option>)}
+            </select>
+            <button className="btn h-8" disabled={!canPrev} onClick={() => setOffset(Math.max(0, offset - limit))}>Назад</button>
+            <button className="btn h-8" disabled={!canNext} onClick={() => setOffset(offset + limit)}>Вперед</button>
+          </div>
+        </div>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -292,7 +283,7 @@ export default function Table({ data, onOpen }: { data: Transaction[]; onOpen: (
                   )}
 
                   {items.map((vRow) => {
-                    const t = sorted[vRow.index];
+                    const t = items[vRow.index];
                     if (!t) return null;
                     return (
                       <tr

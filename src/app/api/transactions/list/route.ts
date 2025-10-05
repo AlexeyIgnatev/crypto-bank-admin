@@ -12,6 +12,7 @@ function withCookies(upstream: any, json: any, status: number) {
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
+  // pass-through query as-is
   const upstream = await upstreamFetch(`/transactions/list${url.search}`, { method: "GET" });
   const json = await upstream.json().catch(() => null);
   return withCookies(upstream, json, upstream.status);

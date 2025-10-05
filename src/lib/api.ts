@@ -17,10 +17,61 @@ function mapTxStatus(x?: string): TransactionStatus {
   }
 }
 
-export async function getTransactions(params: { offset?: number; limit?: number; }): Promise<{ items: Transaction[]; total: number; offset: number; limit: number; }> {
+type BackendStatus = "SUCCESS" | "FAILED" | "PENDING";
+
+function mapUiStatusToBackend(x: TransactionStatus): BackendStatus {
+  switch (x) {
+    case "confirmed": return "SUCCESS";
+    case "declined": return "FAILED";
+    default: return "PENDING";
+  }
+}
+
+function mapDisplayToAsset(x: string): string {
+  switch (x) {
+    case "COM": return "SOM";
+    case "SALAM": return "ESOM";
+    case "USDT": return "USDT_TRC20";
+    default: return x; // BTC, ETH
+  }
+}
+
+export async function getTransactions(params: {
+  offset?: number;
+  limit?: number;
+  sortBy?: "createdAt" | "amount" | "status" | "kind";
+  sortDir?: "asc" | "desc";
+  id?: string;
+  txHash?: string;
+  sender?: string;
+  receiver?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  statuses?: TransactionStatus[];
+  currencies?: string[]; // COM, SALAM, BTC, ETH, USDT
+}): Promise<{ items: Transaction[]; total: number; offset: number; limit: number; }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.sortBy) q.set("sort_by", params.sortBy);
+  if (params.sortDir) q.set("sort_dir", params.sortDir);
+  if (params.id) q.set("id", params.id);
+  if (params.txHash) q.set("tx_hash", params.txHash);
+  if (params.sender) q.set("sender", params.sender);
+  if (params.receiver) q.set("receiver", params.receiver);
+  if (params.dateFrom) q.set("date_from", params.dateFrom);
+  if (params.dateTo) q.set("date_to", params.dateTo);
+  if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
+  if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
+  if (params.statuses && params.statuses.length) {
+    for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
+  }
+  if (params.currencies && params.currencies.length) {
+    for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+  }
+
   const res = await fetch(`/api/transactions/list?${q.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load transactions");
   const data = await res.json();
@@ -28,7 +79,7 @@ export async function getTransactions(params: { offset?: number; limit?: number;
     id: String(it.tx_hash || it.id),
     status: mapTxStatus(it.status),
     createdAt: it.createdAt,
-    amount: Number(it.som_amount ?? 0),
+    amount: Number(it.amount ?? 0),
     currency: mapCurrency(it.asset),
     sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
     recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),

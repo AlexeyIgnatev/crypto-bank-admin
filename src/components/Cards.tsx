@@ -12,8 +12,7 @@ export default function Cards() {
         const s = await getStatsToday();
         if (alive) setStats(s);
       } catch {
-        // keep defaults if backend is unavailable
-        if (alive) setStats({ total: 123_000_000, bank: 23_000_000, wallet: 45_000_000, users: 1_230_000 });
+        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0 });
       }
     })();
     return () => { alive = false; };
