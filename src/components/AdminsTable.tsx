@@ -45,7 +45,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   const [sortKey, setSortKey] = useState<AdminSortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // filters per column
+  // filters per column (local only for UI; actual fetch happens in page via useEffect)
   const [firstQ, setFirstQ] = useState("");
   const [lastQ, setLastQ] = useState("");
   const [loginQ, setLoginQ] = useState("");

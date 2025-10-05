@@ -23,6 +23,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return withCookies(upstream, json, upstream.status);
 }
 
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  const body = await req.json();
+  const upstream = await upstreamFetch(`/admin-management/${params.id}`, { method: "PUT", body: JSON.stringify(body) });
+  const json = await upstream.json().catch(() => null);
+  return withCookies(upstream, json, upstream.status);
+}
+
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const upstream = await upstreamFetch(`/admin-management/${params.id}`, { method: "DELETE" });
   const json = await upstream.json().catch(() => null);

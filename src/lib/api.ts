@@ -164,32 +164,68 @@ export async function deleteUser(id: string|number) {
   return true;
 }
 
-export async function getAdmins(params: { offset?: number; limit?: number; }): Promise<{ items: Admin[]; total: number; offset: number; limit: number; }> {
+function roleLabelFromKey(k?: string): string {
+  switch ((k || "").toUpperCase()) {
+    case "SUPER_ADMIN": return "Супер админ";
+    default: return k || "Супер админ";
+  }
+}
+function roleKeyFromLabel(lbl: string): string {
+  const x = lbl.trim().toLowerCase();
+  if (x === "супер админ") return "SUPER_ADMIN";
+  return lbl;
+}
+
+export async function getAdmins(params: {
+  offset?: number; limit?: number;
+  firstNameQuery?: string; lastNameQuery?: string; emailQuery?: string;
+  roles?: string[]; // backend role keys e.g. SUPER_ADMIN
+  createdFrom?: string; createdTo?: string; // ISO
+  sortFirstName?: "asc" | "desc";
+  sortLastName?: "asc" | "desc";
+  sortEmail?: "asc" | "desc";
+  sortCreatedAt?: "asc" | "desc";
+}): Promise<{ items: Admin[]; total: number; offset: number; limit: number; }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.firstNameQuery) q.set("firstNameQuery", params.firstNameQuery);
+  if (params.lastNameQuery) q.set("lastNameQuery", params.lastNameQuery);
+  if (params.emailQuery) q.set("emailQuery", params.emailQuery);
+  if (params.roles && params.roles.length) for (const r of params.roles) q.append("roles", r);
+  if (params.createdFrom) q.set("createdFrom", params.createdFrom);
+  if (params.createdTo) q.set("createdTo", params.createdTo);
+  if (params.sortFirstName) q.set("sortFirstName", params.sortFirstName);
+  if (params.sortLastName) q.set("sortLastName", params.sortLastName);
+  if (params.sortEmail) q.set("sortEmail", params.sortEmail);
+  if (params.sortCreatedAt) q.set("sortCreatedAt", params.sortCreatedAt);
+
   const res = await fetch(`/api/admin-management?${q.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load admins");
   const data = await res.json();
-  const items: Admin[] = (data.items || data || []).map((a: any) => ({
+  const itemsSrc: any[] = data.items || data || [];
+  const items: Admin[] = itemsSrc.map((a: any) => ({
     id: String(a.id),
     firstName: a.firstName || "",
     lastName: a.lastName || "",
     login: a.email || "",
-    role: "Супер админ",
+    role: roleLabelFromKey(a.role || "SUPER_ADMIN"),
     createdAt: a.createdAt || new Date().toISOString(),
   }));
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
 }
 
 export async function createAdmin(payload: { email: string; password: string; firstName: string; lastName: string; role: string; }) {
-  const res = await fetch(`/api/admin-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const body = { ...payload, role: roleKeyFromLabel(payload.role) };
+  const res = await fetch(`/api/admin-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to create admin");
   return res.json();
 }
 
 export async function updateAdmin(id: string | number, payload: Partial<{ email: string; password: string; firstName: string; lastName: string; role: string; }>) {
-  const res = await fetch(`/api/admin-management/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const body = { ...payload } as any;
+  if (body.role) body.role = roleKeyFromLabel(body.role);
+  const res = await fetch(`/api/admin-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to update admin");
   return res.json();
 }
@@ -199,6 +235,8 @@ export async function deleteAdmin(id: string | number) {
   if (!res.ok && res.status !== 204) throw new Error("Failed to delete admin");
   return true;
 }
+}
+
 
 export async function getSettings(): Promise<Record<string, string>> {
   const res = await fetch(`/api/blockchain-config/settings`, { cache: "no-store" });

@@ -10,10 +10,34 @@ export default function AdminsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [firstNameQuery, setFirstNameQuery] = useState("");
+  const [lastNameQuery, setLastNameQuery] = useState("");
+  const [emailQuery, setEmailQuery] = useState("");
+  const [roles, setRoles] = useState<string[]>([]);
+  const [createdFrom, setCreatedFrom] = useState<string | undefined>();
+  const [createdTo, setCreatedTo] = useState<string | undefined>();
+  const [sortFirstName, setSortFirstName] = useState<"asc"|"desc"|undefined>();
+  const [sortLastName, setSortLastName] = useState<"asc"|"desc"|undefined>();
+  const [sortEmail, setSortEmail] = useState<"asc"|"desc"|undefined>();
+  const [sortCreatedAt, setSortCreatedAt] = useState<"asc"|"desc"|undefined>();
+
   async function reload() {
     try {
       setError(null);
-      const res = await getAdmins({ offset: 0, limit: 200 });
+      const res = await getAdmins({
+        offset: 0,
+        limit: 200,
+        firstNameQuery: firstNameQuery || undefined,
+        lastNameQuery: lastNameQuery || undefined,
+        emailQuery: emailQuery || undefined,
+        roles: roles.length ? roles : undefined,
+        createdFrom,
+        createdTo,
+        sortFirstName,
+        sortLastName,
+        sortEmail,
+        sortCreatedAt,
+      });
       setData(res.items);
     } catch (e) {
       setError("Не удалось загрузить администраторов");
@@ -22,7 +46,7 @@ export default function AdminsPage() {
     }
   }
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { reload(); }, [firstNameQuery, lastNameQuery, emailQuery, roles, createdFrom, createdTo, sortFirstName, sortLastName, sortEmail, sortCreatedAt]);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
