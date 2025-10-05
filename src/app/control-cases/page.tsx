@@ -20,38 +20,15 @@ function statusBadge(status: ControlCaseStatus) {
   return <span className={`badge ${cls}`}>{text}</span>;
 }
 
-import { useEffect } from "react";
-import { getAntifraudCases, approveAntifraudCase, rejectAntifraudCase } from "@/lib/api";
+import CasesTable from "@/components/CasesTable";
+import { approveAntifraudCase, rejectAntifraudCase, type AntiFraudCaseItem } from "@/lib/api";
 
 export default function ControlCasesPage() {
-  const [items, setItems] = useState<ControlCase[]>([]);
-  const [selected, setSelected] = useState<ControlCase | null>(null);
+  const [selected, setSelected] = useState<AntiFraudCaseItem | null>(null);
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ open: boolean; action: "approve"|"reject"|null }>({ open: false, action: null });
 
-  const total = items.length;
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getAntifraudCases({ limit: 50, sortBy: "createdAt", sortDir: "desc" });
-        const mapped: ControlCase[] = res.items.map(it => ({
-          id: it.id,
-          status: it.status,
-          createdAt: it.createdAt,
-          amount: it.amount,
-          currency: it.currency,
-          sender: it.sender,
-          recipient: it.recipient,
-        }));
-        setItems(mapped);
-      } catch {
-        setItems([]);
-      }
-    })();
-  }, []);
-
-  function openDetails(t: ControlCase) { setSelected(t); setOpen(true); }
+  function openDetails(t: AntiFraudCaseItem) { setSelected(t); setOpen(true); }
   function closeDetails() { setOpen(false); }
 
   async function doChangeStatus(action: "approve"|"reject") {
@@ -59,9 +36,7 @@ export default function ControlCasesPage() {
     try {
       if (action === "approve") await approveAntifraudCase(selected.id);
       else await rejectAntifraudCase(selected.id);
-      const nextStatus: ControlCaseStatus = action === "approve" ? "APPROVED" : "REJECTED";
-      setItems(prev => prev.map(it => it.id === selected.id ? { ...it, status: nextStatus } : it));
-      setSelected(s => s ? { ...s, status: nextStatus } : s);
+      setSelected(s => s ? { ...s, status: action === "approve" ? "APPROVED" : "REJECTED" } : s);
     } finally {
       setConfirm({ open: false, action: null });
     }
@@ -74,47 +49,8 @@ export default function ControlCasesPage() {
           <div>Загружено {items.length} из {total}</div>
           <div className="opacity-90">Список кейсов фин. контроля</div>
         </div>
-        <div className="p-2">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm table-fixed">
-              <colgroup>
-                <col className="w-[72px]" />
-                <col className="w-[240px]" />
-                <col className="w-[140px]" />
-                <col className="w-[160px]" />
-                <col className="w-[120px]" />
-                <col />
-                <col />
-              </colgroup>
-              <thead>
-                <tr className="text-xs text-muted">
-                  <th className="px-4 py-3 text-left">№</th>
-                  <th className="px-4 py-3 text-left">ID/tx_hash</th>
-                  <th className="px-4 py-3 text-left">Статус</th>
-                  <th className="px-4 py-3 text-left">Дата</th>
-                  <th className="px-4 py-3 text-left">Сумма</th>
-                  <th className="px-4 py-3 text-left">Отправитель</th>
-                  <th className="px-4 py-3 text-left">Получатель</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((t, i) => (
-                  <tr key={t.id} className="border-t border-soft hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => openDetails(t)}>
-                    <td className="px-4 py-3 tabular-nums text-muted">{i + 1}</td>
-                    <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
-                    <td className="px-4 py-3">{statusBadge(t.status)}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {t.currency}</td>
-                    <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
-                    <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
-                  </tr>
-                ))}
-                {items.length === 0 && (
-                  <tr><td className="px-4 py-8 text-center text-muted" colSpan={7}>Нет данных</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="p-2 min-h-[360px]">
+          <CasesTable onOpen={openDetails} />
         </div>
       </div>
 
