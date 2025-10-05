@@ -109,12 +109,19 @@ export async function getStatsToday(): Promise<{ total: number; bank: number; wa
   };
 }
 
-export async function getUsers(params: { offset?: number; limit?: number; search?: string; statuses?: ("ACTIVE"|"BLOCKED")[] }): Promise<{ items: User[]; total: number; offset: number; limit: number; }> {
+export async function getUsers(params: {
+  offset?: number; limit?: number;
+  search?: string; statuses?: ("ACTIVE"|"BLOCKED")[];
+  sortBy?: "customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt";
+  sortDir?: "asc"|"desc";
+}): Promise<{ items: User[]; total: number; offset: number; limit: number; }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.search) q.set("search", params.search);
   if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", s);
+  if (params.sortBy) q.set("sort_by", params.sortBy);
+  if (params.sortDir) q.set("sort_dir", params.sortDir);
   const res = await fetch(`/api/user-management?${q.toString()}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load users");
   const data = await res.json();

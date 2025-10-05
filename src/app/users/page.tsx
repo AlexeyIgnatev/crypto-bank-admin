@@ -11,19 +11,34 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function reload() {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<("ACTIVE"|"BLOCKED")[] | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<"customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt">("createdAt");
+  const [sortDir, setSortDir] = useState<"asc"|"desc">("desc");
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+
+  async function fetchPage(pageOffset: number, replace: boolean) {
     try {
       setError(null);
-      const res = await getUsers({ offset: 0, limit: 200 });
-      setData(res.items);
+      setLoading(true);
+      const res = await getUsers({ offset: pageOffset, limit, search: search || undefined, statuses: statusFilter, sortBy, sortDir });
+      setTotal(res.total ?? (res.items?.length || 0));
+      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
     } catch (e) {
+      if (replace) setData([]);
       setError("Не удалось загрузить пользователей");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    setData([]);
+    setOffset(0);
+    fetchPage(0, true);
+  }, [search, statusFilter, sortBy, sortDir, limit]);
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
@@ -34,12 +49,21 @@ export default function UsersPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="min-h-0 flex-1 flex flex-col">
-        {loading ? (
-          <div className="m-auto text-muted">Загрузка...</div>
-        ) : error ? (
+        {error ? (
           <div className="m-auto text-red-500">{error}</div>
         ) : (
-          <UsersTable data={data} onOpen={(u) => { setSelected(u); setOpenView(true); }} />
+          <div className="flex-1 min-h-0" onScroll={(e) => {
+            const el = e.currentTarget as HTMLDivElement;
+            const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+            if (nearEnd && !loading && (offset + data.length < total)) {
+              const nextOffset = offset + data.length;
+              setOffset(nextOffset);
+              fetchPage(nextOffset, false);
+            }
+          }}>
+            <UsersTable data={data} onOpen={(u) => { setSelected(u); setOpenView(true); }} />
+            <div className="p-3 text-center text-sm text-muted">{loading ? "Загрузка..." : ((offset + data.length) < total ? "Прокрутите вниз, чтобы загрузить ещё" : "Все данные загружены")}</div>
+          </div>
         )}
       </div>
 
