@@ -11,20 +11,17 @@ function mapCurrency(x?: string): string {
 
 function mapTxStatus(x?: string): TransactionStatus {
   switch ((x || "").toUpperCase()) {
-    case "SUCCESS": return "confirmed";
-    case "FAILED": return "declined";
-    default: return "pending";
+    case "SUCCESS": return "SUCCESS";
+    case "FAILED": return "FAILED";
+    case "REJECTED": return "REJECTED";
+    default: return "PENDING";
   }
 }
 
-type BackendStatus = "SUCCESS" | "FAILED" | "PENDING";
+type BackendStatus = "SUCCESS" | "FAILED" | "PENDING" | "REJECTED";
 
 function mapUiStatusToBackend(x: TransactionStatus): BackendStatus {
-  switch (x) {
-    case "confirmed": return "SUCCESS";
-    case "declined": return "FAILED";
-    default: return "PENDING";
-  }
+  return (x as BackendStatus);
 }
 
 function mapDisplayToAsset(x: string): string {
@@ -83,7 +80,7 @@ export async function getTransactions(params: {
     currency: mapCurrency(it.asset),
     sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
     recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),
-  }));
+  } as Transaction));
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
 }
 
@@ -242,8 +239,31 @@ export async function deleteAdmin(id: string | number) {
   if (!res.ok && res.status !== 204) throw new Error("Failed to delete admin");
   return true;
 }
-}
 
+export async function getTransactionsStats(params: {
+  dateFrom?: string; dateTo?: string;
+  statuses?: TransactionStatus[];
+  currencies?: string[];
+  operations?: ("bank"|"crypto"|"exchange")[];
+  metric?: "sum"|"count";
+  bucket?: "day"|"week"|"month";
+}): Promise<{ points: { ts: number; label: string; value: number }[]; totalSum: number; totalCount: number; }> {
+  const q = new URLSearchParams();
+  if (params.dateFrom) q.set("date_from", params.dateFrom);
+  if (params.dateTo) q.set("date_to", params.dateTo);
+  if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
+  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+  if (params.operations && params.operations.length) for (const o of params.operations) q.append("operation", o);
+  if (params.metric) q.set("metric", params.metric);
+  if (params.bucket) q.set("bucket", params.bucket);
+  const res = await fetch(`/api/transactions/stats?${q.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load transactions stats");
+  const d = await res.json();
+  const points = (d.points || d.items || []).map((p: any) => ({ ts: Number(p.ts ?? p.time ?? 0), label: p.label || String(p.ts ?? p.time), value: Number(p.value ?? p.count ?? p.sum ?? 0) }));
+  const totalSum = Number(d.total_sum ?? d.totalSum ?? 0);
+  const totalCount = Number(d.total_count ?? d.totalCount ?? 0);
+  return { points, totalSum, totalCount };
+}
 
 export async function getSettings(): Promise<Record<string, string>> {
   const res = await fetch(`/api/blockchain-config/settings`, { cache: "no-store" });

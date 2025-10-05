@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
-import { Transaction, TransactionStatus, Filters, OperationType } from "@/types";
-import { applyFilters, generateTransactions } from "@/lib/mockRepo";
+import { TransactionStatus, OperationType } from "@/types";
+import { useEffect } from "react";
+import { getTransactions, getTransactionsStats } from "@/lib/api";
 import {
   ResponsiveContainer,
   AreaChart as RCAreaChart,
@@ -91,7 +92,7 @@ function mkBuckets(data: Transaction[], mode: "day" | "week" | "month", metric: 
 
 // ---------- Page ----------
 export default function TransactionsAnalytics() {
-  const data = useMemo(() => generateTransactions(500), []);
+  // Данные теперь берём с бэкенда через getTransactions/getTransactionsStats
 
   // filters
   const [dateFrom, setDateFrom] = useState<string | undefined>(() => new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString());
@@ -102,21 +103,46 @@ export default function TransactionsAnalytics() {
   const [metric, setMetric] = useState<"sum" | "count">("sum");
   const [bucket, setBucket] = useState<"day" | "week" | "month">("day");
 
-  const filtered = useMemo(() => {
-    const f: Filters = {
-      q: "",
-      dateFrom,
-      dateTo,
-      statuses: statuses.size ? Array.from(statuses) : undefined,
-      currencies: currencies.size ? Array.from(currencies) : undefined,
-      operations: operations.size ? Array.from(operations) : undefined,
-    };
-    return applyFilters(data, f);
-  }, [data, dateFrom, dateTo, statuses, currencies, operations]);
+  // Загрузка первой страницы и статистики для графика
+  const [rows, setRows] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<{ points: { ts: number; label: string; value: number }[]; totalSum: number; totalCount: number }>({ points: [], totalSum: 0, totalCount: 0 });
 
-  const buckets = useMemo(() => mkBuckets(filtered, bucket, metric), [filtered, bucket, metric]);
-  const totalSum = useMemo(() => filtered.reduce((a, t) => a + t.amount, 0), [filtered]);
-  const insights = useMemo(() => buildInsights(filtered), [filtered]);
+  useEffect(() => {
+    setLoading(true);
+    (async () => {
+      try {
+        const res = await getTransactions({
+          offset: 0,
+          limit: 1,
+          dateFrom,
+          dateTo,
+          statuses: statuses.size ? Array.from(statuses) : undefined,
+          currencies: currencies.size ? Array.from(currencies) : undefined,
+        });
+        setRows(res.items);
+        setTotal(res.total);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [dateFrom, dateTo, statuses, currencies]);
+
+  useEffect(() => {
+    (async () => {
+      const s = await getTransactionsStats({
+        dateFrom,
+        dateTo,
+        statuses: statuses.size ? Array.from(statuses) : undefined,
+        currencies: currencies.size ? Array.from(currencies) : undefined,
+        operations: operations.size ? Array.from(operations) : undefined,
+        metric,
+        bucket,
+      });
+      setStats(s);
+    })();
+  }, [dateFrom, dateTo, statuses, currencies, operations, metric, bucket]);
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden w-full">
@@ -127,9 +153,10 @@ export default function TransactionsAnalytics() {
           <Field label="Статус">
             <div className="flex flex-wrap gap-2">
               {[
-                { key: "confirmed", label: "Подтверждено", cls: "status-confirmed" },
-                { key: "pending", label: "В ожидании", cls: "status-pending" },
-                { key: "declined", label: "Отклонено", cls: "status-declined" },
+                { key: "SUCCESS", label: "Успешно", cls: "status-success" },
+                { key: "PENDING", label: "В ожидании", cls: "status-pending" },
+                { key: "REJECTED", label: "Отклонено", cls: "status-rejected" },
+                { key: "FAILED", label: "Ошибка", cls: "status-failed" },
               ].map(opt => (
                 <button key={opt.key}
                   className={`pill status ${opt.cls}`}
@@ -227,18 +254,13 @@ export default function TransactionsAnalytics() {
             <div className="text-sm text-muted">{metric === "sum" ? "Сумма переводов" : "Количество переводов"}</div>
           </div>
           <div className="flex-1 min-h-[320px]">
-            <InteractiveChart data={buckets} metric={metric} />
+            <InteractiveChart data={stats.points} metric={metric} />
           </div>
         </div>
         <div className="lg:col-span-1 card border border-soft rounded-xl p-3 space-y-3">
-          <Stat label="Общая сумма" value={totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
-          <Stat label="Общее количество" value={filtered.length.toLocaleString()} />
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Топ валюта по сумме" value={`${insights.topCurrencyBySum.label}`} />
-            <Stat label="Топ валюта по количеству" value={`${insights.topCurrencyByCount.label}`} />
-            <Stat label="Наиболее активный день" value={`${insights.topDay.label}`} />
-            <Stat label="Средний чек" value={`${Math.round(insights.avgAmount).toLocaleString()}`} />
-          </div>
+          <Stat label="Общая сумма" value={stats.totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
+          <Stat label="Общее количество" value={stats.totalCount.toLocaleString()} />
+          {/* Дополнительные статистики можно добавить на основании расширенного ответа /transactions/stats */}
         </div>
       </div>
     </div>

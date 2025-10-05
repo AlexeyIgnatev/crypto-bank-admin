@@ -314,11 +314,11 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
                         <td className="px-4 py-3 font-mono truncate" title={t.id}>{t.id}</td>
                         <td className="px-4 py-3">
                           <span className={`badge ${
-                            t.status === "confirmed" ? "badge-success" :
-                            t.status === "pending" ? "badge-warning" :
-                            "badge-danger"
+                            t.status === "SUCCESS" ? "badge-success" :
+                            t.status === "PENDING" ? "badge-warning" :
+                            t.status === "REJECTED" ? "badge-danger" : "badge-danger"
                           }`}>
-                            {t.status === "confirmed" ? "Подтверждено" : t.status === "pending" ? "В ожидании" : "Отклонено"}
+                            {t.status === "SUCCESS" ? "Успешно" : t.status === "PENDING" ? "В ожидании" : t.status === "REJECTED" ? "Отклонено" : "Ошибка"}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
@@ -359,7 +359,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
         <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)} portalRef={statusDD.panelRef}>
           <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">Статусы</div>
-            {(["confirmed","pending","declined"] as TransactionStatus[]).map((s) => {
+            {(["PENDING","SUCCESS","REJECTED","FAILED"] as TransactionStatus[]).map((s) => {
               const checked = statusSet.has(s);
               return (
                 <label key={s} className="flex items-center gap-2 py-1 cursor-pointer select-none">

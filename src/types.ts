@@ -1,4 +1,4 @@
-export type TransactionStatus = "confirmed" | "pending" | "declined";
+export type TransactionStatus = "PENDING" | "SUCCESS" | "REJECTED" | "FAILED";
 
 export interface Transaction {
   id: string; // short hash
