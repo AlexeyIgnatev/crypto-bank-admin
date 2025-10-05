@@ -80,6 +80,16 @@ type EditState = { open: boolean; rule: Rule | null };
 
 export default function ControlPage() {
   const [rules, setRules] = useState<Rule[]>(() => initialRules());
+  // подтягиваем значения из бекенда в текущую вёрстку
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await getAntifraudRules();
+        setRules(prev => applyFromBackend(list, prev));
+      } catch {}
+    })();
+  }, []);
+
   const [edit, setEdit] = useState<EditState>({ open: false, rule: null });
 
   const groups = useMemo(() => ({
@@ -89,10 +99,86 @@ export default function ControlPage() {
 
   const openEdit = (rule: Rule) => setEdit({ open: true, rule: clone(rule) });
   const closeEdit = () => setEdit({ open: false, rule: null });
-  const saveEdit = () => {
+
+  const KEY_MAP: Record<string, string> = {
+    "req-1": "FIAT_ANY_GE_1M",
+    "req-2": "ONE_TIME_GE_8M",
+    "beh-1": "FREQUENT_OPS_3_30D_EACH_GE_100K",
+    "beh-2": "WITHDRAW_AFTER_LARGE_INFLOW",
+    "beh-3": "SPLITTING_TOTAL_14D_GE_1M",
+    "beh-4": "THIRD_PARTY_DEPOSITS_3_30D_TOTAL_GE_1M",
+    "beh-5": "AFTER_INACTIVITY_6M",
+    "beh-6": "MANY_SENDERS_TO_ONE_10_PER_MONTH",
+  };
+  function toDto(rule: Rule): any {
+    const t = rule.params;
+    switch (t.type) {
+      case "fiatOpsThreshold":
+        return { threshold_som: String(t.amountSom) };
+      case "singleDeal":
+        return { threshold_som: String(t.amountSom) };
+      case "frequentOps":
+        return { min_count: t.count, period_days: t.days, threshold_som: String(t.perOpMinSom) };
+      case "withdrawAfterLargeIncome":
+        return { percent_threshold: String(t.percent), threshold_som: String(t.baseAmountSom), period_days: t.days };
+      case "splitFiatAmounts":
+        return { threshold_som: String(t.amountSom), period_days: t.days };
+      case "thirdPartyDeposits":
+        return { min_count: t.count, period_days: t.days, threshold_som: String(t.totalSom) };
+      case "accountActivityAfterInactivity":
+        return { period_days: Math.max(1, Math.trunc(t.months * 30)) };
+      case "manyTransfersFromDifferentPersons":
+        return { min_count: t.persons, period_days: 30 };
+    }
+  }
+  function applyFromBackend(list: AntiFraudRule[], prev: Rule[]): Rule[] {
+    const byKey = Object.fromEntries(list.map(r => [r.key, r] as const));
+    return prev.map(r => {
+      const key = KEY_MAP[r.id];
+      const br = byKey[key];
+      if (!br) return r;
+      const p = r.params as any;
+      switch (p.type) {
+        case "fiatOpsThreshold":
+        case "singleDeal":
+          p.amountSom = Number((br as any).threshold_som ?? p.amountSom) || p.amountSom; break;
+        case "frequentOps":
+          p.count = Number((br as any).min_count ?? p.count) || p.count;
+          p.days = Number((br as any).period_days ?? p.days) || p.days;
+          p.perOpMinSom = Number((br as any).threshold_som ?? p.perOpMinSom) || p.perOpMinSom; break;
+        case "withdrawAfterLargeIncome":
+          p.percent = Number((br as any).percent_threshold ?? p.percent) || p.percent;
+          p.baseAmountSom = Number((br as any).threshold_som ?? p.baseAmountSom) || p.baseAmountSom;
+          p.days = Number((br as any).period_days ?? p.days) || p.days; break;
+        case "splitFiatAmounts":
+          p.amountSom = Number((br as any).threshold_som ?? p.amountSom) || p.amountSom;
+          p.days = Number((br as any).period_days ?? p.days) || p.days; break;
+        case "thirdPartyDeposits":
+          p.count = Number((br as any).min_count ?? p.count) || p.count;
+          p.days = Number((br as any).period_days ?? p.days) || p.days;
+          p.totalSom = Number((br as any).threshold_som ?? p.totalSom) || p.totalSom; break;
+        case "accountActivityAfterInactivity":
+          p.months = Math.max(1, Math.round(Number((br as any).period_days ?? p.months*30) / 30)); break;
+        case "manyTransfersFromDifferentPersons":
+          p.persons = Number((br as any).min_count ?? p.persons) || p.persons; break;
+      }
+      return { ...r, params: { ...p } } as Rule;
+    });
+  }
+
+  const [saving, setSaving] = useState(false);
+  const saveEdit = async () => {
     if (!edit.rule) return;
-    setRules(prev => prev.map(r => r.id === edit.rule!.id ? edit.rule! : r));
-    closeEdit();
+    setSaving(true);
+    try {
+      const key = KEY_MAP[edit.rule.id];
+      const dto = toDto(edit.rule);
+      await updateAntifraudRule(key, dto);
+      setRules(prev => prev.map(r => r.id === edit.rule!.id ? edit.rule! : r));
+    } finally {
+      setSaving(false);
+      closeEdit();
+    }
   };
 
   return (
@@ -200,7 +286,7 @@ function EditModal({ open, rule, onChange, onClose, onSave }: { open: boolean; r
 
         <div className="grid grid-cols-2 gap-2 pt-1">
           <button className="btn h-9" onClick={onClose}>Отмена</button>
-          <button className="btn btn-primary h-9" disabled={disabled} onClick={onSave}>Сохранить</button>
+          <button className="btn btn-primary h-9" disabled={disabled || saving} onClick={onSave}>{saving?"Сохранение…":"Сохранить"}</button>
         </div>
       </div>
     </Modal>

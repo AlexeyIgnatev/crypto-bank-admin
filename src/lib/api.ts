@@ -341,14 +341,6 @@ export type AntiFraudCaseItem = {
   txId?: string; // transaction id
   txHash?: string;
 };
-function mapCurrency(x?: string): string {
-  switch (x) {
-    case "SOM": return "COM";
-    case "ESOM": return "SALAM";
-    case "USDT_TRC20": return "USDT";
-    default: return x || "COM";
-  }
-}
 export async function getAntifraudCases(params: {
   offset?: number; limit?: number;
   sortBy?: "createdAt"|"amount"|"status"|"kind";
@@ -373,7 +365,7 @@ export async function getAntifraudCases(params: {
   if (params.dateTo) q.set("date_to", params.dateTo);
   if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
   if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
-  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", c);
+  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
   if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", o);
   if (params.caseStatus) q.set("case_status", params.caseStatus);
 
