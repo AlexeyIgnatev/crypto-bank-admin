@@ -11,6 +11,8 @@ const items = [
   { href: "/transactions", label: "Транзакции", icon: "💳" },
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
+  { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
+
 ];
 
 export default function Sidebar() {
