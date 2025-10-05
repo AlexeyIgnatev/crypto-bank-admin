@@ -10,6 +10,7 @@ export default function AdminsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Параметры фильтрации/сортировки (можно связать с UI позже)
   const [firstNameQuery, setFirstNameQuery] = useState("");
   const [lastNameQuery, setLastNameQuery] = useState("");
   const [emailQuery, setEmailQuery] = useState("");
@@ -21,12 +22,17 @@ export default function AdminsPage() {
   const [sortEmail, setSortEmail] = useState<"asc"|"desc"|undefined>();
   const [sortCreatedAt, setSortCreatedAt] = useState<"asc"|"desc"|undefined>();
 
-  async function reload() {
+  // Пагинация
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+
+  async function fetchPage(pageOffset: number, replace: boolean) {
+    setLoading(true);
     try {
-      setError(null);
       const res = await getAdmins({
-        offset: 0,
-        limit: 200,
+        offset: pageOffset,
+        limit,
         firstNameQuery: firstNameQuery || undefined,
         lastNameQuery: lastNameQuery || undefined,
         emailQuery: emailQuery || undefined,
@@ -38,15 +44,31 @@ export default function AdminsPage() {
         sortEmail,
         sortCreatedAt,
       });
-      setData(res.items);
+      setTotal(res.total ?? (res.items?.length || 0));
+      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
     } catch (e) {
+      if (replace) { setData([]); setTotal(0); }
       setError("Не удалось загрузить администраторов");
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { reload(); }, [firstNameQuery, lastNameQuery, emailQuery, roles, createdFrom, createdTo, sortFirstName, sortLastName, sortEmail, sortCreatedAt]);
+  // Первый запрос и обновление при изменении фильтров/сортировок/лимита
+  useEffect(() => {
+    setData([]);
+    setOffset(0);
+    fetchPage(0, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, firstNameQuery, lastNameQuery, emailQuery, roles, createdFrom, createdTo, sortFirstName, sortLastName, sortEmail, sortCreatedAt]);
+
+  const canNext = offset + data.length < total;
+  const onEndReached = () => {
+    if (loading || !canNext) return;
+    const nextOffset = offset + data.length;
+    setOffset(nextOffset);
+    fetchPage(nextOffset, false);
+  };
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
@@ -63,7 +85,14 @@ export default function AdminsPage() {
         ) : error ? (
           <div className="m-auto text-red-500">{error}</div>
         ) : (
-          <AdminsTable data={data} onOpen={(a) => { setSelected(a); setOpenView(true); }} />
+          <div className="flex-1 min-h-0" onScroll={(e) => {
+            const el = e.currentTarget as HTMLDivElement;
+            const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+            if (nearEnd) onEndReached();
+          }}>
+            <AdminsTable data={data} onOpen={(a) => { setSelected(a); setOpenView(true); }} />
+            <div className="p-3 text-center text-sm text-muted">{loading ? "Загрузка..." : (canNext ? "Прокрутите вниз, чтобы загрузить ещё" : "Все данные загружены")}</div>
+          </div>
         )}
       </div>
 

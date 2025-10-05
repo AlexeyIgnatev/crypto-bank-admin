@@ -42,6 +42,10 @@ function useDropdown(): DropdownState {
 }
 
 export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (a: Admin) => void }) {
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState<number | undefined>(undefined);
+
   const [sortKey, setSortKey] = useState<AdminSortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -60,32 +64,9 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   const roleDD = useDropdown();
 
   const filtered = useMemo(() => {
-    let res = [...data];
-    if (firstQ) {
-      const s = firstQ.trim().toLowerCase();
-      res = res.filter(a => a.firstName.toLowerCase().includes(s));
-    }
-    if (lastQ) {
-      const s = lastQ.trim().toLowerCase();
-      res = res.filter(a => a.lastName.toLowerCase().includes(s));
-    }
-    if (loginQ) {
-      const s = loginQ.trim().toLowerCase();
-      res = res.filter(a => a.login.toLowerCase().includes(s));
-    }
-    if (dateFrom) {
-      const d = new Date(dateFrom).getTime();
-      res = res.filter(a => new Date(a.createdAt).getTime() >= d);
-    }
-    if (dateTo) {
-      const d = new Date(dateTo).getTime();
-      res = res.filter(a => new Date(a.createdAt).getTime() <= d);
-    }
-    if (roleSet.size > 0) {
-      res = res.filter(a => roleSet.has(a.role));
-    }
-    return res;
-  }, [data, firstQ, lastQ, loginQ, dateFrom, dateTo, roleSet]);
+    // На экране используется серверная фильтрация — здесь просто отображаем входящие данные
+    return data;
+  }, [data]);
 
   const sorted = useMemo(() => {
     const dir = sortDir === "asc" ? 1 : -1;
@@ -195,6 +176,19 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               return (
                 <>
                   {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={6} style={{ height: paddingTop }} /></tr>)}
+
+      <div className="px-4 py-2 text-sm flex items-center justify-between" style={{ background: "var(--primary)", color: "#fff" }}>
+        <div>
+          {total != null ? `Загружено ${data.length}${total ? ` из ${total}` : ""}` : `Загружено ${data.length}`}
+        </div>
+        <div className="flex items-center gap-2">
+          <select className="ui-input h-8" value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
+            {[20, 50, 100].map(n => <option key={n} value={n}>{n} / запрос</option>)}
+          </select>
+          {/* Кнопка догрузки будет вызываться из страницы через изменение offset */}
+        </div>
+      </div>
+
                   {items.map(v => {
                     const a = sorted[v.index]; if (!a) return null;
                     return (

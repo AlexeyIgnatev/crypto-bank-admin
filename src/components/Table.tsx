@@ -94,55 +94,74 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
   const senderDD = useDropdown();
   const recipientDD = useDropdown();
 
-  // Запрос на бэкенд
+  async function fetchPage(pageOffset: number, replace: boolean) {
+    setLoading(true);
+    try {
+      const res = await getTransactions({
+        offset: pageOffset,
+        limit,
+        sortBy: sortKey === "id" ? "createdAt" : sortKey,
+        sortDir,
+        txHash: idQuery || undefined,
+        id: idQuery || undefined,
+        sender: senderQ || undefined,
+        receiver: recipientQ || undefined,
+        dateFrom,
+        dateTo,
+        minAmount,
+        maxAmount,
+        statuses: statusSet.size ? Array.from(statusSet) : undefined,
+        currencies: currencySet.size ? Array.from(currencySet) : undefined,
+      });
+      setTotal(res.total ?? (res.items?.length || 0));
+      setItems(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
+    } catch {
+      if (replace) { setItems([]); setTotal(0); }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Первый запрос и обновление при изменении фильтров/сортировки/лимита
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
-      try {
-        const res = await getTransactions({
-          offset,
-          limit,
-          sortBy: sortKey === "id" ? "createdAt" : sortKey,
-          sortDir,
-          txHash: idQuery || undefined,
-          id: idQuery || undefined,
-          sender: senderQ || undefined,
-          receiver: recipientQ || undefined,
-          dateFrom,
-          dateTo,
-          minAmount,
-          maxAmount,
-          statuses: statusSet.size ? Array.from(statusSet) : undefined,
-          currencies: currencySet.size ? Array.from(currencySet) : undefined,
-        });
-        if (!alive) return;
-        setItems(res.items || []);
-        setTotal(res.total ?? res.items.length);
-      } catch {
-        if (!alive) return;
-        setItems([]);
-        setTotal(0);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    // сброс скролла при изменении фильтров/сортировки/страницы
+    setItems([]);
+    setOffset(0);
     const el = containerRef.current; if (el) el.scrollTop = 0;
-    return () => { alive = false; };
-  }, [offset, limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
+    fetchPage(0, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
+
+  // Догрузка следующей страницы
+  const canPrev = offset > 0;
+  const canNext = offset + items.length < total;
+
+  function loadMore() {
+    if (loading || !canNext) return;
+    const nextOffset = offset + items.length;
+    setOffset(nextOffset);
+    fetchPage(nextOffset, false);
+  }
 
   // Виртуализация через @tanstack/react-virtual
   const rowHeight = 48;
   const rowVirtualizer = useVirtualizer({
-    count: items.length,
+    count: items.length + (canNext ? 1 : 0),
     getScrollElement: () => containerRef.current,
     estimateSize: () => rowHeight,
     overscan: 8,
   });
 
-  const canPrev = offset > 0;
-  const canNext = offset + limit < total;
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+      if (nearEnd) loadMore();
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [canNext, loading, items.length]);
+
 
   function toggleSort(key: SortKey) {
     if (key === "id") return; // сортировка по id не поддерживается бекендом
@@ -159,14 +178,13 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
         <div className="flex items-center justify-between px-4 py-2 text-white text-sm">
           <div>
-            {loading ? "Загрузка..." : `Показано ${items.length} из ${total}`}
+            {loading ? "Загрузка..." : `Загружено ${items.length} из ${total}`}
           </div>
           <div className="flex items-center gap-2">
-            <select className="ui-input h-8" value={limit} onChange={(e) => { setOffset(0); setLimit(Number(e.target.value)); }}>
-              {[20, 50, 100].map(n => <option key={n} value={n}>{n} / стр.</option>)}
+            <select className="ui-input h-8" value={limit} onChange={(e) => { setItems([]); setOffset(0); setLimit(Number(e.target.value)); }}>
+              {[20, 50, 100].map(n => <option key={n} value={n}>{n} / запрос</option>)}
             </select>
-            <button className="btn h-8" disabled={!canPrev} onClick={() => setOffset(Math.max(0, offset - limit))}>Назад</button>
-            <button className="btn h-8" disabled={!canNext} onClick={() => setOffset(offset + limit)}>Вперед</button>
+            <button className="btn h-8" disabled={!canNext || loading} onClick={loadMore}>Загрузить ещё</button>
           </div>
         </div>
         <table className="w-full text-sm table-fixed">
