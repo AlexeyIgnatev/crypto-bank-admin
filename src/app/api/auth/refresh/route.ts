@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { API_BASE, isProd } from "@/lib/config";
+import { API_BASE } from "@/lib/config";
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   const cookieStore = cookies();
   const refresh = cookieStore.get("refreshToken")?.value;
   if (!refresh) return NextResponse.json({ message: "No refresh token" }, { status: 401 });
@@ -10,7 +10,8 @@ export async function POST() {
   const data = await upstream.json().catch(() => null) as any;
   if (!upstream.ok || !data?.accessToken || !data?.refreshToken) return NextResponse.json({ message: "Refresh failed" }, { status: 401 });
   const res = NextResponse.json({ ok: true });
-  res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
-  res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
+  const isHttps = new URL(req.url).protocol === "https:";
+  res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isHttps });
+  res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isHttps });
   return res;
 }

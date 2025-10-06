@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { upstreamFetch } from "@/lib/http";
-import { isProd } from "@/lib/config";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const email = (body as any).email;
   const password = (body as any).password;
@@ -18,8 +17,9 @@ export async function POST(req: Request) {
   const data = await upstream.json().catch(() => null as any);
   if (upstream.ok && data?.accessToken && data?.refreshToken) {
     const res = NextResponse.json({ ok: true });
-    res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
-    res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isProd });
+    const isHttps = new URL(req.url).protocol === "https:";
+    res.cookies.set("accessToken", data.accessToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isHttps });
+    res.cookies.set("refreshToken", data.refreshToken, { httpOnly: true, path: "/", sameSite: "lax", secure: isHttps });
     return res;
   }
   return NextResponse.json({ message: data?.message || "Ошибка авторизации" }, { status: upstream.status || 401 });

@@ -22,7 +22,9 @@ function LoginContent() {
       });
       if (res.ok) {
         const next = params.get("next") || "/";
-        router.replace(next);
+        // Хард-редирект гарантирует, что браузер отправит свежие куки на следующий запрос
+        if (typeof window !== "undefined") window.location.assign(next);
+        else router.replace(next);
       } else {
         const data = await res.json().catch(() => ({ message: "Ошибка авторизации" }));
         setError(data.message || "Ошибка авторизации");

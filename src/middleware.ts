@@ -19,8 +19,9 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const isAuthed = Boolean(req.cookies.get("accessToken")?.value);
-  if (!isAuthed) {
+  const hasAccess = Boolean(req.cookies.get("accessToken")?.value);
+  const hasRefresh = Boolean(req.cookies.get("refreshToken")?.value);
+  if (!hasAccess && !hasRefresh) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     // Preserve the original destination for optional use later
