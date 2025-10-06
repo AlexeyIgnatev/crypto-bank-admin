@@ -33,10 +33,7 @@ export default function Home() {
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="Статус" value={<StatusEditor tx={selected} onSave={(next) => {
-                  setTxs(prev => prev.map(t => t.id === next.id ? next : t));
-                  setSelected(next);
-                }} />} />
+            <Row label="Статус" value={<StatusBadge status={selected.status} />} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
             <Row label="Сумма" value={`${selected.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${selected.currency}`} />
             <Row label="Отправитель" value={
@@ -136,8 +133,8 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
 
 
 function StatusBadge({ status }: { status: TransactionStatus }) {
-  const cls = status === "confirmed" ? "badge-success" : status === "pending" ? "badge-warning" : "badge-danger";
-  const text = status === "confirmed" ? "Подтверждено" : status === "pending" ? "В ожидании" : "Отклонено";
+  const cls = status === "SUCCESS" ? "badge-success" : status === "PENDING" ? "badge-warning" : status === "REJECTED" ? "badge-danger" : "badge-danger";
+  const text = status === "SUCCESS" ? "Успешно" : status === "PENDING" ? "В ожидании" : status === "REJECTED" ? "Отклонено" : "Ошибка";
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
 
