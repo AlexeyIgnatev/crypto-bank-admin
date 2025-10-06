@@ -6,6 +6,19 @@ import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { Admin } from "../types";
 
+function roleKeyToLabel(k?: string): string {
+  switch ((k || "").toUpperCase()) {
+    case "SUPER_ADMIN": return "Супер админ";
+    default: return k || "Супер админ";
+  }
+}
+function roleLabelToKey(lbl: string): string {
+  const x = (lbl || "").trim().toLowerCase();
+  if (x === "супер админ") return "SUPER_ADMIN";
+  return lbl;
+}
+
+
 export type AdminSortKey = "firstName" | "lastName" | "login" | "createdAt";
 export type SortDir = "asc" | "desc";
 
@@ -41,21 +54,37 @@ function useDropdown(): DropdownState {
   return { open, setOpen, btnRef, panelRef, pos } as DropdownState;
 }
 
-export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (a: Admin) => void }) {
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(20);
-  const [total, setTotal] = useState<number | undefined>(undefined);
+export default function AdminsTable({
+  data,
+  onOpen,
+  filters,
+  onChangeFilters,
+  sort,
+  onChangeSort,
+}: {
+  data: Admin[];
+  onOpen: (a: Admin) => void;
+  filters: { firstNameQuery?: string; lastNameQuery?: string; emailQuery?: string; createdFrom?: string; createdTo?: string; roles?: string[] };
+  onChangeFilters: (patch: Partial<{ firstNameQuery?: string; lastNameQuery?: string; emailQuery?: string; createdFrom?: string; createdTo?: string; roles?: string[] }>) => void;
+  sort: { key: AdminSortKey; dir: SortDir };
+  onChangeSort: (key: AdminSortKey, dir: SortDir) => void;
+}) {
+  // локальные поля ввода (применяются на Save)
+  const [firstQ, setFirstQ] = useState(filters.firstNameQuery || "");
+  const [lastQ, setLastQ] = useState(filters.lastNameQuery || "");
+  const [loginQ, setLoginQ] = useState(filters.emailQuery || "");
+  const [dateFrom, setDateFrom] = useState<string | undefined>(filters.createdFrom);
+  const [dateTo, setDateTo] = useState<string | undefined>(filters.createdTo);
+  const [roleSet, setRoleSet] = useState<Set<string>>(new Set((filters.roles || []).map(roleKeyToLabel)));
 
-  const [sortKey, setSortKey] = useState<AdminSortKey>("createdAt");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
-
-  // filters per column (local only for UI; actual fetch happens in page via useEffect)
-  const [firstQ, setFirstQ] = useState("");
-  const [lastQ, setLastQ] = useState("");
-  const [loginQ, setLoginQ] = useState("");
-  const [dateFrom, setDateFrom] = useState<string | undefined>();
-  const [dateTo, setDateTo] = useState<string | undefined>();
-  const [roleSet, setRoleSet] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    setFirstQ(filters.firstNameQuery || "");
+    setLastQ(filters.lastNameQuery || "");
+    setLoginQ(filters.emailQuery || "");
+    setDateFrom(filters.createdFrom);
+    setDateTo(filters.createdTo);
+    setRoleSet(new Set((filters.roles || []).map(roleKeyToLabel)));
+  }, [filters.firstNameQuery, filters.lastNameQuery, filters.emailQuery, filters.createdFrom, filters.createdTo, JSON.stringify(filters.roles || [])]);
 
   const firstDD = useDropdown();
   const lastDD = useDropdown();
@@ -63,26 +92,14 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   const dateDD = useDropdown();
   const roleDD = useDropdown();
 
-  const filtered = useMemo(() => {
-    // На экране используется серверная фильтрация — здесь просто отображаем входящие данные
-    return data;
-  }, [data]);
-
-  const sorted = useMemo(() => {
-    const dir = sortDir === "asc" ? 1 : -1;
-    return [...filtered].sort((a, b) => {
-      const va: any = (a as any)[sortKey];
-      const vb: any = (b as any)[sortKey];
-      if (sortKey === "createdAt") return (new Date(va).getTime() - new Date(vb).getTime()) * dir;
-      return String(va).localeCompare(String(vb)) * dir;
-    });
-  }, [filtered, sortKey, sortDir]);
+  // Порядок и фильтрация приходят уже с бэкенда: используем как есть
+  const rows = data;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [firstQ, lastQ, loginQ, dateFrom, dateTo, roleSet]);
 
   const rowVirtualizer = useVirtualizer({
-    count: sorted.length,
+    count: rows.length,
     getScrollElement: () => containerRef.current,
     estimateSize: () => 48,
     overscan: 8,
@@ -90,8 +107,8 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
   });
 
   function toggleSort(key: AdminSortKey) {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
+    const nextDir: SortDir = (sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : "asc");
+    onChangeSort(key, nextDir);
   }
 
   return (
@@ -111,7 +128,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               <Th>№</Th>
               <Th onClick={() => toggleSort("firstName")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "firstName"} dir={sortDir} />
+                  <SortIcon active={sort.key === "firstName"} dir={sort.dir} />
                   <span className="px-1">Имя</span>
                   <button ref={firstDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); firstDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -120,7 +137,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               </Th>
               <Th onClick={() => toggleSort("lastName")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "lastName"} dir={sortDir} />
+                  <SortIcon active={sort.key === "lastName"} dir={sort.dir} />
                   <span className="px-1">Фамилия</span>
                   <button ref={lastDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); lastDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -129,7 +146,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               </Th>
               <Th onClick={() => toggleSort("login")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "login"} dir={sortDir} />
+                  <SortIcon active={sort.key === "login"} dir={sort.dir} />
                   <span className="px-1">Логин</span>
                   <button ref={loginDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); loginDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -146,7 +163,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
               </Th>
               <Th onClick={() => toggleSort("createdAt")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
+                  <SortIcon active={sort.key === "createdAt"} dir={sort.dir} />
                   <span className="px-1">Создано</span>
                   <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); dateDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -180,7 +197,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
 
 
                   {items.map(v => {
-                    const a = sorted[v.index]; if (!a) return null;
+                    const a = rows[v.index]; if (!a) return null;
                     return (
                       <tr key={a.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" style={{ height: v.size }} onClick={() => onOpen(a)}>
                         <td className="px-4 py-3 tabular-nums text-muted">{v.index + 1}</td>
@@ -259,7 +276,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setRoleSet(new Set())}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => roleDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ roles: Array.from(roleSet).map(roleLabelToKey) }); roleDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>

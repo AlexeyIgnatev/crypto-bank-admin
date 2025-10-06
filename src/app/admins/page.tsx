@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import AdminsTable from "../../components/AdminsTable";
+import AdminsTable, { AdminSortKey, SortDir } from "../../components/AdminsTable";
 import Modal from "../../components/Modal";
 import { Admin } from "../../types";
 import { getAdmins, createAdmin, updateAdmin, deleteAdmin } from "@/lib/api";
@@ -11,16 +11,9 @@ export default function AdminsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Параметры фильтрации/сортировки (можно связать с UI позже)
-  const [firstNameQuery, setFirstNameQuery] = useState("");
-  const [lastNameQuery, setLastNameQuery] = useState("");
-  const [emailQuery, setEmailQuery] = useState("");
-  const [roles, setRoles] = useState<string[]>([]);
-  const [createdFrom, setCreatedFrom] = useState<string | undefined>();
-  const [createdTo, setCreatedTo] = useState<string | undefined>();
-  const [sortFirstName, setSortFirstName] = useState<"asc"|"desc"|undefined>();
-  const [sortLastName, setSortLastName] = useState<"asc"|"desc"|undefined>();
-  const [sortEmail, setSortEmail] = useState<"asc"|"desc"|undefined>();
-  const [sortCreatedAt, setSortCreatedAt] = useState<"asc"|"desc"|undefined>();
+  // Фильтры и сортировка для бэкенда
+  const [filters, setFilters] = useState<{ firstNameQuery?: string; lastNameQuery?: string; emailQuery?: string; roles?: string[]; createdFrom?: string; createdTo?: string }>({});
+  const [sort, setSort] = useState<{ key: AdminSortKey; dir: SortDir }>({ key: "createdAt", dir: "desc" });
 
   // Пагинация
   const [offset, setOffset] = useState(0);
@@ -33,16 +26,16 @@ export default function AdminsPage() {
       const res = await getAdmins({
         offset: pageOffset,
         limit,
-        firstNameQuery: firstNameQuery || undefined,
-        lastNameQuery: lastNameQuery || undefined,
-        emailQuery: emailQuery || undefined,
-        roles: roles.length ? roles : undefined,
-        createdFrom,
-        createdTo,
-        sortFirstName,
-        sortLastName,
-        sortEmail,
-        sortCreatedAt,
+        firstNameQuery: filters.firstNameQuery,
+        lastNameQuery: filters.lastNameQuery,
+        emailQuery: filters.emailQuery,
+        roles: filters.roles,
+        createdFrom: filters.createdFrom,
+        createdTo: filters.createdTo,
+        sortFirstName: sort.key === "firstName" ? sort.dir : undefined,
+        sortLastName: sort.key === "lastName" ? sort.dir : undefined,
+        sortEmail: sort.key === "login" ? sort.dir : undefined,
+        sortCreatedAt: sort.key === "createdAt" ? sort.dir : undefined,
       });
       setTotal(res.total ?? (res.items?.length || 0));
       setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
@@ -60,7 +53,7 @@ export default function AdminsPage() {
     setOffset(0);
     fetchPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit, firstNameQuery, lastNameQuery, emailQuery, roles, createdFrom, createdTo, sortFirstName, sortLastName, sortEmail, sortCreatedAt]);
+  }, [limit, JSON.stringify(filters), sort.key, sort.dir]);
 
   const canNext = offset + data.length < total;
   const onEndReached = () => {
@@ -90,7 +83,14 @@ export default function AdminsPage() {
             const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
             if (nearEnd) onEndReached();
           }}>
-            <AdminsTable data={data} onOpen={(a) => { setSelected(a); setOpenView(true); }} />
+            <AdminsTable
+              data={data}
+              onOpen={(a) => { setSelected(a); setOpenView(true); }}
+              filters={filters}
+              onChangeFilters={(patch) => setFilters(prev => ({ ...prev, ...patch }))}
+              sort={sort}
+              onChangeSort={(key, dir) => setSort({ key, dir })}
+            />
           </div>
         )}
       </div>
