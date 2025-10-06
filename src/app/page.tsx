@@ -4,13 +4,18 @@
 import Cards from "../components/Cards";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
+import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef } from "react";
-import { Transaction } from "../types";
+import { Transaction, User, TransactionStatus } from "../types";
 
 export default function Home() {
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
+
+  const [openUser, setOpenUser] = useState(false);
+  const [openUserEdit, setOpenUserEdit] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   function openUserModalByName(name: string) {
     // Для MVP просто показываем имя, без запроса в бекенд
@@ -69,7 +74,7 @@ export default function Home() {
       </Modal>
       <Modal open={openUser} onClose={() => setOpenUser(false)} title="Пользователь">
         {selectedUser && (
-          <UserDetailsCard user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => { setOpenUser(false); setOpenUserEdit(true); }} onDelete={() => setOpenUser(false)} />
+          <UserDetails user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => { setOpenUser(false); setOpenUserEdit(true); }} onDelete={() => setOpenUser(false)} />
         )}
       </Modal>
 
