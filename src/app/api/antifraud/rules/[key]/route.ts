@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { upstreamFetch } from "@/lib/http";
 
 function withCookies(upstream: any, json: any, status: number) {
@@ -10,9 +10,9 @@ function withCookies(upstream: any, json: any, status: number) {
   return res;
 }
 
-export async function PUT(req: Request, ctx: { params: { key: string } }) {
+export async function PUT(req: NextRequest, ctx: { params: Promise<{ key: string }> }) {
   const body = await req.json().catch(() => ({}));
-  const key = ctx.params.key;
+  const { key } = await ctx.params;
   const upstream = await upstreamFetch(`/antifraud/rules/${encodeURIComponent(key)}`, { method: "PUT", body: JSON.stringify(body) });
   const json = await upstream.json().catch(() => null);
   return withCookies(upstream, json, upstream.status);

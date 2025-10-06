@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,5 +47,13 @@ export default function LoginPage() {
         <button className="btn btn-primary w-full h-10" disabled={loading}>{loading ? "Вход..." : "Войти"}</button>
       </form>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="w-full h-full grid place-items-center text-sm text-muted">Загрузка…</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

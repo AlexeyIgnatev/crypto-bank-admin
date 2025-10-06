@@ -73,12 +73,6 @@ function ApiRulesManager() {
   );
 }
 
-  | ({ type: "withdrawAfterLargeIncome"; percent: number; baseAmountSom: number; days: number })
-  | ({ type: "splitFiatAmounts"; amountSom: number; days: number })
-  | ({ type: "thirdPartyDeposits"; count: number; days: number; totalSom: number })
-  | ({ type: "accountActivityAfterInactivity"; months: number })
-  | ({ type: "manyTransfersFromDifferentPersons"; persons: number });
-
 type Rule = RuleBase & { params: RuleParams };
 
 type EditState = { open: boolean; rule: Rule | null };
