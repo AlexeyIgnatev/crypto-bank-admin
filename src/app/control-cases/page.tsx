@@ -44,14 +44,8 @@ export default function ControlCasesPage() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-      <div className="shrink-0 rounded-xl border border-soft card">
-        <div className="flex items-center justify-between px-4 py-2 text-sm" style={{ background: "var(--primary)", color: "#fff", borderTopLeftRadius: 12, borderTopRightRadius: 12 }}>
-          <div className="opacity-90">Список кейсов фин. контроля</div>
-          <div />
-        </div>
-        <div className="p-2 min-h-[360px]">
-          <CasesTable onOpen={openDetails} />
-        </div>
+      <div className="flex-1 min-h-0">
+        <CasesTable onOpen={openDetails} />
       </div>
 
       {/* Модалка деталей кейса */}
