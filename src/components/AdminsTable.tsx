@@ -224,7 +224,7 @@ export default function AdminsTable({
             <input className="ui-input w-full" placeholder="Имя содержит" value={firstQ} onChange={e => setFirstQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setFirstQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => firstDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ firstNameQuery: firstQ || undefined }); firstDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -237,7 +237,7 @@ export default function AdminsTable({
             <input className="ui-input w-full" placeholder="Фамилия содержит" value={lastQ} onChange={e => setLastQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setLastQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => lastDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ lastNameQuery: lastQ || undefined }); lastDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -250,7 +250,7 @@ export default function AdminsTable({
             <input className="ui-input w-full" placeholder="email/логин" value={loginQ} onChange={e => setLoginQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setLoginQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => loginDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ emailQuery: loginQ || undefined }); loginDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -291,7 +291,7 @@ export default function AdminsTable({
             <Flatpickr value={dateTo ? new Date(dateTo) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ createdFrom: dateFrom, createdTo: dateTo }); dateDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
