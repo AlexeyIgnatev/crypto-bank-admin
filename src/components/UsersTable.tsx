@@ -41,12 +41,23 @@ function useDropdown(): DropdownState {
   return { open, setOpen, btnRef, panelRef, pos } as DropdownState;
 }
 
-export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u: User) => void }) {
+import { getUsers } from "@/lib/api";
+
+export default function UsersTable({ onOpen, refreshToken = 0 }: { onOpen: (u: User) => void; refreshToken?: number; }) {
+  // server data state
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+  const [data, setData] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const [sortKey, setSortKey] = useState<UserSortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   // per-column filters
   const [nameQ, setNameQ] = useState("");
+  const [search, setSearch] = useState("");
+
   const [phoneQ, setPhoneQ] = useState("");
   const [emailQ, setEmailQ] = useState("");
   const [statusSet, setStatusSet] = useState<Set<UserStatus>>(new Set());
@@ -65,46 +76,45 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
   const comDD = useDropdown();
   const totalDD = useDropdown();
 
-  const filtered = useMemo(() => {
-    let res = [...data];
-    if (nameQ) { const s = nameQ.trim().toLowerCase(); res = res.filter(u => u.fullName.toLowerCase().includes(s)); }
-    if (phoneQ) { const s = phoneQ.trim().toLowerCase(); res = res.filter(u => u.phone.toLowerCase().includes(s)); }
-    if (emailQ) { const s = emailQ.trim().toLowerCase(); res = res.filter(u => u.email.toLowerCase().includes(s)); }
-    if (statusSet.size > 0) { res = res.filter(u => statusSet.has(u.status)); }
-    if (dateFrom) { const d = new Date(dateFrom).getTime(); res = res.filter(u => new Date(u.createdAt).getTime() >= d); }
-    if (dateTo) { const d = new Date(dateTo).getTime(); res = res.filter(u => new Date(u.createdAt).getTime() <= d); }
-    // balances filters
-    if (minCOM) { const v = parseFloat(minCOM.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => u.balances.COM >= v); }
-    if (maxCOM) { const v = parseFloat(maxCOM.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => u.balances.COM <= v); }
-    if (minTotal) { const v = parseFloat(minTotal.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => (u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT) >= v); }
-    if (maxTotal) { const v = parseFloat(maxTotal.replace(/\s/g, "")); if (!Number.isNaN(v)) res = res.filter(u => (u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT) <= v); }
-    return res;
-  }, [data, nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
-
-  const sorted = useMemo(() => {
-    const dir = sortDir === "asc" ? 1 : -1;
-    return [...filtered].sort((a, b) => {
-      const pick = (u: User, key: UserSortKey): any => {
-        if (key === "balanceCOM") return u.balances.COM;
-        if (key === "balanceTotal") return u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT;
-        return (u as any)[key];
-      };
-      const va: any = pick(a, sortKey);
-      const vb: any = pick(b, sortKey);
-      if (sortKey === "createdAt") return (new Date(va).getTime() - new Date(vb).getTime()) * dir;
-      if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
-      return String(va).localeCompare(String(vb)) * dir;
-    });
-  }, [filtered, sortKey, sortDir]);
+  // server-driven: show data as-is; client numeric filters are not applied to server
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const [headerPadRight, setHeaderPadRight] = useState(0);
   useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
 
+  // server fetch based on filters/sort
+  async function fetchPage(pageOffset: number, replace: boolean) {
+    setLoading(true);
+    try {
+      const statuses = statusSet.size ? Array.from(statusSet).map(s => s === "Активен" ? "ACTIVE" : "BLOCKED") : undefined;
+      const res = await getUsers({
+        offset: pageOffset,
+        limit,
+        search: nameQ || phoneQ || emailQ ? [nameQ, phoneQ, emailQ].filter(Boolean).join(" ") : undefined,
+        statuses,
+        sortBy: sortKey === "fullName" ? "fio" : sortKey === "phone" ? "phone" : sortKey === "email" ? "email" : sortKey === "status" ? "status" : sortKey === "balanceCOM" ? "som_balance" : sortKey === "balanceTotal" ? "total_balance" : "createdAt",
+        sortDir,
+      });
+      setTotal(res.total ?? (res.items?.length || 0));
+      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
+    } catch (e) {
+      if (replace) setData([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // reset and fetch when deps change
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    setData([]); setOffset(0);
+    fetchPage(0, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, sortKey, sortDir, nameQ, phoneQ, emailQ, statusSet, refreshToken]);
+
+  // header padding sync with scrollbar
+  useEffect(() => {
+    const el = containerRef.current; if (!el) return;
     const update = () => {
       const pr = el.offsetWidth - el.clientWidth; // scrollbar width
       setHeaderPadRight(pr > 0 ? pr : 0);
@@ -114,9 +124,9 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
     ro.observe(el);
     window.addEventListener('resize', update);
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
-  }, [sorted.length]);
+  }, [data.length]);
 
-  const rowVirtualizer = useVirtualizer({ count: sorted.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
+  const rowVirtualizer = useVirtualizer({ count: data.length + ((offset + data.length) < total ? 1 : 0), getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
 
   function toggleSort(key: UserSortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -197,9 +207,23 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
             </tr>
           </thead>
         </table>
+      <div className="px-3 py-2 flex items-center gap-2">
+        <input className="ui-input h-9 w-[320px]" placeholder="Поиск (ФИО/телефон/email)" value={nameQ} onChange={(e)=>setNameQ(e.target.value)} />
+        <button className="btn h-9" onClick={()=>{ setNameQ(""); setPhoneQ(""); setEmailQ(""); setStatusSet(new Set()); }}>Сбросить фильтры</button>
       </div>
 
-      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]">
+      </div>
+
+      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]" onScroll={() => {
+        const el = containerRef.current; if (!el) return;
+        const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+        if (nearEnd && !loading && (offset + data.length < total)) {
+          const nextOffset = offset + data.length;
+          setOffset(nextOffset);
+          fetchPage(nextOffset, false);
+        }
+      }}>
+
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
@@ -213,14 +237,14 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
           <tbody>
             {(() => {
               const items = rowVirtualizer.getVirtualItems();
-              const total = rowVirtualizer.getTotalSize();
+              const totalSize = rowVirtualizer.getTotalSize();
               const paddingTop = items.length > 0 ? items[0].start : 0;
-              const paddingBottom = items.length > 0 ? total - items[items.length - 1].end : 0;
+              const paddingBottom = items.length > 0 ? totalSize - items[items.length - 1].end : 0;
               return (
                 <>
                   {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={7} style={{ height: paddingTop }} /></tr>)}
                   {items.map(v => {
-                    const u = sorted[v.index]; if (!u) return null;
+                    const u = data[v.index]; if (!u) return null;
                     const totalBalance = u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT;
                     return (
                       <tr key={u.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" style={{ height: v.size }} onClick={() => onOpen(u)}>
