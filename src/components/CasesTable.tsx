@@ -166,6 +166,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
             <col className="w-[72px]" />
             <col className="w-[240px]" />
             <col className="w-[140px]" />
+            <col className="w-[180px]" />
             <col className="w-[160px]" />
             <col className="w-[120px]" />
             <col />
@@ -240,30 +241,60 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
       </div>
 
       {/* Тело таблицы с виртуализацией */}
-      <div ref={containerRef} className="min-h-0 flex-1 relative overflow-auto">
-        <div style={{ height: rowVirtualizer.getTotalSize(), position: "relative" }}>
-          {rowVirtualizer.getVirtualItems().map(vi => {
-            const isLoader = vi.index >= items.length;
-            const item = items[vi.index];
-            return (
-              <div key={vi.key} data-index={vi.index} className={`absolute top-0 left-0 w-full border-b border-soft`} style={{ transform: `translateY(${vi.start}px)`, height: rowHeight }}>
-                {isLoader ? (
-                  <div className="flex items-center justify-center h-full text-muted text-sm">{loading ? "Загрузка..." : (items.length < total ? "Прокрутите вниз для загрузки" : "" )}</div>
-                ) : (
-                  <div className="grid grid-cols-7 gap-0 text-sm hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" onClick={() => onOpen(item)}>
-                    <div className="px-4 py-3 tabular-nums text-muted">{vi.index + 1}</div>
-                    <div className="px-4 py-3 font-mono truncate" title={item.txHash || item.id}>{item.txHash || item.id}</div>
-                    <div className="px-4 py-3"><StatusBadge status={item.status} /></div>
-                    <div className="px-4 py-3 whitespace-nowrap">{new Date(item.createdAt).toLocaleString()}</div>
-                    <div className="px-4 py-3 whitespace-nowrap">{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {item.currency}</div>
-                    <div className="px-4 py-3 truncate" title={item.sender}>{item.sender}</div>
-                    <div className="px-4 py-3 truncate" title={item.recipient}>{item.recipient}</div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[72px]" />
+            <col className="w-[240px]" />
+            <col className="w-[140px]" />
+            <col className="w-[180px]" />
+            <col className="w-[160px]" />
+            <col className="w-[120px]" />
+            <col />
+            <col />
+          </colgroup>
+          <tbody>
+            {(() => {
+              const vItems = rowVirtualizer.getVirtualItems();
+              const total = rowVirtualizer.getTotalSize();
+              const paddingTop = vItems.length > 0 ? vItems[0].start : 0;
+              const paddingBottom = vItems.length > 0 ? total - vItems[vItems.length - 1].end : 0;
+              return (
+                <>
+                  {paddingTop > 0 && (
+                    <tr aria-hidden="true"><td colSpan={8} style={{ height: paddingTop }} /></tr>
+                  )}
+
+                  {vItems.map((vRow) => {
+                    const item = items[vRow.index];
+                    if (!item) return null;
+                    return (
+                      <tr
+                        key={item.id}
+                        className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+                        onClick={() => onOpen(item)}
+                        style={{ height: vRow.size }}
+                      >
+                        <td className="px-4 py-3 tabular-nums text-muted">{vRow.index + 1}</td>
+                        <td className="px-4 py-3 font-mono truncate" title={item.txHash || item.id}>{item.txHash || item.id}</td>
+                        <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
+                        <td className="px-4 py-3 whitespace-nowrap">{new Date(item.createdAt).toLocaleString()}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{item.currency}</td>
+                        <td className="px-4 py-3 truncate" title={item.sender}>{item.sender}</td>
+                        <td className="px-4 py-3 truncate" title={item.recipient}>{item.recipient}</td>
+                      </tr>
+                    );
+                  })}
+
+                  {paddingBottom > 0 && (
+                    <tr aria-hidden="true"><td colSpan={8} style={{ height: paddingBottom }} /></tr>
+                  )}
+                </>
+              );
+            })()}
+          </tbody>
+        </table>
       </div>
 
       {/* Панели фильтров */}
