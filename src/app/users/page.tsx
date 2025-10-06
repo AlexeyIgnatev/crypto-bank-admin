@@ -43,7 +43,6 @@ export default function UsersPage() {
   }
 
   // первый запрос и обновления при изменении фильтров/сортировок/лимита
-  import { useEffect } from "react";
   useEffect(() => {
     setData([]); setOffset(0);
     fetchPage(0, true);
