@@ -24,7 +24,7 @@ function mapUiStatusToBackend(x: TransactionStatus): BackendStatus {
   return (x as BackendStatus);
 }
 
-function mapDisplayToAsset(x: string): string {
+function mapDisplayToAssetOld(x: string): string {
   switch (x) {
     case "COM": return "SOM";
     case "SALAM": return "ESOM";
@@ -66,7 +66,7 @@ export async function getTransactions(params: {
     for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
   }
   if (params.currencies && params.currencies.length) {
-    for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+    for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
   }
 
   const res = await fetch(`/api/transactions/list?${q.toString()}`, { cache: "no-store" });
@@ -261,7 +261,7 @@ export async function getTransactionsStats(params: {
   if (params.dateFrom) q.set("date_from", params.dateFrom);
   if (params.dateTo) q.set("date_to", params.dateTo);
   if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
-  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
   if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", opMap[o] || o);
   if (params.metric) q.set("metric", params.metric);
   if (params.bucket) q.set("group_by", params.bucket);
@@ -314,7 +314,7 @@ function mapAssetToDisplay(x?: string): string {
     default: return x || "COM";
   }
 }
-function mapDisplayToAsset(x?: string): string {
+function mapDisplayToAssetDisplayHelper(x?: string): string {
   switch (x) {
     case "COM": return "SOM";
     case "SALAM": return "ESOM";
@@ -384,7 +384,7 @@ export async function getAntifraudCases(params: {
   if (params.dateTo) q.set("date_to", params.dateTo);
   if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
   if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
-  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
   if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", o);
   if (params.caseStatus) q.set("case_status", params.caseStatus);
   if (params.caseStatuses && params.caseStatuses.length) for (const s of params.caseStatuses) q.append("case_status", s);

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Modal from "@/components/Modal";
 
 // Экран подключен к API /antifraud/rules для чтения/сохранения правил.
@@ -12,7 +12,12 @@ type RuleParams =
   | ({ type: "fiatOpsThreshold"; amountSom: number })
   | ({ type: "singleDeal"; amountSom: number })
   | ({ type: "frequentOps"; count: number; days: number; perOpMinSom: number })
-import { useEffect } from "react";
+  | ({ type: "withdrawAfterLargeIncome"; percent: number; baseAmountSom: number; days: number })
+  | ({ type: "splitFiatAmounts"; amountSom: number; days: number })
+  | ({ type: "thirdPartyDeposits"; count: number; days: number; totalSom: number })
+  | ({ type: "accountActivityAfterInactivity"; months: number })
+  | ({ type: "manyTransfersFromDifferentPersons"; persons: number });
+
 import { getAntifraudRules, updateAntifraudRule, type AntiFraudRule } from "@/lib/api";
 
 function ApiRulesManager() {
