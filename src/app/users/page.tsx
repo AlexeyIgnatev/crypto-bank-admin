@@ -62,7 +62,6 @@ export default function UsersPage() {
             }
           }}>
             <UsersTable data={data} onOpen={(u) => { setSelected(u); setOpenView(true); }} />
-            <div className="p-3 text-center text-sm text-muted">{loading ? "Загрузка..." : ((offset + data.length) < total ? "Прокрутите вниз, чтобы загрузить ещё" : "Все данные загружены")}</div>
           </div>
         )}
       </div>

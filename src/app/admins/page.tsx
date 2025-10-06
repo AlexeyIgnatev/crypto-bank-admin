@@ -91,7 +91,6 @@ export default function AdminsPage() {
             if (nearEnd) onEndReached();
           }}>
             <AdminsTable data={data} onOpen={(a) => { setSelected(a); setOpenView(true); }} />
-            <div className="p-3 text-center text-sm text-muted">{loading ? "Загрузка..." : (canNext ? "Прокрутите вниз, чтобы загрузить ещё" : "Все данные загружены")}</div>
           </div>
         )}
       </div>

@@ -177,17 +177,6 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
                 <>
                   {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={6} style={{ height: paddingTop }} /></tr>)}
 
-      <div className="px-4 py-2 text-sm flex items-center justify-between" style={{ background: "var(--primary)", color: "#fff" }}>
-        <div>
-          {total != null ? `Загружено ${data.length}${total ? ` из ${total}` : ""}` : `Загружено ${data.length}`}
-        </div>
-        <div className="flex items-center gap-2">
-          <select className="ui-input h-8" value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
-            {[20, 50, 100].map(n => <option key={n} value={n}>{n} / запрос</option>)}
-          </select>
-          {/* Кнопка догрузки будет вызываться из страницы через изменение offset */}
-        </div>
-      </div>
 
                   {items.map(v => {
                     const a = sorted[v.index]; if (!a) return null;

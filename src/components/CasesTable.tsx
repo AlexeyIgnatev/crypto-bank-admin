@@ -160,15 +160,6 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
       <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
-        <div className="flex items-center justify-between px-4 py-2 text-white text-sm">
-          <div>{loading ? "Загрузка..." : `Загружено ${items.length} из ${total}`}</div>
-          <div className="flex items-center gap-2">
-            <select className="ui-input h-8" value={limit} onChange={(e) => { setItems([]); setOffset(0); setLimit(Number(e.target.value)); }}>
-              {[20, 50, 100].map(n => <option key={n} value={n}>{n} / запрос</option>)}
-            </select>
-            <button className="btn h-8" disabled={!canNext || loading} onClick={loadMore}>Загрузить ещё</button>
-          </div>
-        </div>
         <table className="w-full text-sm table-fixed">
           <colgroup>
             <col className="w-[72px]" />
