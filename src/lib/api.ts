@@ -80,6 +80,8 @@ export async function getTransactions(params: {
     currency: mapCurrency(it.asset),
     sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
     recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),
+    senderCustomerId: it.sender_customer_id != null ? String(it.sender_customer_id) : undefined,
+    recipientCustomerId: it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined,
   } as Transaction));
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
 }
@@ -116,6 +118,8 @@ export async function getUsers(params: {
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.search) q.set("search", params.search);
+
+
   if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", s);
   if (params.sortBy) q.set("sort_by", params.sortBy);
   if (params.sortDir) q.set("sort_dir", params.sortDir);
@@ -138,6 +142,28 @@ export async function getUsers(params: {
     createdAt: u.createdAt || new Date().toISOString(),
   }));
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+}
+
+export async function getUserById(id: string|number): Promise<User> {
+  const res = await fetch(`/api/user-management/${id}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load user");
+  const u = await res.json();
+  const user: User = {
+    id: String(u.customer_id ?? u.id ?? u.userId ?? id),
+    fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
+    phone: u.phone || "",
+    email: u.email || "",
+    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : "Активен",
+    balances: {
+      COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
+      SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
+      BTC: Number(u.balances?.BTC ?? 0),
+      ETH: Number(u.balances?.ETH ?? 0),
+      USDT: Number(u.balances?.USDT_TRC20 ?? u.balances?.USDT ?? 0),
+    },
+    createdAt: u.createdAt || new Date().toISOString(),
+  };
+  return user;
 }
 
 export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"; }) {
@@ -194,6 +220,8 @@ export async function getAdmins(params: {
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.firstNameQuery) q.set("firstNameQuery", params.firstNameQuery);
+
+
   if (params.lastNameQuery) q.set("lastNameQuery", params.lastNameQuery);
   if (params.emailQuery) q.set("emailQuery", params.emailQuery);
   if (params.roles && params.roles.length) for (const r of params.roles) q.append("roles", r);

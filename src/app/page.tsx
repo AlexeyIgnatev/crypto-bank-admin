@@ -7,6 +7,7 @@ import Modal from "../components/Modal";
 import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef } from "react";
 import { Transaction, User, TransactionStatus } from "../types";
+import { getUserById } from "@/lib/api";
 
 export default function Home() {
   const [txs, setTxs] = useState<Transaction[]>([]);
@@ -17,10 +18,14 @@ export default function Home() {
   const [openUserEdit, setOpenUserEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  function openUserModalByName(name: string) {
-    // Для MVP просто показываем имя, без запроса в бекенд
-    setSelectedUser({ id: name, fullName: name, phone: "", email: "", status: "Активен", balances: { COM: 0, SALAM: 0, BTC: 0, ETH: 0, USDT: 0 }, createdAt: new Date().toISOString() } as any);
-    setOpenUser(true);
+  async function openUserModalById(id: string) {
+    try {
+      const user = await getUserById(id);
+      setSelectedUser(user);
+      setOpenUser(true);
+    } catch (_e) {
+      // Если пользователь не найден — просто не открываем модалку
+    }
   }
 
   return (
@@ -39,31 +44,35 @@ export default function Home() {
             <Row label="Отправитель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.sender}>{selected.sender}</span>
-                <button
-                  className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
-                  onClick={() => openUserModalByName(selected.sender)}
-                  aria-label="Открыть профиль"
-                  title="Открыть профиль"
-                >
-                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
-                    <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                {selected.senderCustomerId && (
+                  <button
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
+                    onClick={() => openUserModalById(String(selected.senderCustomerId))}
+                    aria-label="Открыть профиль"
+                    title="Открыть профиль"
+                  >
+                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
+                      <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
               </div>
             } />
             <Row label="Получатель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.recipient}>{selected.recipient}</span>
-                <button
-                  className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
-                  onClick={() => openUserModalByName(selected.recipient)}
-                  aria-label="Открыть профиль"
-                  title="Открыть профиль"
-                >
-                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
-                    <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                {selected.recipientCustomerId && (
+                  <button
+                    className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
+                    onClick={() => openUserModalById(String(selected.recipientCustomerId))}
+                    aria-label="Открыть профиль"
+                    title="Открыть профиль"
+                  >
+                    <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
+                      <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
               </div>
             } />
           </div>

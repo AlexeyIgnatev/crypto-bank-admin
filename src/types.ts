@@ -8,6 +8,8 @@ export interface Transaction {
   currency: string; // e.g., KGS, USD
   sender: string;
   recipient: string;
+  senderCustomerId?: string;
+  recipientCustomerId?: string;
 }
 
 export type OperationType = "bank" | "crypto" | "exchange";
