@@ -116,7 +116,7 @@ export default function UsersTable({ data, onOpen }: { data: User[]; onOpen: (u:
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
   }, [sorted.length]);
 
-  const rowVirtualizer = useVirtualizer({ count: sorted.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8 });
+  const rowVirtualizer = useVirtualizer({ count: sorted.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
 
   function toggleSort(key: UserSortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
