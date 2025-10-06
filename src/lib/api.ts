@@ -304,3 +304,120 @@ export async function putSettings(payload: Record<string, string>) {
   if (!res.ok) throw new Error("Failed to save settings");
   return res.json();
 }
+
+// Helpers for assets mapping between backend codes and UI labels
+function mapAssetToDisplay(x?: string): string {
+  switch (x) {
+    case "SOM": return "COM";
+    case "ESOM": return "SALAM";
+    case "USDT_TRC20": return "USDT";
+    default: return x || "COM";
+  }
+}
+function mapDisplayToAsset(x?: string): string {
+  switch (x) {
+    case "COM": return "SOM";
+    case "SALAM": return "ESOM";
+    case "USDT": return "USDT_TRC20";
+    default: return x || "SOM";
+  }
+}
+
+// ===== Antifraud =====
+export type AntiFraudRule = {
+  id: number;
+  key: string;
+  enabled: boolean;
+  period_days?: any;
+  threshold_som?: any;
+  min_count?: any;
+  percent_threshold?: any;
+  updatedAt: string;
+};
+export type AntiFraudRuleUpdate = Partial<{ enabled: boolean; period_days: any; threshold_som: any; min_count: any; percent_threshold: any; }>
+
+export async function getAntifraudRules(): Promise<AntiFraudRule[]> {
+  const res = await fetch(`/api/antifraud/rules`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load antifraud rules");
+  return res.json();
+}
+export async function updateAntifraudRule(key: string, payload: AntiFraudRuleUpdate): Promise<AntiFraudRule> {
+  const res = await fetch(`/api/antifraud/rules/${encodeURIComponent(key)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  if (!res.ok) throw new Error("Failed to update antifraud rule");
+  return res.json();
+}
+
+export type AntiFraudCaseStatus = "OPEN"|"APPROVED"|"REJECTED";
+export type AntiFraudCaseItem = {
+  id: string; // case id as string
+  status: AntiFraudCaseStatus;
+  createdAt: string; // case createdAt
+  amount: number; // transaction.amount
+  currency: string; // display currency
+  sender: string;
+  recipient: string;
+  txId?: string; // transaction id
+  txHash?: string;
+};
+export async function getAntifraudCases(params: {
+  offset?: number; limit?: number;
+  sortBy?: "createdAt"|"amount"|"status"|"kind";
+  sortDir?: "asc"|"desc";
+  id?: string; txHash?: string; sender?: string; receiver?: string;
+  dateFrom?: string; dateTo?: string;
+  minAmount?: number; maxAmount?: number;
+  currencies?: string[];
+  operations?: string[];
+  caseStatus?: AntiFraudCaseStatus;
+  caseStatuses?: AntiFraudCaseStatus[];
+}): Promise<{ items: AntiFraudCaseItem[]; total: number; offset: number; limit: number; }> {
+  const q = new URLSearchParams();
+  if (params.offset != null) q.set("offset", String(params.offset));
+  if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.sortBy) q.set("sort_by", params.sortBy);
+  if (params.sortDir) q.set("sort_dir", params.sortDir);
+  if (params.id) q.set("id", params.id);
+  if (params.txHash) q.set("tx_hash", params.txHash);
+  if (params.sender) q.set("sender", params.sender);
+  if (params.receiver) q.set("receiver", params.receiver);
+  if (params.dateFrom) q.set("date_from", params.dateFrom);
+  if (params.dateTo) q.set("date_to", params.dateTo);
+  if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
+  if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
+  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAsset(c));
+  if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", o);
+  if (params.caseStatus) q.set("case_status", params.caseStatus);
+  if (params.caseStatuses && params.caseStatuses.length) for (const s of params.caseStatuses) q.append("case_status", s);
+
+  const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load antifraud cases");
+  const data = await res.json();
+  const items: AntiFraudCaseItem[] = (data.items || []).map((it: any) => {
+    const tx = it.transaction || {};
+    const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
+    const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
+    return {
+      id: String(it.id),
+      status: (it.status || it.case_status || "OPEN") as AntiFraudCaseStatus,
+      createdAt: tx.createdAt || it.createdAt,
+      amount: Number(tx.amount ?? 0),
+      currency: mapAssetToDisplay(tx.asset),
+      sender: senderLabel,
+      recipient: receiverLabel,
+      txId: String(tx.id || ""),
+      txHash: tx.tx_hash,
+    } as AntiFraudCaseItem;
+  });
+  return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+}
+
+export async function approveAntifraudCase(id: string|number) {
+  const res = await fetch(`/api/antifraud/cases/${id}/approve`, { method: "PATCH" });
+  if (!res.ok) throw new Error("Failed to approve case");
+  return res.json();
+}
+export async function rejectAntifraudCase(id: string|number) {
+  const res = await fetch(`/api/antifraud/cases/${id}/reject`, { method: "PATCH" });
+  if (!res.ok) throw new Error("Failed to reject case");
+  return res.json();
+}
