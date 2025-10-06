@@ -27,6 +27,7 @@ export default function ControlCasesPage() {
   const [selected, setSelected] = useState<AntiFraudCaseItem | null>(null);
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ open: boolean; action: "approve"|"reject"|null }>({ open: false, action: null });
+  const [refreshToken, setRefreshToken] = useState(0);
 
   function openDetails(t: AntiFraudCaseItem) { setSelected(t); setOpen(true); }
   function closeDetails() { setOpen(false); }
@@ -37,6 +38,7 @@ export default function ControlCasesPage() {
       if (action === "approve") await approveAntifraudCase(selected.id);
       else await rejectAntifraudCase(selected.id);
       setSelected(s => s ? { ...s, status: action === "approve" ? "APPROVED" : "REJECTED" } : s);
+      setRefreshToken(t => t + 1); // обновим таблицу в фоне
     } finally {
       setConfirm({ open: false, action: null });
     }
@@ -45,7 +47,7 @@ export default function ControlCasesPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="flex-1 min-h-0">
-        <CasesTable onOpen={openDetails} />
+        <CasesTable onOpen={openDetails} refreshToken={refreshToken} />
       </div>
 
       {/* Модалка деталей кейса */}
