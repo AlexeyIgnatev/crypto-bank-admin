@@ -184,8 +184,6 @@ export default function ControlPage() {
     <div className="flex-1 min-h-0 flex">
       <div className="m-auto w-full max-w-5xl">
 
-        <div className="mb-4"><ApiRulesManager /></div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Section title="Обязательный контроль">
             {groups.required.map(rule => (
@@ -200,7 +198,7 @@ export default function ControlPage() {
         </div>
       </div>
 
-      <EditModal open={edit.open} rule={edit.rule} onChange={setEdit} onClose={closeEdit} onSave={saveEdit} />
+      <EditModal open={edit.open} rule={edit.rule} onChange={setEdit} onClose={closeEdit} onSave={saveEdit} saving={saving} />
     </div>
   );
 }
@@ -228,7 +226,7 @@ function RuleRow({ label, value, onEdit }: { label: string; value: string; onEdi
   );
 }
 
-function EditModal({ open, rule, onChange, onClose, onSave }: { open: boolean; rule: Rule | null; onChange: (s: EditState) => void; onClose: () => void; onSave: () => void; }) {
+function EditModal({ open, rule, onChange, onClose, onSave, saving }: { open: boolean; rule: Rule | null; onChange: (s: EditState) => void; onClose: () => void; onSave: () => void; saving: boolean; }) {
   if (!open || !rule) return null;
 
   const setParams = (patch: Partial<RuleParams>) => {
