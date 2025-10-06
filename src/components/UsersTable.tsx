@@ -41,32 +41,33 @@ function useDropdown(): DropdownState {
   return { open, setOpen, btnRef, panelRef, pos } as DropdownState;
 }
 
-import { getUsers } from "@/lib/api";
-
-export default function UsersTable({ onOpen, refreshToken = 0 }: { onOpen: (u: User) => void; refreshToken?: number; }) {
-  // server data state
+export default function UsersTable({ data, onOpen, filters, onChangeFilters, sort, onChangeSort }: {
+  data: User[];
+  onOpen: (u: User) => void;
+  filters: { nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number };
+  onChangeFilters: (patch: Partial<{ nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number }>) => void;
+  sort: { key: UserSortKey; dir: SortDir };
+  onChangeSort: (key: UserSortKey, dir: SortDir) => void;
+}) {
+  // server data state (for virtualization and infinite scroll trigger)
   const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(20);
+  const [limit] = useState(20);
   const [total, setTotal] = useState(0);
-  const [data, setData] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const [sortKey, setSortKey] = useState<UserSortKey>("createdAt");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortKey, setSortKey] = useState<UserSortKey>(sort.key);
+  const [sortDir, setSortDir] = useState<SortDir>(sort.dir);
 
-  // per-column filters
-  const [nameQ, setNameQ] = useState("");
-  const [search, setSearch] = useState("");
-
-  const [phoneQ, setPhoneQ] = useState("");
-  const [emailQ, setEmailQ] = useState("");
-  const [statusSet, setStatusSet] = useState<Set<UserStatus>>(new Set());
-  const [dateFrom, setDateFrom] = useState<string | undefined>();
-  const [dateTo, setDateTo] = useState<string | undefined>();
-  const [minCOM, setMinCOM] = useState<string>("");
-  const [maxCOM, setMaxCOM] = useState<string>("");
-  const [minTotal, setMinTotal] = useState<string>("");
-  const [maxTotal, setMaxTotal] = useState<string>("");
+  // local inputs mirror external filters, apply on Save inside dropdowns
+  const [nameQ, setNameQ] = useState(filters.nameQuery || "");
+  const [phoneQ, setPhoneQ] = useState(filters.phoneQuery || "");
+  const [emailQ, setEmailQ] = useState(filters.emailQuery || "");
+  const [statusSet, setStatusSet] = useState<Set<UserStatus>>(new Set(filters.statuses || []));
+  const [dateFrom, setDateFrom] = useState<string | undefined>(filters.dateFrom);
+  const [dateTo, setDateTo] = useState<string | undefined>(filters.dateTo);
+  const [minCOM, setMinCOM] = useState<string>(filters.minCOM != null ? String(filters.minCOM) : "");
+  const [maxCOM, setMaxCOM] = useState<string>(filters.maxCOM != null ? String(filters.maxCOM) : "");
+  const [minTotal, setMinTotal] = useState<string>(filters.minTotal != null ? String(filters.minTotal) : "");
+  const [maxTotal, setMaxTotal] = useState<string>(filters.maxTotal != null ? String(filters.maxTotal) : "");
 
   const nameDD = useDropdown();
   const phoneDD = useDropdown();
@@ -76,41 +77,12 @@ export default function UsersTable({ onOpen, refreshToken = 0 }: { onOpen: (u: U
   const comDD = useDropdown();
   const totalDD = useDropdown();
 
-  // server-driven: show data as-is; client numeric filters are not applied to server
+  // server-driven: show data as-is; параметры фильтров и сортировки управляются родителем (страницей)
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
   const [headerPadRight, setHeaderPadRight] = useState(0);
   useEffect(() => { const el = containerRef.current; if (el) el.scrollTop = 0; }, [nameQ, phoneQ, emailQ, statusSet, dateFrom, dateTo, minCOM, maxCOM, minTotal, maxTotal]);
-
-  // server fetch based on filters/sort
-  async function fetchPage(pageOffset: number, replace: boolean) {
-    setLoading(true);
-    try {
-      const statuses = statusSet.size ? Array.from(statusSet).map(s => s === "Активен" ? "ACTIVE" : "BLOCKED") : undefined;
-      const res = await getUsers({
-        offset: pageOffset,
-        limit,
-        search: nameQ || phoneQ || emailQ ? [nameQ, phoneQ, emailQ].filter(Boolean).join(" ") : undefined,
-        statuses,
-        sortBy: sortKey === "fullName" ? "fio" : sortKey === "phone" ? "phone" : sortKey === "email" ? "email" : sortKey === "status" ? "status" : sortKey === "balanceCOM" ? "som_balance" : sortKey === "balanceTotal" ? "total_balance" : "createdAt",
-        sortDir,
-      });
-      setTotal(res.total ?? (res.items?.length || 0));
-      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
-    } catch (e) {
-      if (replace) setData([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // reset and fetch when deps change
-  useEffect(() => {
-    setData([]); setOffset(0);
-    fetchPage(0, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit, sortKey, sortDir, nameQ, phoneQ, emailQ, statusSet, refreshToken]);
 
   // header padding sync with scrollbar
   useEffect(() => {
@@ -126,7 +98,7 @@ export default function UsersTable({ onOpen, refreshToken = 0 }: { onOpen: (u: U
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
   }, [data.length]);
 
-  const rowVirtualizer = useVirtualizer({ count: data.length + ((offset + data.length) < total ? 1 : 0), getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
+  const rowVirtualizer = useVirtualizer({ count: data.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
 
   function toggleSort(key: UserSortKey) {
     if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
@@ -207,22 +179,9 @@ export default function UsersTable({ onOpen, refreshToken = 0 }: { onOpen: (u: U
             </tr>
           </thead>
         </table>
-      <div className="px-3 py-2 flex items-center gap-2">
-        <input className="ui-input h-9 w-[320px]" placeholder="Поиск (ФИО/телефон/email)" value={nameQ} onChange={(e)=>setNameQ(e.target.value)} />
-        <button className="btn h-9" onClick={()=>{ setNameQ(""); setPhoneQ(""); setEmailQ(""); setStatusSet(new Set()); }}>Сбросить фильтры</button>
       </div>
 
-      </div>
-
-      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]" onScroll={() => {
-        const el = containerRef.current; if (!el) return;
-        const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
-        if (nearEnd && !loading && (offset + data.length < total)) {
-          const nextOffset = offset + data.length;
-          setOffset(nextOffset);
-          fetchPage(nextOffset, false);
-        }
-      }}>
+      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]">
 
         <table className="w-full text-sm table-fixed">
           <colgroup>

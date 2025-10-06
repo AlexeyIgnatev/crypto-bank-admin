@@ -1,12 +1,62 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import { User } from "../../types";
 import UserDetailsCard from "../../components/UserDetails";
-import { createUser, updateUser, deleteUser } from "@/lib/api";
+import { createUser, updateUser, deleteUser, getUsers } from "@/lib/api";
+import { UserStatus } from "@/types";
 
 export default function UsersPage() {
+  const [data, setData] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // фильтры/сортировки как у администраторов — управляются на странице
+  const [filters, setFilters] = useState<{ nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number }>({});
+  const [sort, setSort] = useState<{ key: import("@/components/UsersTable").UserSortKey; dir: import("@/components/UsersTable").SortDir }>({ key: "createdAt", dir: "desc" });
+
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(20);
+  const [total, setTotal] = useState(0);
+
+  async function fetchPage(pageOffset: number, replace: boolean) {
+    setLoading(true);
+    try {
+      const statuses = (filters.statuses || []).map(s => s === "Активен" ? "ACTIVE" : "BLOCKED");
+      const res = await getUsers({
+        offset: pageOffset,
+        limit,
+        search: [filters.nameQuery, filters.phoneQuery, filters.emailQuery].filter(Boolean).join(" ") || undefined,
+        statuses: statuses.length ? statuses : undefined,
+        sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : "createdAt",
+        sortDir: sort.dir,
+      });
+      setTotal(res.total ?? (res.items?.length || 0));
+      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
+    } catch (e) {
+      if (replace) { setData([]); setTotal(0); }
+      setError("Не удалось загрузить пользователей");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // первый запрос и обновления при изменении фильтров/сортировок/лимита
+  import { useEffect } from "react";
+  useEffect(() => {
+    setData([]); setOffset(0);
+    fetchPage(0, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, JSON.stringify(filters), sort.key, sort.dir]);
+
+  const canNext = offset + data.length < total;
+  const onEndReached = () => {
+    if (loading || !canNext) return;
+    const nextOffset = offset + data.length;
+    setOffset(nextOffset);
+    fetchPage(nextOffset, false);
+  };
 
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
@@ -17,9 +67,26 @@ export default function UsersPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="min-h-0 flex-1 flex flex-col">
-        <div className="flex-1 min-h-0">
-          <UsersTable onOpen={(u) => { setSelected(u); setOpenView(true); }} />
-        </div>
+        {loading ? (
+          <div className="m-auto text-muted">Загрузка...</div>
+        ) : error ? (
+          <div className="m-auto text-red-500">{error}</div>
+        ) : (
+          <div className="flex-1 min-h-0" onScroll={(e) => {
+            const el = e.currentTarget as HTMLDivElement;
+            const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+            if (nearEnd) onEndReached();
+          }}>
+            <UsersTable
+              data={data}
+              onOpen={(u) => { setSelected(u); setOpenView(true); }}
+              filters={filters}
+              onChangeFilters={(patch) => setFilters(prev => ({ ...prev, ...patch }))}
+              sort={sort}
+              onChangeSort={(key, dir) => setSort({ key, dir })}
+            />
+          </div>
+        )}
       </div>
 
       <button
