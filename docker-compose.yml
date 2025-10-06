@@ -7,8 +7,8 @@ services:
       - "46346:3000"
     environment:
       # You can override this to point to your backend
-      - API_BASE=${API_BASE:-http://localhost:8000}
-      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://localhost:8000}
+      - API_BASE=${API_BASE:-http://192.168.254.121:8000}
+      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://192.168.254.121:8000}
       - NODE_ENV=production
     # If your backend is also in compose, you can declare a depends_on
     # depends_on:
