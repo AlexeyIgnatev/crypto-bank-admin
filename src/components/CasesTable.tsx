@@ -138,6 +138,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
     getScrollElement: () => containerRef.current,
     estimateSize: () => rowHeight,
     overscan: 8,
+    initialRect: { width: 0, height: 600 },
   });
 
   useEffect(() => {

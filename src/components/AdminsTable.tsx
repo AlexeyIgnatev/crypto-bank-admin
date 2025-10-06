@@ -86,6 +86,7 @@ export default function AdminsTable({ data, onOpen }: { data: Admin[]; onOpen: (
     getScrollElement: () => containerRef.current,
     estimateSize: () => 48,
     overscan: 8,
+    initialRect: { width: 0, height: 600 },
   });
 
   function toggleSort(key: AdminSortKey) {

@@ -149,6 +149,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     getScrollElement: () => containerRef.current,
     estimateSize: () => rowHeight,
     overscan: 8,
+    initialRect: { width: 0, height: 600 },
   });
 
   useEffect(() => {
@@ -277,10 +278,10 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
           </colgroup>
           <tbody>
             {(() => {
-              const items = rowVirtualizer.getVirtualItems();
+              const vItems = rowVirtualizer.getVirtualItems();
               const total = rowVirtualizer.getTotalSize();
-              const paddingTop = items.length > 0 ? items[0].start : 0;
-              const paddingBottom = items.length > 0 ? total - items[items.length - 1].end : 0;
+              const paddingTop = vItems.length > 0 ? vItems[0].start : 0;
+              const paddingBottom = vItems.length > 0 ? total - vItems[vItems.length - 1].end : 0;
               return (
                 <>
                   {paddingTop > 0 && (
@@ -289,7 +290,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
                     </tr>
                   )}
 
-                  {items.map((vRow) => {
+                  {vItems.map((vRow) => {
                     const t = items[vRow.index];
                     if (!t) return null;
                     return (
