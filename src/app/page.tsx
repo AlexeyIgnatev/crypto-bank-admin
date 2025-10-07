@@ -6,6 +6,7 @@ import Table from "../components/Table";
 import Modal from "../components/Modal";
 import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef } from "react";
+import { formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
 import { getUserById } from "@/lib/api";
 
@@ -40,7 +41,7 @@ export default function Home() {
             <Row label="ID/tx_hash" value={selected.id} mono />
             <Row label="Статус" value={<StatusBadge status={selected.status} />} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
-            <Row label="Сумма" value={`${selected.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${selected.currency}`} />
+            <Row label="Сумма" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
             <Row label="Отправитель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.sender}>{selected.sender}</span>

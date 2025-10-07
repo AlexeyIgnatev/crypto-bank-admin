@@ -6,6 +6,7 @@ import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Transaction, TransactionStatus } from "../types";
+import { formatAmount6 } from "@/lib/format";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
 export type SortDir = "asc" | "desc";
@@ -312,7 +313,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{t.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(t.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{t.currency}</td>
                         <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
                         <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>
