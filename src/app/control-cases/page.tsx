@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import Modal from "@/components/Modal";
+import { formatAmount6 } from "@/lib/format";
 
 // Локальные типы для кейсов финконтроля (не вмешиваемся в общий TransactionStatus)
 type ControlCaseStatus = "OPEN" | "APPROVED" | "REJECTED";
@@ -57,7 +58,7 @@ export default function ControlCasesPage() {
             <Row label="ID/tx_hash" value={<span className="font-mono">{selected.id}</span>} />
             <Row label="Статус" value={<div className="flex items-center gap-2">{statusBadge(selected.status)}</div>} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
-            <Row label="Сумма" value={`${selected.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} ${selected.currency}`} />
+            <Row label="Сумма" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
             <Row label="Отправитель" value={selected.sender} />
             <Row label="Получатель" value={selected.recipient} />
             {selected.status === "OPEN" && (

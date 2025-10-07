@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { User } from "../types";
+import { formatAmount6 } from "@/lib/format";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -24,17 +25,17 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
         <div className="space-y-2">
           <div className="text-muted">Балансы</div>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>COM</div><div className="text-right">{user.balances.COM.toLocaleString()}</div>
-            <div>SALAM</div><div className="text-right">{user.balances.SALAM.toLocaleString()}</div>
-            <div>BTC</div><div className="text-right">{user.balances.BTC.toLocaleString()}</div>
-            <div>ETH</div><div className="text-right">{user.balances.ETH.toLocaleString()}</div>
-            <div>USDT</div><div className="text-right">{user.balances.USDT.toLocaleString()}</div>
+            <div>COM</div><div className="text-right">{formatAmount6(user.balances.COM)}</div>
+            <div>SALAM</div><div className="text-right">{formatAmount6(user.balances.SALAM)}</div>
+            <div>BTC</div><div className="text-right">{formatAmount6(user.balances.BTC)}</div>
+            <div>ETH</div><div className="text-right">{formatAmount6(user.balances.ETH)}</div>
+            <div>USDT</div><div className="text-right">{formatAmount6(user.balances.USDT)}</div>
           </div>
         </div>
         <div className="space-y-2">
           <div className="text-muted">Итоги</div>
-          <div className="flex justify-between"><span>Баланс СОМ</span><span>{user.balances.COM.toLocaleString()}</span></div>
-          <div className="flex justify-between"><span>Общий баланс</span><span>{total.toLocaleString()}</span></div>
+          <div className="flex justify-between"><span>Баланс СОМ</span><span>{formatAmount6(user.balances.COM)}</span></div>
+          <div className="flex justify-between"><span>Общий баланс</span><span>{formatAmount6(total)}</span></div>
           <div className="flex justify-between"><span>Создан</span><span>{new Date(user.createdAt).toLocaleString()}</span></div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { User, UserStatus } from "../types";
+import { formatAmount6 } from "@/lib/format";
 
 export type UserSortKey = "fullName" | "phone" | "email" | "status" | "createdAt" | "balanceCOM" | "balanceTotal";
 export type SortDir = "asc" | "desc";
@@ -226,8 +227,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{u.balances.COM.toLocaleString()}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{totalBalance.toLocaleString()}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(u.balances.COM)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
                       </tr>
                     );
                   })}

@@ -5,6 +5,7 @@ import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { AntiFraudCaseItem, AntiFraudCaseStatus, getAntifraudCases } from "@/lib/api";
+import { formatAmount6 } from "@/lib/format";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
 export type SortDir = "asc" | "desc";
@@ -279,7 +280,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
                         <td className="px-4 py-3 font-mono truncate" title={item.txHash || item.id}>{item.txHash || item.id}</td>
                         <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(item.createdAt).toLocaleString()}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(item.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{item.currency}</td>
                         <td className="px-4 py-3 truncate" title={item.sender}>{item.sender}</td>
                         <td className="px-4 py-3 truncate" title={item.recipient}>{item.recipient}</td>
