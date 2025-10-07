@@ -29,9 +29,9 @@ export default function Cards() {
 
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card title="Общая сумма транзакций" value={`${fmt(stats?.total ?? 123_000_000)} ₸`} accent />
-      <Card title="Между банковскими счетами" value={`${fmt(stats?.bank ?? 23_000_000)} ₸`} />
-      <Card title="Между криптокошельками" value={`${fmt(stats?.wallet ?? 45_000_000)} ₸`} />
+      <Card title="Общая сумма транзакций" value={`${fmt(stats?.total ?? 123_000_000)}`} accent />
+      <Card title="Между банковскими счетами" value={`${fmt(stats?.bank ?? 23_000_000)}`} />
+      <Card title="Между криптокошельками" value={`${fmt(stats?.wallet ?? 45_000_000)}`} />
       <Card title="Количество пользователей" value={`${fmt(stats?.users ?? 1_230_000)}`} accent />
     </section>
   );
