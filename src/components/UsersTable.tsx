@@ -54,8 +54,6 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
   const [limit] = useState(20);
   const [total, setTotal] = useState(0);
 
-  const [sortKey, setSortKey] = useState<UserSortKey>(sort.key);
-  const [sortDir, setSortDir] = useState<SortDir>(sort.dir);
 
   // local inputs mirror external filters, apply on Save inside dropdowns
   const [nameQ, setNameQ] = useState(filters.nameQuery || "");
@@ -76,6 +74,20 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
   const dateDD = useDropdown();
   const comDD = useDropdown();
   const totalDD = useDropdown();
+
+  // sync local inputs from external filters
+  useEffect(() => {
+    setNameQ(filters.nameQuery || "");
+    setPhoneQ(filters.phoneQuery || "");
+    setEmailQ(filters.emailQuery || "");
+    setStatusSet(new Set(filters.statuses || []));
+    setDateFrom(filters.dateFrom);
+    setDateTo(filters.dateTo);
+    setMinCOM(filters.minCOM != null ? String(filters.minCOM) : "");
+    setMaxCOM(filters.maxCOM != null ? String(filters.maxCOM) : "");
+    setMinTotal(filters.minTotal != null ? String(filters.minTotal) : "");
+    setMaxTotal(filters.maxTotal != null ? String(filters.maxTotal) : "");
+  }, [filters.nameQuery, filters.phoneQuery, filters.emailQuery, JSON.stringify(filters.statuses || []), filters.dateFrom, filters.dateTo, filters.minCOM, filters.maxCOM, filters.minTotal, filters.maxTotal]);
 
   // server-driven: show data as-is; параметры фильтров и сортировки управляются родителем (страницей)
 
@@ -101,8 +113,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
   const rowVirtualizer = useVirtualizer({ count: data.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
 
   function toggleSort(key: UserSortKey) {
-    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
+    const nextDir: SortDir = (sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : "asc");
+    onChangeSort(key, nextDir);
   }
 
   return (
@@ -123,7 +135,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               <Th>№</Th>
               <Th onClick={() => toggleSort("fullName")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "fullName"} dir={sortDir} />
+                  <SortIcon active={sort.key === "fullName"} dir={sort.dir} />
                   <span className="px-1">ФИО</span>
                   <button ref={nameDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); nameDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -132,7 +144,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </Th>
               <Th onClick={() => toggleSort("phone")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "phone"} dir={sortDir} />
+                  <SortIcon active={sort.key === "phone"} dir={sort.dir} />
                   <span className="px-1">Телефон</span>
                   <button ref={phoneDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); phoneDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -141,7 +153,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </Th>
               <Th onClick={() => toggleSort("email")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "email"} dir={sortDir} />
+                  <SortIcon active={sort.key === "email"} dir={sort.dir} />
                   <span className="px-1">E-mail</span>
                   <button ref={emailDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); emailDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -150,7 +162,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </Th>
               <Th onClick={() => toggleSort("status")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "status"} dir={sortDir} />
+                  <SortIcon active={sort.key === "status"} dir={sort.dir} />
                   <span className="px-1">Статус</span>
                   <button ref={statusDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); statusDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -159,7 +171,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </Th>
               <Th onClick={() => toggleSort("balanceCOM")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "balanceCOM"} dir={sortDir} />
+                  <SortIcon active={sort.key === "balanceCOM"} dir={sort.dir} />
                   <span className="px-1">Баланс СОМ</span>
                   <button ref={comDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); comDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -168,7 +180,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </Th>
               <Th onClick={() => toggleSort("balanceTotal")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sortKey === "balanceTotal"} dir={sortDir} />
+                  <SortIcon active={sort.key === "balanceTotal"} dir={sort.dir} />
                   <span className="px-1">Общий баланс</span>
                   <button ref={totalDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); totalDD.setOpen(o => !o); }}>
                     <span className="chev">▾</span>
@@ -234,7 +246,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             <input className="ui-input w-full" placeholder="ФИО содержит" value={nameQ} onChange={e => setNameQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setNameQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => nameDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ nameQuery: nameQ || undefined }); nameDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -247,7 +259,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             <input className="ui-input w-full" placeholder="Телефон содержит" value={phoneQ} onChange={e => setPhoneQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setPhoneQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => phoneDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ phoneQuery: phoneQ || undefined }); phoneDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -260,7 +272,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             <input className="ui-input w-full" placeholder="email содержит" value={emailQ} onChange={e => setEmailQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setEmailQ("")}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => emailDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ emailQuery: emailQ || undefined }); emailDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -284,7 +296,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             ))}
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => statusDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ statuses: Array.from(statusSet) }); statusDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -306,7 +318,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => { setMinCOM(""); setMaxCOM(""); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => comDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ minCOM: minCOM ? Number(minCOM) : undefined, maxCOM: maxCOM ? Number(maxCOM) : undefined }); comDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -329,7 +341,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => totalDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ minTotal: minTotal ? Number(minTotal) : undefined, maxTotal: maxTotal ? Number(maxTotal) : undefined }); totalDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -344,7 +356,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
             <Flatpickr value={dateTo ? new Date(dateTo) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ dateFrom, dateTo }); dateDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
