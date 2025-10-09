@@ -144,6 +144,36 @@ export default function TransactionsAnalytics() {
     })();
   }, [dateFrom, dateTo, statuses, currencies, operations, metric, bucket]);
 
+  // Экспорт CSV текущих точек графика
+  function exportCsv() {
+    const points = stats.points || [];
+    if (!points.length) return;
+    const sep = ",";
+    const safe = (v: string | number) => {
+      const s = String(v ?? "");
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    const valHeader = metric === "sum" ? "Сумма" : "Кол-во";
+    const header = ["Дата", "Timestamp", valHeader].join(sep);
+    const rows = points.map(p => [safe(p.label), safe(p.ts), safe(p.value)].join(sep)).join("\n");
+    const csv = header + "\n" + rows + "\n";
+    const fmt = (d?: string) => {
+      if (!d) return "";
+      const x = new Date(d);
+      const y = x.getFullYear();
+      const m = String(x.getMonth() + 1).padStart(2, "0");
+      const dd = String(x.getDate()).padStart(2, "0");
+      return `${y}${m}${dd}`;
+    };
+    const name = `transactions_chart_${metric}_${bucket}_${fmt(dateFrom)}_${fmt(dateTo)}.csv`;
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }); // BOM for Excel
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden w-full">
       <div className="card border border-soft rounded-xl p-3">
@@ -268,6 +298,21 @@ export default function TransactionsAnalytics() {
           </div>
         </div>
       </div>
+
+      {/* FAB экспорт */}
+      <button
+        onClick={exportCsv}
+        disabled={!stats.points?.length}
+        title="Экспорт CSV"
+        aria-label="Экспорт CSV"
+        className={`fixed bottom-6 right-6 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 h-14 px-5 flex items-center gap-2 ${stats.points?.length ? "bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-500" : "bg-gray-400 text-white cursor-not-allowed"}`}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="pointer-events-none">
+          <path fill="currentColor" d="M12 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L11 13.586V4a1 1 0 011-1z" />
+          <path fill="currentColor" d="M5 18a2 2 0 002 2h10a2 2 0 002-2v-2a1 1 0 112 0v2a4 4 0 01-4 4H7a4 4 0 01-4-4v-2a1 1 0 112 0v2z" />
+        </svg>
+        <span className="hidden sm:inline">Экспорт</span>
+      </button>
     </div>
   );
 }
