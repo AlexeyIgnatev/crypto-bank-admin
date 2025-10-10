@@ -225,7 +225,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                         <td className="px-4 py-3 whitespace-nowrap">{u.phone}</td>
                         <td className="px-4 py-3 truncate" title={u.email}>{u.email}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : u.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(u.balances.COM)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
@@ -283,7 +283,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
         <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)} portalRef={statusDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">Статус</div>
-            {(["Активен","Заблокирован"] as UserStatus[]).map(st => (
+            {(["Активен","Заблокирован","Фин контроль"] as UserStatus[]).map(st => (
               <label key={st} className="flex items-center gap-2">
                 <input type="checkbox" checked={statusSet.has(st)} onChange={(e) => {
                   setStatusSet(prev => {

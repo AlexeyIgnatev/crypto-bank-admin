@@ -35,7 +35,7 @@ export interface Admin {
   createdAt: string; // ISO
 }
 
-export type UserStatus = "Активен" | "Заблокирован";
+export type UserStatus = "Активен" | "Заблокирован" | "Фин контроль";
 
 export interface User {
   id: string;

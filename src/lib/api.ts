@@ -110,7 +110,7 @@ export async function getStatsToday(): Promise<{ total: number; bank: number; wa
 
 export async function getUsers(params: {
   offset?: number; limit?: number;
-  search?: string; statuses?: ("ACTIVE"|"BLOCKED")[];
+  search?: string; statuses?: ("ACTIVE"|"BLOCKED"|"FRAUD")[];
   sortBy?: "customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt";
   sortDir?: "asc"|"desc";
 }): Promise<{ items: User[]; total: number; offset: number; limit: number; }> {
@@ -131,7 +131,7 @@ export async function getUsers(params: {
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : "Активен",
+    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -153,7 +153,7 @@ export async function getUserById(id: string|number): Promise<User> {
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : "Активен",
+    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -166,23 +166,23 @@ export async function getUserById(id: string|number): Promise<User> {
   return user;
 }
 
-export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"; }) {
+export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }) {
   const body = {
     firstName: payload.firstName,
     lastName: payload.lastName,
     middleName: payload.middleName || "",
     phone: payload.phone,
     email: payload.email,
-    status: payload.status === "Заблокирован" ? "BLOCKED" : "ACTIVE",
+    status: payload.status === "Заблокирован" ? "BLOCKED" : (payload.status === "Фин контроль" ? "FRAUD" : "ACTIVE"),
   };
   const res = await fetch(`/api/user-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to create user");
   return res.json();
 }
 
-export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"; }>) {
+export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }>) {
   const body: any = { ...payload };
-  if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : "ACTIVE";
+  if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
   const res = await fetch(`/api/user-management/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to update user");
   return res.json();

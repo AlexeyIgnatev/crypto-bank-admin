@@ -23,7 +23,7 @@ export default function UsersPage() {
   async function fetchPage(pageOffset: number, replace: boolean) {
     setLoading(true);
     try {
-      const statuses = (filters.statuses || []).map(s => s === "Активен" ? "ACTIVE" : "BLOCKED");
+      const statuses = (filters.statuses || []).map(s => s === "Активен" ? "ACTIVE" : s === "Заблокирован" ? "BLOCKED" : "FRAUD");
       const res = await getUsers({
         offset: pageOffset,
         limit,
@@ -171,7 +171,7 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
   const [middleName, setMiddleName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"Активен"|"Заблокирован">("Активен");
+  const [status, setStatus] = useState<"Активен"|"Заблокирован"|"Фин контроль">("Активен");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   return (
@@ -212,6 +212,7 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
           <select className="ui-input" value={status} onChange={e=>setStatus(e.target.value as any)}>
             <option>Активен</option>
             <option>Заблокирован</option>
+            <option>Фин контроль</option>
           </select>
         </div>
       </div>
@@ -271,6 +272,7 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
           <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
             <option>Активен</option>
             <option>Заблокирован</option>
+            <option>Фин контроль</option>
           </select>
         </div>
       </div>
