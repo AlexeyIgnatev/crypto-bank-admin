@@ -168,9 +168,9 @@ export async function getUserById(id: string|number): Promise<User> {
 
 export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }) {
   const body = {
-    firstName: payload.firstName,
-    lastName: payload.lastName,
-    middleName: payload.middleName || "",
+    first_name: payload.firstName,
+    last_name: payload.lastName,
+    middle_name: payload.middleName || "",
     phone: payload.phone,
     email: payload.email,
     status: payload.status === "Заблокирован" ? "BLOCKED" : (payload.status === "Фин контроль" ? "FRAUD" : "ACTIVE"),
@@ -181,9 +181,16 @@ export async function createUser(payload: { firstName: string; lastName: string;
 }
 
 export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }>) {
-  const body: any = { ...payload };
+  const body: any = {
+    ...(payload.firstName != null ? { first_name: payload.firstName } : {}),
+    ...(payload.lastName != null ? { last_name: payload.lastName } : {}),
+    ...(payload.middleName != null ? { middle_name: payload.middleName } : {}),
+    ...(payload.phone != null ? { phone: payload.phone } : {}),
+    ...(payload.email != null ? { email: payload.email } : {}),
+    ...(payload.status != null ? { status: payload.status } : {}),
+  };
   if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
-  const res = await fetch(`/api/user-management/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch(`/api/user-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to update user");
   return res.json();
 }
