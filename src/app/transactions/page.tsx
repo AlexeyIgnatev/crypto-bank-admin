@@ -287,32 +287,23 @@ export default function TransactionsAnalytics() {
             <InteractiveChart data={stats.points} metric={metric} />
           </div>
         </div>
-        <div className="lg:col-span-1 card border border-soft rounded-xl p-3 space-y-3">
-          <Stat label="Общая сумма" value={stats.totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
-          <Stat label="Общее количество" value={stats.totalCount.toLocaleString()} />
-          <div className="grid grid-cols-2 gap-3">
-            <Stat label="Топ валюта по сумме" value={stats.topCurrencyBySumLabel || "—"} />
-            <Stat label="Топ валюта по количеству" value={stats.topCurrencyByCountLabel || "—"} />
-            <Stat label="Наиболее активный день" value={stats.mostActiveDayLabel || "—"} />
-            <Stat label="Средний чек" value={Math.round(stats.averageCheck).toLocaleString()} />
+        <div className="lg:col-span-1 card border border-soft rounded-xl p-3 flex flex-col min-h-[460px]">
+          <div className="space-y-3 flex-1">
+            <Stat label="Общая сумма" value={stats.totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })} suffix="" />
+            <Stat label="Общее количество" value={stats.totalCount.toLocaleString()} />
+            <div className="grid grid-cols-2 gap-3">
+              <Stat label="Топ валюта по сумме" value={stats.topCurrencyBySumLabel || "—"} />
+              <Stat label="Топ валюта по количеству" value={stats.topCurrencyByCountLabel || "—"} />
+              <Stat label="Наиболее активный день" value={stats.mostActiveDayLabel || "—"} />
+              <Stat label="Средний чек" value={Math.round(stats.averageCheck).toLocaleString()} />
+            </div>
+          </div>
+          <div className="pt-3 mt-2 border-t border-soft">
+            <button className="btn btn-primary w-full h-12 text-base font-semibold" onClick={exportCsv} disabled={!stats.points?.length}>Экспорт CSV</button>
           </div>
         </div>
       </div>
 
-      {/* FAB экспорт */}
-      <button
-        onClick={exportCsv}
-        disabled={!stats.points?.length}
-        title="Экспорт CSV"
-        aria-label="Экспорт CSV"
-        className={`fixed bottom-6 right-6 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 h-14 px-5 flex items-center gap-2 ${stats.points?.length ? "bg-blue-600 hover:bg-blue-500 text-white focus:ring-blue-500" : "bg-gray-400 text-white cursor-not-allowed"}`}
-      >
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" className="pointer-events-none">
-          <path fill="currentColor" d="M12 3a1 1 0 011 1v9.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L11 13.586V4a1 1 0 011-1z" />
-          <path fill="currentColor" d="M5 18a2 2 0 002 2h10a2 2 0 002-2v-2a1 1 0 112 0v2a4 4 0 01-4 4H7a4 4 0 01-4-4v-2a1 1 0 112 0v2z" />
-        </svg>
-        <span className="hidden sm:inline">Экспорт</span>
-      </button>
     </div>
   );
 }

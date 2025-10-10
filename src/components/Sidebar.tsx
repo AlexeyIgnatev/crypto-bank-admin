@@ -3,8 +3,6 @@ import { useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import Modal from "./Modal";
-import FAQ from "./FAQ";
 
 const items = [
   { href: "/", label: "Главная", icon: "🏠" },
@@ -14,12 +12,12 @@ const items = [
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
+  { href: "/faq", label: "FAQ", icon: "❓" },
 ];
 
 export default function Sidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(true);
-  const [openFaq, setOpenFaq] = useState(false);
   const { theme, toggle } = useTheme();
   const pathname = usePathname();
   const labelClass = open ? "inline" : "sr-only";
@@ -62,17 +60,7 @@ export default function Sidebar() {
             </Link>
           );
         })}
-        {/* FAQ button */}
-        <button
-          className={`mx-2 w-[calc(100%-1rem)] flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${open ? "gap-3 justify-start" : "justify-center"} opacity-90 hover:opacity-100 hover-surface`}
-          onClick={() => setOpenFaq(true)}
-          title="FAQ"
-        >
-          <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>❓</span>
-          {open && <span className="flex-1 min-w-0 truncate">FAQ</span>}
-        </button>
       </nav>
-
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
         <button
           className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? '' : 'justify-center'}`}
@@ -94,10 +82,6 @@ export default function Sidebar() {
           {open && <span>Выйти</span>}
         </button>
       </div>
-
-      <Modal open={openFaq} onClose={() => setOpenFaq(false)} title="FAQ">
-        <FAQ />
-      </Modal>
     </aside>
   );
 }
