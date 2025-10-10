@@ -131,3 +131,6 @@ html.theme-switching textarea::placeholder {
   .btn-info { background: #2563eb; color:#fff; border-color: transparent; }
   .btn-info:hover { background: #1d4ed8; }
 
+/* FAQ helpers */
+.faq-hero { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 14%, transparent), transparent); border: 1px solid var(--border-soft); }
+
