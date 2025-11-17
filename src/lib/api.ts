@@ -393,6 +393,8 @@ export type AntiFraudCaseItem = {
   recipient: string;
   txId?: string; // transaction id
   txHash?: string;
+  ruleKey?: string; // backend rule key
+  reason?: any; // backend-provided reason payload/text
 };
 export async function getAntifraudCases(params: {
   offset?: number; limit?: number;
@@ -441,6 +443,8 @@ export async function getAntifraudCases(params: {
       recipient: receiverLabel,
       txId: String(tx.id || ""),
       txHash: tx.tx_hash,
+      ruleKey: it.rule_key,
+      reason: it.reason,
     } as AntiFraudCaseItem;
   });
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
