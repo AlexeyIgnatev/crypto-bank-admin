@@ -146,7 +146,3 @@ function ReasonBlock({ selected }: { selected: AntiFraudCaseItem }) {
     </div>
   );
 }
-
-    </div>
-  );
-}
