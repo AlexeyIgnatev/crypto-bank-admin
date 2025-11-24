@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { getCurrentAdminRole } from "@/lib/api";
 
-const items = [
+const allItems = [
   { href: "/", label: "Главная", icon: "🏠" },
   { href: "/admins", label: "Администраторы", icon: "👤" },
   { href: "/users", label: "Пользователи", icon: "👥" },
@@ -15,12 +16,46 @@ const items = [
   { href: "/faq", label: "FAQ", icon: "❓" },
 ];
 
+function allowedByRole(role?: string): string[] {
+  const base = ["/", "/users", "/transactions", "/faq"];
+  switch ((role || "").toUpperCase()) {
+    case "SUPER_ADMIN":
+      return allItems.map(i => i.href);
+    case "SKK":
+      return [...base, "/control", "/control-cases"];
+    case "TREASURY":
+      return [...base, "/rates"];
+    case "UIT":
+      return [...base, "/admins"];
+    case "UDBO":
+    case "UBUIO":
+    default:
+      return base;
+  }
+}
+
 export default function Sidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const { theme, toggle } = useTheme();
   const pathname = usePathname();
   const labelClass = open ? "inline" : "sr-only";
+
+  const [role, setRole] = useState<string | null>(null);
+  const allowedHrefs = allowedByRole(role || "");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await getCurrentAdminRole();
+        setRole(r);
+        // если текущий маршрут запрещён — перекинуть на главную
+        if (pathname && !allowedByRole(r).includes(pathname)) router.replace("/");
+      } catch {
+        setRole(null);
+      }
+    })();
+  }, [pathname]);
 
   return (
     <aside
@@ -41,7 +76,7 @@ export default function Sidebar() {
         {open && <div className="text-sm opacity-60">&nbsp;</div>}
       </div>
       <nav className="mt-2 space-y-1">
-        {items.map((it) => {
+        {allItems.filter(it => allowedHrefs.includes(it.href)).map((it) => {
           const active = pathname === it.href;
           return (
             <Link key={it.href} href={it.href} className="block">

@@ -142,7 +142,7 @@ function CreateAdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (
       setErr(null);
       setSubmitting(true);
       try {
-        await createAdmin({ email, password, firstName, lastName, role: "SUPER" });
+        await createAdmin({ email, password, firstName, lastName, role: "Супер админ" });
         onSave();
       } catch (e) {
         setErr("Не удалось создать администратора");

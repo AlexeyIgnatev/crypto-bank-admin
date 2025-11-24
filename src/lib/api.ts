@@ -204,13 +204,31 @@ export async function deleteUser(id: string|number) {
 function roleLabelFromKey(k?: string): string {
   switch ((k || "").toUpperCase()) {
     case "SUPER_ADMIN": return "Супер админ";
+    case "SKK": return "СКК";
+    case "UDBO": return "УДБО";
+    case "UBUIO": return "УБУИО";
+    case "TREASURY": return "Казначейство";
+    case "UIT": return "УИТ";
     default: return k || "Супер админ";
   }
 }
 function roleKeyFromLabel(lbl: string): string {
   const x = lbl.trim().toLowerCase();
   if (x === "супер админ") return "SUPER_ADMIN";
+  if (x === "скк") return "SKK";
+  if (x === "удбо") return "UDBO";
+  if (x === "убуио") return "UBUIO";
+  if (x === "казначейство") return "TREASURY";
+  if (x === "уит") return "UIT";
   return lbl;
+}
+
+export async function getCurrentAdminRole(): Promise<string> {
+  const res = await fetch(`/api/admin-management/me`, { cache: "no-store" });
+  if (!res.ok) return "SUPER_ADMIN";
+  const data = await res.json().catch(() => ({} as any));
+  const role = (data && (data.role || data?.data?.role)) || "SUPER_ADMIN";
+  return String(role);
 }
 
 export async function getAdmins(params: {
