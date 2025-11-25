@@ -135,6 +135,8 @@ function CreateAdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [role, setRole] = useState("Супер админ");
+
   const [err, setErr] = useState<string | null>(null);
   return (
     <form className="space-y-3" onSubmit={async (e) => {
@@ -142,7 +144,7 @@ function CreateAdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (
       setErr(null);
       setSubmitting(true);
       try {
-        await createAdmin({ email, password, firstName, lastName, role: "Супер админ" });
+        await createAdmin({ email, password, firstName, lastName, role });
         onSave();
       } catch (e) {
         setErr("Не удалось создать администратора");
@@ -165,8 +167,13 @@ function CreateAdminForm({ onCancel, onSave }: { onCancel: () => void; onSave: (
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Роль</div>
-          <select className="ui-input" defaultValue="Супер админ">
+          <select className="ui-input" value={role} onChange={(e)=>setRole(e.target.value)}>
             <option>Супер админ</option>
+            <option>СКК</option>
+            <option>УДБО</option>
+            <option>УБУИО</option>
+            <option>Казначейство</option>
+            <option>УИТ</option>
           </select>
         </div>
         <div className="col-span-2">
@@ -215,6 +222,7 @@ function EditAdminForm({ admin, onCancel, onSave }: { admin: Admin; onCancel: ()
   const [email, setEmail] = useState(admin.login);
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [role, setRole] = useState(admin.role || "Супер админ");
   const [err, setErr] = useState<string | null>(null);
   return (
     <form className="space-y-3" onSubmit={async (e) => {
@@ -222,7 +230,7 @@ function EditAdminForm({ admin, onCancel, onSave }: { admin: Admin; onCancel: ()
       setErr(null);
       setSubmitting(true);
       try {
-        const p: any = { firstName, lastName, email };
+        const p: any = { firstName, lastName, email, role };
         if (password) p.password = password;
         await updateAdmin(admin.id, p);
         onSave();
@@ -247,8 +255,13 @@ function EditAdminForm({ admin, onCancel, onSave }: { admin: Admin; onCancel: ()
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Роль</div>
-          <select className="ui-input" defaultValue={admin.role}>
+          <select className="ui-input" value={role} onChange={(e)=>setRole(e.target.value)}>
             <option>Супер админ</option>
+            <option>СКК</option>
+            <option>УДБО</option>
+            <option>УБУИО</option>
+            <option>Казначейство</option>
+            <option>УИТ</option>
           </select>
         </div>
         <div className="col-span-2">

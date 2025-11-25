@@ -31,7 +31,7 @@ export interface Admin {
   firstName: string;
   lastName: string;
   login: string; // email or username
-  role: "Супер админ"; // only one role for now
+  role: string; // e.g., "Супер админ", "СКК", "УДБО", "УБУИО", "Казначейство", "УИТ"
   createdAt: string; // ISO
 }
 
