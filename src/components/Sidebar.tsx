@@ -17,20 +17,21 @@ const allItems = [
 ];
 
 function allowedByRole(role?: string): string[] {
-  const base = ["/", "/users", "/transactions", "/faq"];
-  switch ((role || "").toUpperCase()) {
+  const key = (role || "").toUpperCase();
+  switch (key) {
     case "SUPER_ADMIN":
-      return allItems.map(i => i.href);
-    case "SKK":
-      return [...base, "/control", "/control-cases"];
-    case "TREASURY":
-      return [...base, "/rates"];
     case "UIT":
-      return [...base, "/admins"];
+    case "UID":
+      return allItems.map((i) => i.href);
+    case "SKK":
+      return ["/control-cases", "/faq"];
     case "UDBO":
     case "UBUIO":
+      return ["/transactions", "/faq"];
+    case "TREASURY":
+      return ["/rates", "/faq"];
     default:
-      return base;
+      return ["/faq"];
   }
 }
 
@@ -49,8 +50,8 @@ export default function Sidebar() {
       try {
         const r = await getCurrentAdminRole();
         setRole(r);
-        // если текущий маршрут запрещён — перекинуть на главную
-        if (pathname && !allowedByRole(r).includes(pathname)) router.replace("/");
+        const allowed = allowedByRole(r);
+        if (pathname && !allowed.includes(pathname)) router.replace(allowed[0] || "/faq");
       } catch {
         setRole(null);
       }
