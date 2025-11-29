@@ -30,12 +30,25 @@ export default function AdminLogsPage() {
   const [limit, setLimit] = useState(20);
   const [loading, setLoading] = useState(false);
 
+  // Сортировка и фильтры
+  const [sortKey, setSortKey] = useState<"createdAt" | "admin_id" | "action">("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [adminIdFilter, setAdminIdFilter] = useState<string>("");
+  const [actionQuery, setActionQuery] = useState<string>("");
+
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   async function fetchPage(pageOffset: number, replace: boolean) {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ offset: String(pageOffset), limit: String(limit) });
+      const params = new URLSearchParams({
+        offset: String(pageOffset),
+        limit: String(limit),
+        sort_by: sortKey,
+        sort_dir: sortDir,
+      });
+      if (adminIdFilter.trim()) params.set("admin_id", adminIdFilter.trim());
+      if (actionQuery.trim()) params.set("action_query", actionQuery.trim());
       const res = await fetch(`/api/audit/admin-actions?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load logs");
       const data = await res.json();
@@ -60,7 +73,7 @@ export default function AdminLogsPage() {
     setItems([]); setOffset(0);
     const el = containerRef.current; if (el) el.scrollTop = 0;
     fetchPage(0, true);
-  }, [limit]);
+  }, [limit, sortKey, sortDir, adminIdFilter, actionQuery]);
 
   const canNext = offset + items.length < total;
   function loadMore() {
@@ -68,6 +81,10 @@ export default function AdminLogsPage() {
     const nextOffset = offset + items.length;
     setOffset(nextOffset);
     fetchPage(nextOffset, false);
+  }
+  function toggleSort(key: "createdAt" | "admin_id" | "action") {
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("asc"); }
   }
 
   useEffect(() => {
@@ -114,6 +131,15 @@ export default function AdminLogsPage() {
         <div>
           <div className="text-2xl font-bold">Логи действий администраторов</div>
           <div className="text-sm text-muted">Показаны последние события с возможностью подгрузки</div>
+        </div>
+        <div className="flex items-center gap-2">
+          <input className="ui-input h-9 w-[160px]" placeholder="Admin ID" value={adminIdFilter} onChange={(e) => setAdminIdFilter(e.target.value)} />
+          <input className="ui-input h-9 w-[240px]" placeholder="Поиск по действию" value={actionQuery} onChange={(e) => setActionQuery(e.target.value)} />
+          <div className="flex items-center gap-1">
+            <button className="btn h-9" onClick={() => toggleSort("createdAt")}>Дата {sortKey === "createdAt" ? (sortDir === "asc" ? "↑" : "↓") : ""}</button>
+            <button className="btn h-9" onClick={() => toggleSort("admin_id")}>Админ {sortKey === "admin_id" ? (sortDir === "asc" ? "↑" : "↓") : ""}</button>
+            <button className="btn h-9" onClick={() => toggleSort("action")}>Действие {sortKey === "action" ? (sortDir === "asc" ? "↑" : "↓") : ""}</button>
+          </div>
         </div>
       </div>
 
