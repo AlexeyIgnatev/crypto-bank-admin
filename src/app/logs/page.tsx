@@ -12,6 +12,17 @@ export type AdminActionLog = {
   createdAt: string; // ISO
 };
 
+// Тип для детальной информации об администраторе
+type AdminInfo = {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export default function AdminLogsPage() {
   const [items, setItems] = useState<AdminActionLog[]>([]);
   const [total, setTotal] = useState(0);
@@ -72,6 +83,31 @@ export default function AdminLogsPage() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<AdminActionLog | null>(null);
 
+  const [adminInfo, setAdminInfo] = useState<AdminInfo | null>(null);
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  async function loadAdminInfo(id: number) {
+    setAdminLoading(true);
+    try {
+      const res = await fetch(`/api/admin-management/${id}`, { cache: "no-store" });
+      if (res.ok) {
+        const a = await res.json();
+        setAdminInfo({
+          id: Number(a.id),
+          email: String(a.email || ""),
+          firstName: String(a.firstName || ""),
+          lastName: String(a.lastName || ""),
+          role: String(a.role || ""),
+          createdAt: String(a.createdAt || ""),
+          updatedAt: String(a.updatedAt || ""),
+        });
+      } else setAdminInfo(null);
+    } catch {
+      setAdminInfo(null);
+    } finally {
+      setAdminLoading(false);
+    }
+  }
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden w-full">
       <div className="flex items-center justify-between">
@@ -103,7 +139,7 @@ export default function AdminLogsPage() {
           </thead>
           <tbody>
             {items.map((it) => (
-              <tr key={it.id} className="table-row hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => { setSelected(it); setOpen(true); }}>
+              <tr key={it.id} className="table-row hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer" onClick={() => { setSelected(it); setOpen(true); setAdminInfo(null); loadAdminInfo(it.admin_id); }}>
                 <Td>{it.id}</Td>
                 <Td>{it.admin_id}</Td>
                 <Td>{truncate(it.ip, 24)}</Td>
@@ -131,6 +167,25 @@ export default function AdminLogsPage() {
             <Row label="Действие" value={selected.action} />
             <Row label="Детали" value={<pre className="whitespace-pre-wrap break-words text-xs p-2 rounded bg-black/5 dark:bg-white/10">{formatDetails(selected.details)}</pre>} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
+            <div className="pt-2">
+              <div className="text-sm font-semibold mb-1">Администратор</div>
+              {adminLoading ? (
+                <div className="text-sm text-muted">Загрузка…</div>
+              ) : adminInfo ? (
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  <div className="text-muted">ФИО</div>
+                  <div className="col-span-2">{[adminInfo.lastName, adminInfo.firstName].filter(Boolean).join(" ") || "—"}</div>
+                  <div className="text-muted">Email</div>
+                  <div className="col-span-2">{adminInfo.email || "—"}</div>
+                  <div className="text-muted">Роль</div>
+                  <div className="col-span-2">{adminInfo.role || "—"}</div>
+                  <div className="text-muted">Создан</div>
+                  <div className="col-span-2">{adminInfo.createdAt ? new Date(adminInfo.createdAt).toLocaleString() : "—"}</div>
+                </div>
+              ) : (
+                <div className="text-sm text-muted">Нет данных</div>
+              )}
+            </div>
           </div>
         )}
       </Modal>
