@@ -13,6 +13,7 @@ const allItems = [
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
+  { href: "/logs", label: "Логи", icon: "🧾" },
   { href: "/faq", label: "FAQ", icon: "❓" },
 ];
 
@@ -20,9 +21,10 @@ function allowedByRole(role?: string): string[] {
   const key = (role || "").toUpperCase();
   switch (key) {
     case "SUPER_ADMIN":
-    case "UIT":
     case "UID":
       return allItems.map((i) => i.href);
+    case "UIT":
+      return ["/admins", "/faq"];
     case "SKK":
       return ["/control-cases", "/faq"];
     case "UDBO":
