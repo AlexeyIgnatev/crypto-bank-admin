@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable react/jsx-key */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Modal from "@/components/Modal";
 
@@ -222,6 +222,7 @@ export default function AdminLogsPage() {
                     <span className="px-1">Дата</span>
                   </div>
                 </Th>
+              </tr>
             </thead>
           </table>
         </div>
@@ -251,41 +252,12 @@ export default function AdminLogsPage() {
             </div>
           </HeaderDropdown>, document.body)}
 
-              </tr>
-            </thead>
-          </table>
-        </div>
-
         <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
           <table className="w-full text-sm table-fixed">
             <colgroup>
               <col className="w-[96px]" />
               <col className="w-[160px]" />
               <col className="w-[160px]" />
-
-// Элементы шапки таблицы, как на главной
-function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: number; left: number; width: number }; children: React.ReactNode; onClose: () => void; portalRef: React.RefObject<HTMLDivElement>; }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  return (
-    <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
-      <div ref={portalRef} className="card border border-soft rounded-xl shadow-xl overflow-hidden" style={{ background: "var(--card)" }}>
-        {children}
-      </div>
-    </div>
-  );
-}
-function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
-  return (
-    <span className={`inline-block text-white/90 ${active ? "opacity-100" : "opacity-50"}`} style={{ width: 12 }} aria-hidden>
-      {dir === "asc" ? "↑" : "↓"}
-    </span>
-  );
-}
-
               <col />
               <col />
               <col className="w-[200px]" />
@@ -343,6 +315,8 @@ function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
           </div>
         )}
       </Modal>
+
+
     </div>
   );
 }
