@@ -15,7 +15,7 @@ function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: num
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
+    <div style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 1000 }}>
       <div ref={portalRef} className="card border border-soft rounded-xl shadow-xl overflow-hidden" style={{ background: "var(--card)" }}>
         {children}
       </div>
@@ -26,6 +26,9 @@ function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: num
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Modal from "@/components/Modal";
+import Flatpickr from "react-flatpickr";
+import "flatpickr/dist/themes/airbnb.css";
+import { Russian } from "flatpickr/dist/l10n/ru.js";
 
 type DropdownState = {
   open: boolean;
@@ -106,6 +109,9 @@ export default function AdminLogsPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [adminIdFilter, setAdminIdFilter] = useState<string>("");
   const [actionQuery, setActionQuery] = useState<string>("");
+  const [dateFrom, setDateFrom] = useState<string | undefined>();
+  const [dateTo, setDateTo] = useState<string | undefined>();
+  const dateDD = useDropdown();
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -120,6 +126,8 @@ export default function AdminLogsPage() {
       });
       if (adminIdFilter.trim()) params.set("admin_id", adminIdFilter.trim());
       if (actionQuery.trim()) params.set("action_query", actionQuery.trim());
+      if (dateFrom) params.set("created_from", dateFrom);
+      if (dateTo) params.set("created_to", dateTo);
       const res = await fetch(`/api/audit/admin-actions?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to load logs");
       const data = await res.json();
@@ -144,7 +152,7 @@ export default function AdminLogsPage() {
     setItems([]); setOffset(0);
     const el = containerRef.current; if (el) el.scrollTop = 0;
     fetchPage(0, true);
-  }, [limit, sortKey, sortDir, adminIdFilter, actionQuery]);
+  }, [limit, sortKey, sortDir, adminIdFilter, actionQuery, dateFrom, dateTo]);
 
   const canNext = offset + items.length < total;
   function loadMore() {
@@ -243,6 +251,10 @@ export default function AdminLogsPage() {
                   <div className="flex items-center gap-1">
                     <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
                     <span className="px-1">Дата</span>
+                    <button ref={dateDD.btnRef} className="hdr-chip" aria-label="Фильтр"
+                      onClick={(e) => { e.stopPropagation(); dateDD.setOpen((o) => !o); }}>
+                      <span className="chev">▾</span>
+                    </button>
                   </div>
                 </Th>
               </tr>
@@ -251,9 +263,33 @@ export default function AdminLogsPage() {
         </div>
 
         {/* порталы для фильтров в шапке */}
+        {dateDD.open && createPortal(
+          <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
+            <div className="header-dd p-2 w-[300px]">
+              <div className="text-sm mb-1 font-medium">Дата от</div>
+              <Flatpickr
+                value={dateFrom ? new Date(dateFrom) : null}
+                options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }}
+                onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)}
+                className="ui-input"
+              />
+              <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
+              <Flatpickr
+                value={dateTo ? new Date(dateTo) : null}
+                options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }}
+                onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)}
+                className="ui-input"
+              />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
+                <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
+              </div>
+            </div>
+          </HeaderDropdown>, document.body)}
+
         {adminIdDD.open && createPortal(
           <HeaderDropdown pos={adminIdDD.pos} onClose={() => adminIdDD.setOpen(false)} portalRef={adminIdDD.panelRef}>
-            <div className="header-dd p-2 w-[240px]">
+            <div className="header-dd p-2 w-[220px]">
               <div className="text-sm mb-2 font-medium">Admin ID</div>
               <input className="ui-input w-full" placeholder="Напр. 123" value={adminIdFilter} onChange={(e) => setAdminIdFilter(e.target.value)} />
               <div className="mt-2 grid grid-cols-2 gap-2">
@@ -265,7 +301,7 @@ export default function AdminLogsPage() {
 
         {actionDD.open && createPortal(
           <HeaderDropdown pos={actionDD.pos} onClose={() => actionDD.setOpen(false)} portalRef={actionDD.panelRef}>
-            <div className="header-dd p-2 w-[280px]">
+            <div className="header-dd p-2 w-[320px]">
               <div className="text-sm mb-2 font-medium">Действие</div>
               <input className="ui-input w-full" placeholder="Поиск по действию" value={actionQuery} onChange={(e) => setActionQuery(e.target.value)} />
               <div className="mt-2 grid grid-cols-2 gap-2">
