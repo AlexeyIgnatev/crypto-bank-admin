@@ -111,7 +111,7 @@ export async function getStatsToday(): Promise<{ total: number; bank: number; wa
 export async function getUsers(params: {
   offset?: number; limit?: number;
   search?: string; statuses?: ("ACTIVE"|"BLOCKED"|"FRAUD")[];
-  sortBy?: "customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt";
+  sortBy?: "customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt"|"last_login_at";
   sortDir?: "asc"|"desc";
 }): Promise<{ items: User[]; total: number; offset: number; limit: number; }> {
   const q = new URLSearchParams();
@@ -140,6 +140,9 @@ export async function getUsers(params: {
       USDT: Number(u.balances?.USDT_TRC20 ?? u.balances?.USDT ?? 0),
     },
     createdAt: u.createdAt || new Date().toISOString(),
+    lastLoginAt: u.last_login_at || undefined,
+    lastLoginIp: u.last_login_ip || undefined,
+    lastLoginDevice: u.last_login_device || undefined,
   }));
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
 }
@@ -162,6 +165,9 @@ export async function getUserById(id: string|number): Promise<User> {
       USDT: Number(u.balances?.USDT_TRC20 ?? u.balances?.USDT ?? 0),
     },
     createdAt: u.createdAt || new Date().toISOString(),
+    lastLoginAt: u.last_login_at || undefined,
+    lastLoginIp: u.last_login_ip || undefined,
+    lastLoginDevice: u.last_login_device || undefined,
   };
   return user;
 }

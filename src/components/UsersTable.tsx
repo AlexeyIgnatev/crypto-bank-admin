@@ -7,7 +7,7 @@ import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { User, UserStatus } from "../types";
 import { formatAmount6 } from "@/lib/format";
 
-export type UserSortKey = "fullName" | "phone" | "email" | "status" | "createdAt" | "balanceCOM" | "balanceTotal";
+export type UserSortKey = "fullName" | "phone" | "email" | "status" | "createdAt" | "lastLoginAt" | "balanceCOM" | "balanceTotal";
 export type SortDir = "asc" | "desc";
 
 type DropdownState = {
@@ -63,17 +63,18 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
   const [statusSet, setStatusSet] = useState<Set<UserStatus>>(new Set(filters.statuses || []));
   const [dateFrom, setDateFrom] = useState<string | undefined>(filters.dateFrom);
   const [dateTo, setDateTo] = useState<string | undefined>(filters.dateTo);
-  const [minCOM, setMinCOM] = useState<string>(filters.minCOM != null ? String(filters.minCOM) : "");
-  const [maxCOM, setMaxCOM] = useState<string>(filters.maxCOM != null ? String(filters.maxCOM) : "");
+
   const [minTotal, setMinTotal] = useState<string>(filters.minTotal != null ? String(filters.minTotal) : "");
   const [maxTotal, setMaxTotal] = useState<string>(filters.maxTotal != null ? String(filters.maxTotal) : "");
+  // legacy: removed COM filter from UI, keep render stable
+  const [minCOM, setMinCOM] = useState<string>("");
+  const [maxCOM, setMaxCOM] = useState<string>("");
 
   const nameDD = useDropdown();
   const phoneDD = useDropdown();
   const emailDD = useDropdown();
   const statusDD = useDropdown();
   const dateDD = useDropdown();
-  const comDD = useDropdown();
   const totalDD = useDropdown();
 
   // sync local inputs from external filters
@@ -84,11 +85,9 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
     setStatusSet(new Set(filters.statuses || []));
     setDateFrom(filters.dateFrom);
     setDateTo(filters.dateTo);
-    setMinCOM(filters.minCOM != null ? String(filters.minCOM) : "");
-    setMaxCOM(filters.maxCOM != null ? String(filters.maxCOM) : "");
     setMinTotal(filters.minTotal != null ? String(filters.minTotal) : "");
     setMaxTotal(filters.maxTotal != null ? String(filters.maxTotal) : "");
-  }, [filters.nameQuery, filters.phoneQuery, filters.emailQuery, JSON.stringify(filters.statuses || []), filters.dateFrom, filters.dateTo, filters.minCOM, filters.maxCOM, filters.minTotal, filters.maxTotal]);
+  }, [filters.nameQuery, filters.phoneQuery, filters.emailQuery, JSON.stringify(filters.statuses || []), filters.dateFrom, filters.dateTo, filters.minTotal, filters.maxTotal]);
 
   // server-driven: show data as-is; параметры фильтров и сортировки управляются родителем (страницей)
 
@@ -170,13 +169,10 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                   </button>
                 </div>
               </Th>
-              <Th onClick={() => toggleSort("balanceCOM")}>
+              <Th onClick={() => toggleSort("lastLoginAt")}>
                 <div className="flex items-center gap-1">
-                  <SortIcon active={sort.key === "balanceCOM"} dir={sort.dir} />
-                  <span className="px-1">Баланс СОМ</span>
-                  <button ref={comDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); comDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
-                  </button>
+                  <SortIcon active={sort.key === "lastLoginAt"} dir={sort.dir} />
+                  <span className="px-1">Время логина</span>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("balanceTotal")}>
@@ -227,7 +223,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : u.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(u.balances.COM)}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "—"}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
                       </tr>
                     );
@@ -303,27 +299,6 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
         </HeaderDropdown>
       )}
 
-      {comDD.open && (
-        <HeaderDropdown pos={comDD.pos} onClose={() => comDD.setOpen(false)} portalRef={comDD.panelRef}>
-          <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">Баланс СОМ</div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <div className="text-xs mb-1">Мин</div>
-                <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minCOM} onChange={e => setMinCOM(e.target.value)} />
-              </div>
-              <div>
-                <div className="text-xs mb-1">Макс</div>
-                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxCOM} onChange={e => setMaxCOM(e.target.value)} />
-              </div>
-            </div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setMinCOM(""); setMaxCOM(""); }}>Сбросить</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ minCOM: minCOM ? Number(minCOM) : undefined, maxCOM: maxCOM ? Number(maxCOM) : undefined }); comDD.setOpen(false); }}>Сохранить</button>
-            </div>
-          </div>
-        </HeaderDropdown>
-      )}
 
 
       {totalDD.open && (

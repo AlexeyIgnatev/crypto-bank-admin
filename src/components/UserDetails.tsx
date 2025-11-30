@@ -37,6 +37,9 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
           <div className="flex justify-between"><span>Баланс СОМ</span><span>{formatAmount6(user.balances.COM)}</span></div>
           <div className="flex justify-between"><span>Общий баланс</span><span>{formatAmount6(total)}</span></div>
           <div className="flex justify-between"><span>Создан</span><span>{new Date(user.createdAt).toLocaleString()}</span></div>
+          <div className="flex justify-between"><span>Время последнего логина</span><span>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "—"}</span></div>
+          <div className="flex justify-between"><span>IP адрес</span><span>{user.lastLoginIp || "—"}</span></div>
+          <div className="flex justify-between"><span>Модель устройства</span><span>{user.lastLoginDevice || "—"}</span></div>
         </div>
       </div>
 

@@ -51,4 +51,7 @@ export interface User {
     USDT: number;
   };
   createdAt: string; // ISO
+  lastLoginAt?: string; // ISO
+  lastLoginIp?: string;
+  lastLoginDevice?: string;
 }

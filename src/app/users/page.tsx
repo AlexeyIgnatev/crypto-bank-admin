@@ -29,7 +29,7 @@ export default function UsersPage() {
         limit,
         search: [filters.nameQuery, filters.phoneQuery, filters.emailQuery].filter(Boolean).join(" ") || undefined,
         statuses: statuses.length ? statuses : undefined,
-        sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : "createdAt",
+        sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : sort.key === "lastLoginAt" ? "last_login_at" : "createdAt",
         sortDir: sort.dir,
       });
       setTotal(res.total ?? (res.items?.length || 0));
