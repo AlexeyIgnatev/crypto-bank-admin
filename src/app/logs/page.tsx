@@ -1,5 +1,28 @@
 "use client";
 /* eslint-disable react/jsx-key */
+/* helper components and icons */
+function SortIcon({ active, dir }: { active: boolean; dir: "asc" | "desc" }) {
+  return (
+    <span className={`inline-block ${active ? "opacity-100" : "opacity-50"}`} style={{ width: 12 }} aria-hidden>
+      {dir === "asc" ? "↑" : "↓"}
+    </span>
+  );
+}
+function HeaderDropdown({ pos, children, onClose, portalRef }: { pos: { top: number; left: number; width: number }; children: React.ReactNode; onClose: () => void; portalRef: React.RefObject<HTMLDivElement>; }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div style={{ position: "fixed", top: pos.top, left: pos.left, width: pos.width, zIndex: 1000 }}>
+      <div ref={portalRef} className="card border border-soft rounded-xl shadow-xl overflow-hidden" style={{ background: "var(--card)" }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import Modal from "@/components/Modal";
@@ -315,6 +338,8 @@ export default function AdminLogsPage() {
           </div>
         )}
       </Modal>
+
+
 
 
     </div>
