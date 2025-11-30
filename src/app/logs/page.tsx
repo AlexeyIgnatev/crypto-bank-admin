@@ -41,13 +41,14 @@ function useDropdown(): DropdownState {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 260 });
+  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 280 });
   useEffect(() => {
     if (!open) return;
     const update = () => {
       const r = btnRef.current?.getBoundingClientRect();
       if (!r) return;
-      const width = Math.max(240, Math.min(360, 260));
+      const measured = panelRef.current?.offsetWidth || 280;
+      const width = Math.max(200, Math.min(420, measured));
       const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
       setPos({ top: r.bottom + 6, left, width });
     };
