@@ -8,6 +8,7 @@ export interface Transaction {
   currency: string; // e.g., KGS, USD
   sender: string;
   recipient: string;
+  comment?: string;
   senderCustomerId?: string;
   recipientCustomerId?: string;
 }

@@ -1,4 +1,4 @@
-import { Admin, Transaction, TransactionStatus, User } from "@/types";
+﻿import { Admin, Transaction, TransactionStatus, User } from "@/types";
 
 function mapCurrency(x?: string): string {
   switch (x) {
@@ -78,8 +78,9 @@ export async function getTransactions(params: {
     createdAt: it.createdAt,
     amount: Number(it.amount ?? 0),
     currency: mapCurrency(it.asset),
-    sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
-    recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),
+    sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "вЂ”"),
+    recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "вЂ”"),
+    comment: it.comment || undefined,
     senderCustomerId: it.sender_customer_id != null ? String(it.sender_customer_id) : undefined,
     recipientCustomerId: it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined,
   } as Transaction));
@@ -131,7 +132,7 @@ export async function getUsers(params: {
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
+    status: (u.status === "BLOCKED" || u.status === "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ") ? "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ" : (u.status === "FRAUD" ? "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ" : "РђРєС‚РёРІРµРЅ"),
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -156,7 +157,7 @@ export async function getUserById(id: string|number): Promise<User> {
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
+    status: (u.status === "BLOCKED" || u.status === "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ") ? "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ" : (u.status === "FRAUD" ? "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ" : "РђРєС‚РёРІРµРЅ"),
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -172,21 +173,21 @@ export async function getUserById(id: string|number): Promise<User> {
   return user;
 }
 
-export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }) {
+export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "РђРєС‚РёРІРµРЅ"|"Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ"|"Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ"; }) {
   const body = {
     first_name: payload.firstName,
     last_name: payload.lastName,
     middle_name: payload.middleName || "",
     phone: payload.phone,
     email: payload.email,
-    status: payload.status === "Заблокирован" ? "BLOCKED" : (payload.status === "Фин контроль" ? "FRAUD" : "ACTIVE"),
+    status: payload.status === "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ" ? "BLOCKED" : (payload.status === "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ" ? "FRAUD" : "ACTIVE"),
   };
   const res = await fetch(`/api/user-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to create user");
   return res.json();
 }
 
-export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }>) {
+export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "РђРєС‚РёРІРµРЅ"|"Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ"|"Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ"; }>) {
   const body: any = {
     ...(payload.firstName != null ? { first_name: payload.firstName } : {}),
     ...(payload.lastName != null ? { last_name: payload.lastName } : {}),
@@ -195,7 +196,7 @@ export async function updateUser(id: string|number, payload: Partial<{ firstName
     ...(payload.email != null ? { email: payload.email } : {}),
     ...(payload.status != null ? { status: payload.status } : {}),
   };
-  if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
+  if (body.status) body.status = body.status === "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ" ? "BLOCKED" : (body.status === "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ" ? "FRAUD" : "ACTIVE");
   const res = await fetch(`/api/user-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error("Failed to update user");
   return res.json();
@@ -209,23 +210,23 @@ export async function deleteUser(id: string|number) {
 
 function roleLabelFromKey(k?: string): string {
   switch ((k || "").toUpperCase()) {
-    case "SUPER_ADMIN": return "Супер админ";
-    case "SKK": return "СКК";
-    case "UDBO": return "УДБО";
-    case "UBUIO": return "УБУИО";
-    case "TREASURY": return "Казначейство";
-    case "UIT": return "УИТ";
-    default: return k || "Супер админ";
+    case "SUPER_ADMIN": return "РЎСѓРїРµСЂ Р°РґРјРёРЅ";
+    case "SKK": return "РЎРљРљ";
+    case "UDBO": return "РЈР”Р‘Рћ";
+    case "UBUIO": return "РЈР‘РЈРРћ";
+    case "TREASURY": return "РљР°Р·РЅР°С‡РµР№СЃС‚РІРѕ";
+    case "UIT": return "РЈРРў";
+    default: return k || "РЎСѓРїРµСЂ Р°РґРјРёРЅ";
   }
 }
 function roleKeyFromLabel(lbl: string): string {
   const x = lbl.trim().toLowerCase();
-  if (x === "супер админ") return "SUPER_ADMIN";
-  if (x === "скк") return "SKK";
-  if (x === "удбо") return "UDBO";
-  if (x === "убуио") return "UBUIO";
-  if (x === "казначейство") return "TREASURY";
-  if (x === "уит") return "UIT";
+  if (x === "СЃСѓРїРµСЂ Р°РґРјРёРЅ") return "SUPER_ADMIN";
+  if (x === "СЃРєРє") return "SKK";
+  if (x === "СѓРґР±Рѕ") return "UDBO";
+  if (x === "СѓР±СѓРёРѕ") return "UBUIO";
+  if (x === "РєР°Р·РЅР°С‡РµР№СЃС‚РІРѕ") return "TREASURY";
+  if (x === "СѓРёС‚") return "UIT";
   return lbl;
 }
 
@@ -337,8 +338,8 @@ export async function getTransactionsStats(params: {
   });
   const mapCurrencyToDisplay = (x?: string) => {
     const display = mapCurrency(x);
-    if (display === "COM") return "СОМ";
-    if (display === "SALAM") return "САЛАМ";
+    if (display === "COM") return "РЎРћРњ";
+    if (display === "SALAM") return "РЎРђР›РђРњ";
     return display;
   };
   const totalSum = Number(summary.total_sum_som ?? 0);
@@ -347,7 +348,7 @@ export async function getTransactionsStats(params: {
   const topCurrencyByCountLabel = mapCurrencyToDisplay(summary.top_currency_by_count);
   const mostActiveDayLabel = typeof summary.most_active_day === "string" && summary.most_active_day
     ? summary.most_active_day.slice(0, 10).split("-").reverse().join(".")
-    : "—";
+    : "вЂ”";
   const averageCheck = Number(summary.average_check_som ?? 0);
   return { points, totalSum, totalCount, topCurrencyBySumLabel, topCurrencyByCountLabel, mostActiveDayLabel, averageCheck };
 }
@@ -455,8 +456,8 @@ export async function getAntifraudCases(params: {
   const data = await res.json();
   const items: AntiFraudCaseItem[] = (data.items || []).map((it: any) => {
     const tx = it.transaction || {};
-    const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
-    const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
+    const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "вЂ”");
+    const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "вЂ”");
     return {
       id: String(it.id),
       status: (it.status || it.case_status || "OPEN") as AntiFraudCaseStatus,
@@ -484,3 +485,4 @@ export async function rejectAntifraudCase(id: string|number) {
   if (!res.ok) throw new Error("Failed to reject case");
   return res.json();
 }
+
