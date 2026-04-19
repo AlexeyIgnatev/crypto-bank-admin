@@ -1,9 +1,29 @@
-"use client";
-import { useEffect, useState } from "react";
+﻿"use client";
+import { useEffect, useMemo, useState } from "react";
 import { getStatsToday } from "@/lib/api";
 
+type TodayStats = {
+  total: number;
+  bank: number;
+  wallet: number;
+  users: number;
+  successful: number;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+function formatPeriod(dateFrom?: string, dateTo?: string): string {
+  if (!dateFrom || !dateTo) return "Текущий день";
+  const from = new Date(dateFrom);
+  const to = new Date(dateTo);
+  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime())) return "Текущий день";
+  const fromStr = from.toLocaleString();
+  const toStr = to.toLocaleString();
+  return `${fromStr} - ${toStr}`;
+}
+
 export default function Cards() {
-  const [stats, setStats] = useState<{ total: number; bank: number; wallet: number; users: number } | null>(null);
+  const [stats, setStats] = useState<TodayStats | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -12,13 +32,16 @@ export default function Cards() {
         const s = await getStatsToday();
         if (alive) setStats(s);
       } catch {
-        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0 });
+        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0, successful: 0 });
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const fmt = (n: number) => n.toLocaleString();
+  const periodLabel = useMemo(() => formatPeriod(stats?.dateFrom, stats?.dateTo), [stats?.dateFrom, stats?.dateTo]);
 
   const Card = ({ title, value, accent = false }: { title: string; value: string; accent?: boolean }) => (
     <div className={`rounded-xl p-4 shadow-sm border transition-colors ${accent ? "bg-[var(--red)] text-white border-[color:var(--red-hover)]" : "card border-black/10 dark:border-white/10"}`}>
@@ -28,11 +51,16 @@ export default function Cards() {
   );
 
   return (
-    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card title="Общая сумма транзакций" value={`${fmt(stats?.total ?? 123_000_000)}`} accent />
-      <Card title="Между банковскими счетами" value={`${fmt(stats?.bank ?? 23_000_000)}`} />
-      <Card title="Между криптокошельками" value={`${fmt(stats?.wallet ?? 45_000_000)}`} />
-      <Card title="Количество пользователей" value={`${fmt(stats?.users ?? 1_230_000)}`} accent />
+    <section className="space-y-3">
+      <div className="text-sm text-muted">Период данных: {periodLabel}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+        <Card title="Общая сумма транзакций (СОМ)" value={`${fmt(stats?.total ?? 0)}`} accent />
+        <Card title="Между банковскими счетами (СОМ)" value={`${fmt(stats?.bank ?? 0)}`} />
+        <Card title="Между криптокошельками (СОМ)" value={`${fmt(stats?.wallet ?? 0)}`} />
+        <Card title="Успешные транзакции" value={`${fmt(stats?.successful ?? 0)}`} />
+        <Card title="Количество пользователей" value={`${fmt(stats?.users ?? 0)}`} accent />
+      </div>
     </section>
   );
 }
+

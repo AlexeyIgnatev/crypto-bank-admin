@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect } from "react";
 import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
@@ -6,6 +6,11 @@ import { User } from "../../types";
 import UserDetailsCard from "../../components/UserDetails";
 import { createUser, updateUser, deleteUser, getUsers } from "@/lib/api";
 import { UserStatus } from "@/types";
+import { exportRows, type ExportFormat } from "@/lib/exporters";
+
+function mapUiStatuses(statuses?: UserStatus[]) {
+  return (statuses || []).map((s) => s === "Активен" ? "ACTIVE" : s === "Заблокирован" ? "BLOCKED" : "FRAUD");
+}
 
 export default function UsersPage() {
   const [data, setData] = useState<User[]>([]);
@@ -19,11 +24,12 @@ export default function UsersPage() {
   const [offset, setOffset] = useState(0);
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
   async function fetchPage(pageOffset: number, replace: boolean) {
     setLoading(true);
     try {
-      const statuses = (filters.statuses || []).map(s => s === "Активен" ? "ACTIVE" : s === "Заблокирован" ? "BLOCKED" : "FRAUD");
+      const statuses = mapUiStatuses(filters.statuses);
       const res = await getUsers({
         offset: pageOffset,
         limit,
@@ -33,9 +39,12 @@ export default function UsersPage() {
         sortDir: sort.dir,
       });
       setTotal(res.total ?? (res.items?.length || 0));
-      setData(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
-    } catch (e) {
-      if (replace) { setData([]); setTotal(0); }
+      setData((prev) => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
+    } catch {
+      if (replace) {
+        setData([]);
+        setTotal(0);
+      }
       setError("Не удалось загрузить пользователей");
     } finally {
       setLoading(false);
@@ -44,7 +53,8 @@ export default function UsersPage() {
 
   // первый запрос и обновления при изменении фильтров/сортировок/лимита
   useEffect(() => {
-    setData([]); setOffset(0);
+    setData([]);
+    setOffset(0);
     fetchPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, JSON.stringify(filters), sort.key, sort.dir]);
@@ -57,6 +67,65 @@ export default function UsersPage() {
     fetchPage(nextOffset, false);
   };
 
+  async function loadAllUsersForExport(): Promise<User[]> {
+    const pageLimit = 200;
+    let pageOffset = 0;
+    const all: User[] = [];
+    const statuses = mapUiStatuses(filters.statuses);
+
+    for (;;) {
+      const res = await getUsers({
+        offset: pageOffset,
+        limit: pageLimit,
+        search: [filters.nameQuery, filters.phoneQuery, filters.emailQuery].filter(Boolean).join(" ") || undefined,
+        statuses: statuses.length ? statuses : undefined,
+        sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : sort.key === "lastLoginAt" ? "last_login_at" : "createdAt",
+        sortDir: sort.dir,
+      });
+      const pageItems = res.items || [];
+      all.push(...pageItems);
+      pageOffset += pageItems.length;
+      if (pageItems.length === 0 || all.length >= (res.total ?? 0)) break;
+    }
+
+    return all;
+  }
+
+  async function onExportUsers(format: ExportFormat) {
+    if (exporting) return;
+    setExporting(format);
+    try {
+      const rows = await loadAllUsersForExport();
+      const activeCount = rows.filter((u) => u.status === "Активен").length;
+      await exportRows<User>({
+        format,
+        fileBaseName: "clients_registry",
+        title: "Список клиентов",
+        summary: [
+          { label: "Всего клиентов", value: rows.length },
+          { label: "Активных", value: activeCount },
+        ],
+        columns: [
+          { header: "№", getValue: (_row, index) => index + 1 },
+          { header: "ID клиента ABS", getValue: (row) => row.absClientId || row.id },
+          { header: "ФИО", getValue: (row) => row.fullName || "—" },
+          { header: "Телефон", getValue: (row) => row.phone || "—" },
+          { header: "E-mail", getValue: (row) => row.email || "—" },
+          { header: "Статус", getValue: (row) => row.status },
+          { header: "Последний логин", getValue: (row) => row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "—" },
+          { header: "COM", getValue: (row) => row.balances.COM },
+          { header: "SALAM", getValue: (row) => row.balances.SALAM },
+          { header: "BTC", getValue: (row) => row.balances.BTC },
+          { header: "ETH", getValue: (row) => row.balances.ETH },
+          { header: "USDT", getValue: (row) => row.balances.USDT },
+        ],
+        rows,
+      });
+    } finally {
+      setExporting(null);
+    }
+  }
+
   const [openCreate, setOpenCreate] = useState(false);
   const [openView, setOpenView] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
@@ -65,6 +134,12 @@ export default function UsersPage() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
+      <div className="shrink-0 flex items-center justify-end gap-2">
+        <button className="btn h-9" disabled={!!exporting} onClick={() => onExportUsers("excel")}>{exporting === "excel" ? "Выгрузка..." : "Excel"}</button>
+        <button className="btn h-9" disabled={!!exporting} onClick={() => onExportUsers("pdf")}>{exporting === "pdf" ? "Выгрузка..." : "PDF"}</button>
+        <button className="btn h-9" disabled={!!exporting} onClick={() => onExportUsers("txt")}>{exporting === "txt" ? "Выгрузка..." : "TXT"}</button>
+      </div>
+
       <div className="min-h-0 flex-1 flex flex-col">
         {loading ? (
           <div className="m-auto text-muted">Загрузка...</div>
@@ -80,7 +155,7 @@ export default function UsersPage() {
               data={data}
               onOpen={(u) => { setSelected(u); setOpenView(true); }}
               filters={filters}
-              onChangeFilters={(patch) => setFilters(prev => ({ ...prev, ...patch }))}
+              onChangeFilters={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
               sort={sort}
               onChangeSort={(key, dir) => setSort({ key, dir })}
             />
@@ -305,3 +380,4 @@ function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; on
     </div>
   );
 }
+

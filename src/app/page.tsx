@@ -39,18 +39,19 @@ export default function Home() {
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="РЎС‚Р°С‚СѓСЃ" value={<StatusBadge status={selected.status} />} />
-            <Row label="Р”Р°С‚Р°" value={new Date(selected.createdAt).toLocaleString()} />
-            <Row label="РЎСѓРјРјР°" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
-            <Row label="РћС‚РїСЂР°РІРёС‚РµР»СЊ" value={
+            <Row label="Статус" value={<StatusBadge status={selected.status} />} />
+            <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
+            <Row label="Сумма" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
+            <Row label="Комиссия" value={formatAmount6(Number(selected.feeAmount || 0))} />
+            <Row label="Отправитель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.sender}>{selected.sender}</span>
                 {selected.senderCustomerId && (
                   <button
                     className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
                     onClick={() => openUserModalById(String(selected.senderCustomerId))}
-                    aria-label="РћС‚РєСЂС‹С‚СЊ РїСЂРѕС„РёР»СЊ"
-                    title="РћС‚РєСЂС‹С‚СЊ РїСЂРѕС„РёР»СЊ"
+                    aria-label="Открыть профиль"
+                    title="Открыть профиль"
                   >
                     <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
                       <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -59,15 +60,16 @@ export default function Home() {
                 )}
               </div>
             } />
-            <Row label="РџРѕР»СѓС‡Р°С‚РµР»СЊ" value={
+            <Row label="ID отправителя ABS" value={selected.senderAbsId || selected.senderCustomerId || "—"} mono />
+            <Row label="Получатель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.recipient}>{selected.recipient}</span>
                 {selected.recipientCustomerId && (
                   <button
                     className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
                     onClick={() => openUserModalById(String(selected.recipientCustomerId))}
-                    aria-label="РћС‚РєСЂС‹С‚СЊ РїСЂРѕС„РёР»СЊ"
-                    title="РћС‚РєСЂС‹С‚СЊ РїСЂРѕС„РёР»СЊ"
+                    aria-label="Открыть профиль"
+                    title="Открыть профиль"
                   >
                     <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
                       <path fill="#fff" fillRule="evenodd" d="M10 8a3 3 0 100-6 3 3 0 000 6zM3 14a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -76,6 +78,8 @@ export default function Home() {
                 )}
               </div>
             } />
+            <Row label="ID получателя ABS" value={selected.recipientAbsId || selected.recipientCustomerId || "—"} mono />
+            <Row label="ID клиента ABS" value={selected.clientAbsId || selected.senderCustomerId || selected.recipientCustomerId || "—"} mono />
             <Row label="Назначение платежа" value={
               <span className="break-all" title={selected.comment || "—"}>
                 {selected.comment || "—"}
@@ -225,4 +229,5 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
     </div>
   );
 }
+
 

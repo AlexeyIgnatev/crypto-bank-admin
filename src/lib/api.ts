@@ -77,9 +77,13 @@ export async function getTransactions(params: {
     status: mapTxStatus(it.status),
     createdAt: it.createdAt,
     amount: Number(it.amount ?? 0),
+    feeAmount: Number(it.fee_amount ?? 0),
     currency: mapCurrency(it.asset),
     sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "вЂ”"),
     recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "вЂ”"),
+    senderAbsId: it.sender_abs_id != null ? String(it.sender_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : undefined),
+    recipientAbsId: it.receiver_abs_id != null ? String(it.receiver_abs_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined),
+    clientAbsId: it.client_abs_id != null ? String(it.client_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined)),
     comment: it.comment || undefined,
     senderCustomerId: it.sender_customer_id != null ? String(it.sender_customer_id) : undefined,
     recipientCustomerId: it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined,
@@ -87,7 +91,15 @@ export async function getTransactions(params: {
   return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
 }
 
-export async function getStatsToday(): Promise<{ total: number; bank: number; wallet: number; users: number; }> {
+export async function getStatsToday(): Promise<{
+  total: number;
+  bank: number;
+  wallet: number;
+  users: number;
+  successful: number;
+  dateFrom?: string;
+  dateTo?: string;
+}> {
   const res = await fetch(`/api/transactions/stats/today`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load stats");
   const d = await res.json();
@@ -106,6 +118,9 @@ export async function getStatsToday(): Promise<{ total: number; bank: number; wa
     bank: num(d.bank_to_bank_som),
     wallet: num(d.wallet_to_wallet_som),
     users: Number(d.users_count ?? 0),
+    successful: Number(d.successful_count ?? 0),
+    dateFrom: typeof d.date_from === "string" ? d.date_from : undefined,
+    dateTo: typeof d.date_to === "string" ? d.date_to : undefined,
   };
 }
 
@@ -129,6 +144,7 @@ export async function getUsers(params: {
   const data = await res.json();
   const items: User[] = (data.items || []).map((u: any) => ({
     id: String(u.customer_id ?? u.id ?? u.userId ?? ""),
+    absClientId: String(u.customer_id ?? u.id ?? u.userId ?? ""),
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
@@ -154,6 +170,7 @@ export async function getUserById(id: string|number): Promise<User> {
   const u = await res.json();
   const user: User = {
     id: String(u.customer_id ?? u.id ?? u.userId ?? id),
+    absClientId: String(u.customer_id ?? u.id ?? u.userId ?? id),
     fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
     phone: u.phone || "",
     email: u.email || "",
@@ -485,4 +502,5 @@ export async function rejectAntifraudCase(id: string|number) {
   if (!res.ok) throw new Error("Failed to reject case");
   return res.json();
 }
+
 
