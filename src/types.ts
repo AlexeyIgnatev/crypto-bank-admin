@@ -36,11 +36,11 @@ export interface Admin {
   firstName: string;
   lastName: string;
   login: string; // email or username
-  role: string; // e.g., "РЎСѓРїРµСЂ Р°РґРјРёРЅ", "РЎРљРљ", "РЈР”Р‘Рћ", "РЈР‘РЈРРћ", "РљР°Р·РЅР°С‡РµР№СЃС‚РІРѕ", "РЈРРў"
+  role: string; // e.g., "Супер админ", "СКК", "УДБО", "УБУИО", "Казначейство", "УИТ"
   createdAt: string; // ISO
 }
 
-export type UserStatus = "РђРєС‚РёРІРµРЅ" | "Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ" | "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ";
+export type UserStatus = "Активен" | "Заблокирован" | "Фин контроль";
 
 export interface User {
   id: string;
@@ -61,4 +61,5 @@ export interface User {
   lastLoginIp?: string;
   lastLoginDevice?: string;
 }
+
 

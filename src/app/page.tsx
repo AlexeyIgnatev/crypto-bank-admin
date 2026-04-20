@@ -25,7 +25,7 @@ export default function Home() {
       setSelectedUser(user);
       setOpenUser(true);
     } catch (_e) {
-      // Р•СЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РЅРµ РЅР°Р№РґРµРЅ вЂ” РїСЂРѕСЃС‚Рѕ РЅРµ РѕС‚РєСЂС‹РІР°РµРј РјРѕРґР°Р»РєСѓ
+      // Если пользователь не найден - просто не открываем модалку
     }
   }
 
@@ -35,7 +35,7 @@ export default function Home() {
       <div className="min-h-0 flex-1 flex flex-col"><Table
         onOpen={(t) => { setSelected(t); setOpen(true); }}
       /></div>
-      <Modal open={open} onClose={() => setOpen(false)} title="Р”РµС‚Р°Р»Рё С‚СЂР°РЅР·Р°РєС†РёРё">
+      <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
@@ -88,13 +88,13 @@ export default function Home() {
           </div>
         )}
       </Modal>
-      <Modal open={openUser} onClose={() => setOpenUser(false)} title="РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ">
+      <Modal open={openUser} onClose={() => setOpenUser(false)} title="Пользователь">
         {selectedUser && (
           <UserDetails user={selectedUser} onClose={() => setOpenUser(false)} onEdit={() => { setOpenUser(false); setOpenUserEdit(true); }} onDelete={() => setOpenUser(false)} />
         )}
       </Modal>
 
-      <Modal open={openUserEdit} onClose={() => setOpenUserEdit(false)} title="Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ">
+      <Modal open={openUserEdit} onClose={() => setOpenUserEdit(false)} title="Редактировать пользователя">
         {selectedUser && (
           <EditUserInline user={selectedUser} onCancel={() => setOpenUserEdit(false)} onSave={(next) => { setSelectedUser(next); setOpenUserEdit(false); }} />
         )}
@@ -115,19 +115,19 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
     <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave({ ...user, fullName: [lastName, firstName, middleName].filter(Boolean).join(" "), phone, email, status }); }}>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <div className="text-sm mb-1">Р¤Р°РјРёР»РёСЏ</div>
+          <div className="text-sm mb-1">Фамилия</div>
           <input className="ui-input w-full" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
         </div>
         <div>
-          <div className="text-sm mb-1">РРјСЏ</div>
+          <div className="text-sm mb-1">Имя</div>
           <input className="ui-input w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
         </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">РћС‚С‡РµСЃС‚РІРѕ</div>
-          <input className="ui-input w-full" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="(РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)" />
+          <div className="text-sm mb-1">Отчество</div>
+          <input className="ui-input w-full" value={middleName} onChange={(e) => setMiddleName(e.target.value)} placeholder="(необязательно)" />
         </div>
         <div>
-          <div className="text-sm mb-1">РўРµР»РµС„РѕРЅ</div>
+          <div className="text-sm mb-1">Телефон</div>
           <input className="ui-input w-full" value={phone} onChange={(e) => setPhone(e.target.value)} required />
         </div>
         <div>
@@ -135,16 +135,16 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
           <input className="ui-input w-full" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
         </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">РЎС‚Р°С‚СѓСЃ</div>
+          <div className="text-sm mb-1">Статус</div>
           <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
-            <option>РђРєС‚РёРІРµРЅ</option>
-            <option>Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ</option>
+            <option>Активен</option>
+            <option>Заблокирован</option>
           </select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2 pt-4">
-        <button type="button" className="btn w-full h-9" onClick={onCancel}>РћС‚РјРµРЅР°</button>
-        <button type="submit" className="btn btn-success w-full h-9">РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+        <button type="button" className="btn w-full h-9" onClick={onCancel}>Отмена</button>
+        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
       </div>
     </form>
   );
@@ -153,7 +153,7 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
 
 function StatusBadge({ status }: { status: TransactionStatus }) {
   const cls = status === "SUCCESS" ? "badge-success" : status === "PENDING" ? "badge-warning" : status === "REJECTED" ? "badge-danger" : "badge-danger";
-  const text = status === "SUCCESS" ? "РЈСЃРїРµС€РЅРѕ" : status === "PENDING" ? "Р’ РѕР¶РёРґР°РЅРёРё" : status === "REJECTED" ? "РћС‚РєР»РѕРЅРµРЅРѕ" : "РћС€РёР±РєР°";
+  const text = status === "SUCCESS" ? "Успешно" : status === "PENDING" ? "В ожидании" : status === "REJECTED" ? "Отклонено" : "Ошибка";
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
 
@@ -218,8 +218,8 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
         <button
           className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
           onClick={() => { onSave({ ...tx, status: value }); setOpen(false); }}
-          title="РЎРѕС…СЂР°РЅРёС‚СЊ"
-          aria-label="РЎРѕС…СЂР°РЅРёС‚СЊ"
+          title="Сохранить"
+          aria-label="Сохранить"
         >
           <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true" className="pointer-events-none">
             <path fill="#fff" fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -229,5 +229,6 @@ function StatusEditor({ tx, onSave }: { tx: Transaction; onSave: (t: Transaction
     </div>
   );
 }
+
 
 

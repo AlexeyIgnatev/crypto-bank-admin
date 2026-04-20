@@ -89,7 +89,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
     setMaxTotal(filters.maxTotal != null ? String(filters.maxTotal) : "");
   }, [filters.nameQuery, filters.phoneQuery, filters.emailQuery, JSON.stringify(filters.statuses || []), filters.dateFrom, filters.dateTo, filters.minTotal, filters.maxTotal]);
 
-  // server-driven: show data as-is; РїР°СЂР°РјРµС‚СЂС‹ С„РёР»СЊС‚СЂРѕРІ Рё СЃРѕСЂС‚РёСЂРѕРІРєРё СѓРїСЂР°РІР»СЏСЋС‚СЃСЏ СЂРѕРґРёС‚РµР»РµРј (СЃС‚СЂР°РЅРёС†РµР№)
+  // server-driven: show data as-is; параметры фильтров и сортировки управляются родителем (страницей)
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -133,17 +133,17 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
           </colgroup>
           <thead className="text-white">
             <tr>
-              <Th>в„–</Th>
+              <Th>№</Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">ID РєР»РёРµРЅС‚Р° ABS</span>
+                  <span className="px-1">ID клиента ABS</span>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("fullName")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "fullName"} dir={sort.dir} />
-                  <span className="px-1">Р¤РРћ</span>
-                  <button ref={nameDD.btnRef} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); nameDD.setOpen(o => !o); }}>
+                  <span className="px-1">ФИО</span>
+                  <button ref={nameDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); nameDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
                   </button>
                 </div>
@@ -151,8 +151,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               <Th onClick={() => toggleSort("phone")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "phone"} dir={sort.dir} />
-                  <span className="px-1">РўРµР»РµС„РѕРЅ</span>
-                  <button ref={phoneDD.btnRef} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); phoneDD.setOpen(o => !o); }}>
+                  <span className="px-1">Телефон</span>
+                  <button ref={phoneDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); phoneDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
                   </button>
                 </div>
@@ -161,7 +161,7 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "email"} dir={sort.dir} />
                   <span className="px-1">E-mail</span>
-                  <button ref={emailDD.btnRef} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); emailDD.setOpen(o => !o); }}>
+                  <button ref={emailDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); emailDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
                   </button>
                 </div>
@@ -169,8 +169,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               <Th onClick={() => toggleSort("status")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "status"} dir={sort.dir} />
-                  <span className="px-1">РЎС‚Р°С‚СѓСЃ</span>
-                  <button ref={statusDD.btnRef} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); statusDD.setOpen(o => !o); }}>
+                  <span className="px-1">Статус</span>
+                  <button ref={statusDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); statusDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
                   </button>
                 </div>
@@ -178,14 +178,14 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               <Th onClick={() => toggleSort("lastLoginAt")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "lastLoginAt"} dir={sort.dir} />
-                  <span className="px-1">Р’СЂРµРјСЏ Р»РѕРіРёРЅР°</span>
+                  <span className="px-1">Время логина</span>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("balanceTotal")}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sort.key === "balanceTotal"} dir={sort.dir} />
-                  <span className="px-1">РћР±С‰РёР№ Р±Р°Р»Р°РЅСЃ</span>
-                  <button ref={totalDD.btnRef} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); totalDD.setOpen(o => !o); }}>
+                  <span className="px-1">Общий баланс</span>
+                  <button ref={totalDD.btnRef} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); totalDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
                   </button>
                 </div>
@@ -229,9 +229,9 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
                         <td className="px-4 py-3 whitespace-nowrap">{u.phone}</td>
                         <td className="px-4 py-3 truncate" title={u.email}>{u.email}</td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "РђРєС‚РёРІРµРЅ" ? "bg-green-500/20 text-green-700" : u.status === "Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : u.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
                         </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "вЂ”"}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "—"}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
                       </tr>
                     );
@@ -247,11 +247,11 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
       {nameDD.open && (
         <HeaderDropdown pos={nameDD.pos} onClose={() => nameDD.setOpen(false)} portalRef={nameDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">Р¤РРћ</div>
-            <input className="ui-input w-full" placeholder="Р¤РРћ СЃРѕРґРµСЂР¶РёС‚" value={nameQ} onChange={e => setNameQ(e.target.value)} />
+            <div className="text-sm mb-2 font-medium">ФИО</div>
+            <input className="ui-input w-full" placeholder="ФИО содержит" value={nameQ} onChange={e => setNameQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setNameQ("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ nameQuery: nameQ || undefined }); nameDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setNameQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ nameQuery: nameQ || undefined }); nameDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -260,11 +260,11 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
       {phoneDD.open && (
         <HeaderDropdown pos={phoneDD.pos} onClose={() => phoneDD.setOpen(false)} portalRef={phoneDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">РўРµР»РµС„РѕРЅ</div>
-            <input className="ui-input w-full" placeholder="РўРµР»РµС„РѕРЅ СЃРѕРґРµСЂР¶РёС‚" value={phoneQ} onChange={e => setPhoneQ(e.target.value)} />
+            <div className="text-sm mb-2 font-medium">Телефон</div>
+            <input className="ui-input w-full" placeholder="Телефон содержит" value={phoneQ} onChange={e => setPhoneQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setPhoneQ("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ phoneQuery: phoneQ || undefined }); phoneDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setPhoneQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ phoneQuery: phoneQ || undefined }); phoneDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -274,10 +274,10 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
         <HeaderDropdown pos={emailDD.pos} onClose={() => emailDD.setOpen(false)} portalRef={emailDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
             <div className="text-sm mb-2 font-medium">E-mail</div>
-            <input className="ui-input w-full" placeholder="email СЃРѕРґРµСЂР¶РёС‚" value={emailQ} onChange={e => setEmailQ(e.target.value)} />
+            <input className="ui-input w-full" placeholder="email содержит" value={emailQ} onChange={e => setEmailQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setEmailQ("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ emailQuery: emailQ || undefined }); emailDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setEmailQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ emailQuery: emailQ || undefined }); emailDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -286,8 +286,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
       {statusDD.open && (
         <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)} portalRef={statusDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">РЎС‚Р°С‚СѓСЃ</div>
-            {(["РђРєС‚РёРІРµРЅ","Р—Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ","Р¤РёРЅ РєРѕРЅС‚СЂРѕР»СЊ"] as UserStatus[]).map(st => (
+            <div className="text-sm mb-2 font-medium">Статус</div>
+            {(["Активен","Заблокирован","Фин контроль"] as UserStatus[]).map(st => (
               <label key={st} className="flex items-center gap-2">
                 <input type="checkbox" checked={statusSet.has(st)} onChange={(e) => {
                   setStatusSet(prev => {
@@ -300,8 +300,8 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
               </label>
             ))}
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ statuses: Array.from(statusSet) }); statusDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ statuses: Array.from(statusSet) }); statusDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -312,20 +312,20 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
       {totalDD.open && (
         <HeaderDropdown pos={totalDD.pos} onClose={() => totalDD.setOpen(false)} portalRef={totalDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">РћР±С‰РёР№ Р±Р°Р»Р°РЅСЃ</div>
+            <div className="text-sm mb-2 font-medium">Общий баланс</div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <div className="text-xs mb-1">РњРёРЅ</div>
+                <div className="text-xs mb-1">Мин</div>
                 <input className="ui-input w-full" inputMode="decimal" placeholder="0" value={minTotal} onChange={e => setMinTotal(e.target.value)} />
               </div>
               <div>
-                <div className="text-xs mb-1">РњР°РєСЃ</div>
-                <input className="ui-input w-full" inputMode="decimal" placeholder="в€ћ" value={maxTotal} onChange={e => setMaxTotal(e.target.value)} />
+                <div className="text-xs mb-1">Макс</div>
+                <input className="ui-input w-full" inputMode="decimal" placeholder="∞" value={maxTotal} onChange={e => setMaxTotal(e.target.value)} />
               </div>
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ minTotal: minTotal ? Number(minTotal) : undefined, maxTotal: maxTotal ? Number(maxTotal) : undefined }); totalDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinTotal(""); setMaxTotal(""); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ minTotal: minTotal ? Number(minTotal) : undefined, maxTotal: maxTotal ? Number(maxTotal) : undefined }); totalDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -334,13 +334,13 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
       {dateDD.open && (
         <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-1 font-medium">Р”Р°С‚Р° РѕС‚</div>
+            <div className="text-sm mb-1 font-medium">Дата от</div>
             <Flatpickr value={dateFrom ? new Date(dateFrom) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
-            <div className="text-sm mb-1 mt-3 font-medium">Р”Р°С‚Р° РґРѕ</div>
+            <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
             <Flatpickr value={dateTo ? new Date(dateTo) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ dateFrom, dateTo }); dateDD.setOpen(false); }}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => { onChangeFilters({ dateFrom, dateTo }); dateDD.setOpen(false); }}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>
@@ -373,7 +373,8 @@ function Th({ children, onClick }: { children: React.ReactNode; onClick?: () => 
 
 function SortIcon({ active, dir }: { active?: boolean; dir?: SortDir }) {
   return (
-    <span className={`inline-block w-3 text-[10px] ${active ? "opacity-100" : "opacity-40"}`}>{dir === "asc" ? "в†‘" : "в†“"}</span>
+    <span className={`inline-block w-3 text-[10px] ${active ? "opacity-100" : "opacity-40"}`}>{dir === "asc" ? "↑" : "↓"}</span>
   );
 }
+
 

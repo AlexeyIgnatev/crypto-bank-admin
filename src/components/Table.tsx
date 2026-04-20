@@ -42,7 +42,7 @@ function useDropdown(): DropdownState {
       if (!(e.target instanceof Node)) return;
       if (btnRef.current && btnRef.current.contains(e.target)) return;
       if (panelRef.current && panelRef.current.contains(e.target)) return;
-      // РќРµ Р·Р°РєСЂС‹РІР°РµРј РїСЂРё РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРё СЃ РєР°Р»РµРЅРґР°СЂРµРј Flatpickr
+      // Не закрываем при взаимодействии с календарем Flatpickr
       const el = e.target as Element;
       if (el.closest && el.closest(".flatpickr-calendar")) return;
       setOpen(false);
@@ -68,10 +68,10 @@ function nowIso(): string {
 }
 
 function formatPeriodLabel(from?: string, to?: string): string {
-  if (!from || !to) return "РўРµРєСѓС‰РёР№ РґРµРЅСЊ";
+  if (!from || !to) return "Текущий день";
   const f = new Date(from);
   const t = new Date(to);
-  if (!Number.isFinite(f.getTime()) || !Number.isFinite(t.getTime())) return "РўРµРєСѓС‰РёР№ РґРµРЅСЊ";
+  if (!Number.isFinite(f.getTime()) || !Number.isFinite(t.getTime())) return "Текущий день";
   return `${f.toLocaleString()} - ${t.toLocaleString()}`;
 }
 
@@ -92,7 +92,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     if (!el) return;
   }, []);
 
-  // ===== Р¤РёР»СЊС‚СЂС‹ =====
+  // ===== Фильтры =====
   const [idQuery, setIdQuery] = useState("");
   const [statusSet, setStatusSet] = useState<Set<TransactionStatus>>(new Set());
   const [dateFrom, setDateFrom] = useState<string | undefined>(() => startOfTodayIso());
@@ -106,7 +106,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
 
   const availableCurrencies = ["COM", "SALAM", "BTC", "ETH", "USDT"];
 
-  // РІС‹РїР°РґР°СЋС‰РёРµ РјРµРЅСЋ
+  // выпадающие меню
   const idDD = useDropdown();
   const statusDD = useDropdown();
   const dateDD = useDropdown();
@@ -143,7 +143,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     }
   }
 
-  // РџРµСЂРІС‹Р№ Р·Р°РїСЂРѕСЃ Рё РѕР±РЅРѕРІР»РµРЅРёРµ РїСЂРё РёР·РјРµРЅРµРЅРёРё С„РёР»СЊС‚СЂРѕРІ/СЃРѕСЂС‚РёСЂРѕРІРєРё/Р»РёРјРёС‚Р°
+  // Первый запрос и обновление при изменении фильтров/сортировки/лимита
   useEffect(() => {
     setItems([]);
     setOffset(0);
@@ -152,7 +152,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
 
-  // Р”РѕРіСЂСѓР·РєР° СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂР°РЅРёС†С‹
+  // Догрузка следующей страницы
   const canPrev = offset > 0;
   const canNext = offset + items.length < total;
 
@@ -163,7 +163,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     fetchPage(nextOffset, false);
   }
 
-  // Р’РёСЂС‚СѓР°Р»РёР·Р°С†РёСЏ С‡РµСЂРµР· @tanstack/react-virtual
+  // Виртуализация через @tanstack/react-virtual
   async function loadAllForExport(): Promise<Transaction[]> {
     const pageLimit = 200;
     let pageOffset = 0;
@@ -194,10 +194,10 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
   }
 
   function statusLabel(status: TransactionStatus): string {
-    if (status === "SUCCESS") return "РЈСЃРїРµС€РЅРѕ";
-    if (status === "PENDING") return "Р’ РѕР¶РёРґР°РЅРёРё";
-    if (status === "REJECTED") return "РћС‚РєР»РѕРЅРµРЅРѕ";
-    return "РћС€РёР±РєР°";
+    if (status === "SUCCESS") return "Успешно";
+    if (status === "PENDING") return "В ожидании";
+    if (status === "REJECTED") return "Отклонено";
+    return "Ошибка";
   }
 
   function currencySummary(rows: Transaction[]): string {
@@ -219,27 +219,27 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       await exportRows<Transaction>({
         format,
         fileBaseName: "transactions_registry",
-        title: "Р РµРµСЃС‚СЂ С‚СЂР°РЅР·Р°РєС†РёР№",
+        title: "Реестр транзакций",
         periodLabel: period,
         summary: [
-          { label: "Р’СЃРµРіРѕ С‚СЂР°РЅР·Р°РєС†РёР№", value: rows.length },
-          { label: "РЈСЃРїРµС€РЅС‹С… С‚СЂР°РЅР·Р°РєС†РёР№", value: successful },
-          { label: "РЎСѓРјРјР° РїРѕ РІР°Р»СЋС‚Р°Рј", value: currencySummary(rows) || "вЂ”" },
+          { label: "Всего транзакций", value: rows.length },
+          { label: "Успешных транзакций", value: successful },
+          { label: "Сумма по валютам", value: currencySummary(rows) || "—" },
         ],
         columns: [
-          { header: "в„–", getValue: (_row, index) => index + 1 },
+          { header: "№", getValue: (_row, index) => index + 1 },
           { header: "ID/tx_hash", getValue: (row) => row.id },
-          { header: "РЎС‚Р°С‚СѓСЃ", getValue: (row) => statusLabel(row.status) },
-          { header: "Р”Р°С‚Р°", getValue: (row) => new Date(row.createdAt).toLocaleString() },
-          { header: "РЎСѓРјРјР°", getValue: (row) => formatAmount6(row.amount) },
-          { header: "Р’Р°Р»СЋС‚Р°", getValue: (row) => row.currency },
-          { header: "РљРѕРјРёСЃСЃРёСЏ", getValue: (row) => formatAmount6(Number(row.feeAmount || 0)) },
-          { header: "РћС‚РїСЂР°РІРёС‚РµР»СЊ", getValue: (row) => row.sender },
-          { header: "ID РѕС‚РїСЂР°РІРёС‚РµР»СЏ ABS", getValue: (row) => row.senderAbsId || row.senderCustomerId || "вЂ”" },
-          { header: "РџРѕР»СѓС‡Р°С‚РµР»СЊ", getValue: (row) => row.recipient },
-          { header: "ID РїРѕР»СѓС‡Р°С‚РµР»СЏ ABS", getValue: (row) => row.recipientAbsId || row.recipientCustomerId || "вЂ”" },
-          { header: "ID РєР»РёРµРЅС‚Р° ABS", getValue: (row) => row.clientAbsId || row.senderCustomerId || row.recipientCustomerId || "вЂ”" },
-          { header: "РќР°Р·РЅР°С‡РµРЅРёРµ", getValue: (row) => row.comment || "вЂ”" },
+          { header: "Статус", getValue: (row) => statusLabel(row.status) },
+          { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
+          { header: "Сумма", getValue: (row) => formatAmount6(row.amount) },
+          { header: "Валюта", getValue: (row) => row.currency },
+          { header: "Комиссия", getValue: (row) => formatAmount6(Number(row.feeAmount || 0)) },
+          { header: "Отправитель", getValue: (row) => row.sender },
+          { header: "ID отправителя ABS", getValue: (row) => row.senderAbsId || row.senderCustomerId || "—" },
+          { header: "Получатель", getValue: (row) => row.recipient },
+          { header: "ID получателя ABS", getValue: (row) => row.recipientAbsId || row.recipientCustomerId || "—" },
+          { header: "ID клиента ABS", getValue: (row) => row.clientAbsId || row.senderCustomerId || row.recipientCustomerId || "—" },
+          { header: "Назначение", getValue: (row) => row.comment || "—" },
         ],
         rows,
       });
@@ -270,7 +270,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
 
 
   function toggleSort(key: SortKey) {
-    if (key === "id") return; // СЃРѕСЂС‚РёСЂРѕРІРєР° РїРѕ id РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р±РµРєРµРЅРґРѕРј
+    if (key === "id") return; // сортировка по id не поддерживается бекендом
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
       setSortKey(key);
@@ -280,13 +280,13 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
 
   return (
     <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm mb-4">
-      {/* РќРµРїСЂРѕРєСЂСѓС‡РёРІР°РµРјР°СЏ С€Р°РїРєР° РЅР° РІСЃСЋ С€РёСЂРёРЅСѓ РєР°СЂС‚РѕС‡РєРё */}
+      {/* Непрокручиваемая шапка на всю ширину карточки */}
       <div className="shrink-0 px-3 py-2 border-b border-black/10 dark:border-white/10 flex items-center justify-between gap-2 bg-[var(--card)]">
-        <div className="text-sm text-muted">РџРµСЂРёРѕРґ СЂРµРµСЃС‚СЂР°: {formatPeriodLabel(dateFrom, dateTo)}</div>
+        <div className="text-sm text-muted">Период реестра: {formatPeriodLabel(dateFrom, dateTo)}</div>
         <div className="flex items-center gap-2">
-          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("excel")}>{exporting === "excel" ? "Р’С‹РіСЂСѓР·РєР°..." : "Excel"}</button>
-          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("pdf")}>{exporting === "pdf" ? "Р’С‹РіСЂСѓР·РєР°..." : "PDF"}</button>
-          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("txt")}>{exporting === "txt" ? "Р’С‹РіСЂСѓР·РєР°..." : "TXT"}</button>
+          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("excel")}>{exporting === "excel" ? "Выгрузка..." : "Excel"}</button>
+          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("pdf")}>{exporting === "pdf" ? "Выгрузка..." : "PDF"}</button>
+          <button className="btn h-9" disabled={!!exporting} onClick={() => onExport("txt")}>{exporting === "txt" ? "Выгрузка..." : "TXT"}</button>
         </div>
       </div>
       <div className="shrink-0 rounded-t-xl" style={{ background: "var(--primary)" }}>
@@ -400,7 +400,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
         </table>
       </div>
 
-      {/* РџСЂРѕРєСЂСѓС‡РёРІР°РµРјРѕРµ С‚РµР»Рѕ С‚Р°Р±Р»РёС†С‹ c РІРёСЂС‚СѓР°Р»РёР·Р°С†РёРµР№ */}
+      {/* Прокручиваемое тело таблицы c виртуализацией */}
       <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
         <table className="w-full text-sm table-fixed">
           <colgroup>
@@ -449,7 +449,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
                             t.status === "PENDING" ? "badge-warning" :
                             t.status === "REJECTED" ? "badge-danger" : "badge-danger"
                           }`}>
-                            {t.status === "SUCCESS" ? "РЈСЃРїРµС€РЅРѕ" : t.status === "PENDING" ? "Р’ РѕР¶РёРґР°РЅРёРё" : t.status === "REJECTED" ? "РћС‚РєР»РѕРЅРµРЅРѕ" : "РћС€РёР±РєР°"}
+                            {t.status === "SUCCESS" ? "Успешно" : t.status === "PENDING" ? "В ожидании" : t.status === "REJECTED" ? "Отклонено" : "Ошибка"}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
@@ -477,15 +477,15 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
         </table>
       </div>
 
-      {/* РџРѕСЂС‚Р°Р»С‹ С„РёР»СЊС‚СЂРѕРІ РІ С€Р°РїРєРµ */}
+      {/* Порталы фильтров в шапке */}
       {idDD.open && createPortal(
         <HeaderDropdown pos={idDD.pos} onClose={() => idDD.setOpen(false)} portalRef={idDD.panelRef}>
           <div className="header-dd p-2">
             <div className="text-sm mb-2 font-medium">ID/tx_hash</div>
-            <input className="ui-input w-full" placeholder="Р’РІРµРґРёС‚Рµ ID" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
+            <input className="ui-input w-full" placeholder="Введите ID" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setIdQuery("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => idDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setIdQuery("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => idDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -493,7 +493,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {statusDD.open && createPortal(
         <HeaderDropdown pos={statusDD.pos} onClose={() => statusDD.setOpen(false)} portalRef={statusDD.panelRef}>
           <div className="header-dd p-2">
-            <div className="text-sm mb-2 font-medium">РЎС‚Р°С‚СѓСЃС‹</div>
+            <div className="text-sm mb-2 font-medium">Статусы</div>
             {(["PENDING","SUCCESS","REJECTED","FAILED"] as TransactionStatus[]).map((s) => {
               const checked = statusSet.has(s);
               return (
@@ -506,8 +506,8 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
               );
             })}
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => statusDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setStatusSet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => statusDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -515,13 +515,13 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {dateDD.open && createPortal(
         <HeaderDropdown pos={dateDD.pos} onClose={() => dateDD.setOpen(false)} portalRef={dateDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-1 font-medium">Р”Р°С‚Р° РѕС‚</div>
+            <div className="text-sm mb-1 font-medium">Дата от</div>
             <Flatpickr value={dateFrom ? new Date(dateFrom) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateFrom(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
-            <div className="text-sm mb-1 mt-3 font-medium">Р”Р°С‚Р° РґРѕ</div>
+            <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
             <Flatpickr value={dateTo ? new Date(dateTo) : null} options={{ enableTime: true, dateFormat: "d.m.Y H:i", time_24hr: true, locale: Russian }} onChange={([d]) => setDateTo(d ? new Date(d).toISOString() : undefined)} className="ui-input" />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(startOfTodayIso()); setDateTo(nowIso()); }}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => { setDateFrom(startOfTodayIso()); setDateTo(nowIso()); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => dateDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -529,14 +529,14 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {amountDD.open && createPortal(
         <HeaderDropdown pos={amountDD.pos} onClose={() => amountDD.setOpen(false)} portalRef={amountDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm font-medium">РЎСѓРјРјР°</div>
+            <div className="text-sm font-medium">Сумма</div>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <input className="ui-input h-9" type="number" placeholder="РћС‚" value={minAmount ?? ""} onChange={(e) => setMinAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
-              <input className="ui-input h-9" type="number" placeholder="Р”Рѕ" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
+              <input className="ui-input h-9" type="number" placeholder="От" value={minAmount ?? ""} onChange={(e) => setMinAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
+              <input className="ui-input h-9" type="number" placeholder="До" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(e.target.value === "" ? undefined : Number(e.target.value))} />
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => amountDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => { setMinAmount(undefined); setMaxAmount(undefined); }}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => amountDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -544,7 +544,7 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {currencyDD.open && createPortal(
         <HeaderDropdown pos={currencyDD.pos} onClose={() => currencyDD.setOpen(false)} portalRef={currencyDD.panelRef}>
           <div className="header-dd p-2">
-            <div className="text-sm mb-2 font-medium">Р’Р°Р»СЋС‚С‹</div>
+            <div className="text-sm mb-2 font-medium">Валюты</div>
             {availableCurrencies.map((c) => {
               const checked = currencySet.has(c);
               return (
@@ -555,8 +555,8 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
               );
             })}
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setCurrencySet(new Set())}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => currencyDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setCurrencySet(new Set())}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => currencyDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -564,11 +564,11 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {senderDD.open && createPortal(
         <HeaderDropdown pos={senderDD.pos} onClose={() => senderDD.setOpen(false)} portalRef={senderDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">РћС‚РїСЂР°РІРёС‚РµР»СЊ</div>
-            <input className="ui-input w-full" placeholder="РРјСЏ" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
+            <div className="text-sm mb-2 font-medium">Отправитель</div>
+            <input className="ui-input w-full" placeholder="Имя" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setSenderQ("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => senderDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setSenderQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => senderDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -576,11 +576,11 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
       {recipientDD.open && createPortal(
         <HeaderDropdown pos={recipientDD.pos} onClose={() => recipientDD.setOpen(false)} portalRef={recipientDD.panelRef}>
           <div className="header-dd p-2 w-[260px]">
-            <div className="text-sm mb-2 font-medium">РџРѕР»СѓС‡Р°С‚РµР»СЊ</div>
-            <input className="ui-input w-full" placeholder="РРјСЏ" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
+            <div className="text-sm mb-2 font-medium">Получатель</div>
+            <input className="ui-input w-full" placeholder="Имя" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
             <div className="mt-2 grid grid-cols-2 gap-2">
-              <button className="btn btn-danger w-full h-9" onClick={() => setRecipientQ("")}>РЎР±СЂРѕСЃРёС‚СЊ</button>
-              <button className="btn btn-success w-full h-9" onClick={() => recipientDD.setOpen(false)}>РЎРѕС…СЂР°РЅРёС‚СЊ</button>
+              <button className="btn btn-danger w-full h-9" onClick={() => setRecipientQ("")}>Сбросить</button>
+              <button className="btn btn-success w-full h-9" onClick={() => recipientDD.setOpen(false)}>Сохранить</button>
             </div>
           </div>
         </HeaderDropdown>, document.body)}
@@ -620,10 +620,11 @@ function Th({ children, onClick }: { children: React.ReactNode; onClick?: () => 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
     <span className={`inline-block text-white/90 ${active ? "opacity-100" : "opacity-50"}`} style={{ width: 12 }} aria-hidden>
-      {dir === "asc" ? "в†‘" : "в†“"}
+      {dir === "asc" ? "↑" : "↓"}
     </span>
   );
 }
+
 
 
 
