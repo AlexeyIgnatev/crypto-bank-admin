@@ -78,7 +78,13 @@ function formatPeriodLabel(from?: string, to?: string): string {
 
 import { getTransactions } from "@/lib/api";
 
-export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) {
+export default function Table({
+  onOpen,
+  onPeriodChange,
+}: {
+  onOpen: (t: Transaction) => void;
+  onPeriodChange?: (period: { dateFrom?: string; dateTo?: string }) => void;
+}) {
   const [sortKey, setSortKey] = useState<SortKey>("createdAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [offset, setOffset] = useState(0);
@@ -151,6 +157,10 @@ export default function Table({ onOpen }: { onOpen: (t: Transaction) => void }) 
     fetchPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
+
+  useEffect(() => {
+    onPeriodChange?.({ dateFrom, dateTo });
+  }, [dateFrom, dateTo, onPeriodChange]);
 
   // Догрузка следующей страницы
   const canPrev = offset > 0;

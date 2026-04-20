@@ -10,10 +10,24 @@ import { formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
 import { getUserById } from "@/lib/api";
 
+function startOfTodayIso(): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
 export default function Home() {
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [cardsPeriod, setCardsPeriod] = useState<{ dateFrom?: string; dateTo?: string }>({
+    dateFrom: startOfTodayIso(),
+    dateTo: nowIso(),
+  });
 
   const [openUser, setOpenUser] = useState(false);
   const [openUserEdit, setOpenUserEdit] = useState(false);
@@ -31,9 +45,10 @@ export default function Home() {
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-      <div className="shrink-0"><Cards /></div>
+      <div className="shrink-0"><Cards dateFrom={cardsPeriod.dateFrom} dateTo={cardsPeriod.dateTo} /></div>
       <div className="min-h-0 flex-1 flex flex-col"><Table
         onOpen={(t) => { setSelected(t); setOpen(true); }}
+        onPeriodChange={(period) => setCardsPeriod(period)}
       /></div>
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (

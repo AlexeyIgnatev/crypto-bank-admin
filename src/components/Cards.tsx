@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useEffect, useMemo, useState } from "react";
-import { getStatsToday } from "@/lib/api";
+import { getStatsToday, getTransactionsStats } from "@/lib/api";
 
 type TodayStats = {
   total: number;
@@ -22,23 +22,46 @@ function formatPeriod(dateFrom?: string, dateTo?: string): string {
   return `${fromStr} - ${toStr}`;
 }
 
-export default function Cards() {
+export default function Cards({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: string }) {
   const [stats, setStats] = useState<TodayStats | null>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const s = await getStatsToday();
-        if (alive) setStats(s);
+        if (!dateFrom || !dateTo) {
+          const s = await getStatsToday();
+          if (alive) setStats(s);
+          return;
+        }
+
+        const [totalStats, bankStats, walletStats, successfulStats, usersStats] = await Promise.all([
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", operations: ["bank"], bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", operations: ["crypto"], bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "count", statuses: ["SUCCESS"], bucket: "day" }),
+          getStatsToday(),
+        ]);
+
+        if (alive) {
+          setStats({
+            total: Number(totalStats.totalSum ?? 0),
+            bank: Number(bankStats.totalSum ?? 0),
+            wallet: Number(walletStats.totalSum ?? 0),
+            users: Number(usersStats.users ?? 0),
+            successful: Number(successfulStats.totalCount ?? 0),
+            dateFrom,
+            dateTo,
+          });
+        }
       } catch {
-        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0, successful: 0 });
+        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0, successful: 0, dateFrom, dateTo });
       }
     })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [dateFrom, dateTo]);
 
   const fmt = (n: number) => n.toLocaleString();
   const periodLabel = useMemo(() => formatPeriod(stats?.dateFrom, stats?.dateTo), [stats?.dateFrom, stats?.dateTo]);
@@ -63,4 +86,3 @@ export default function Cards() {
     </section>
   );
 }
-
