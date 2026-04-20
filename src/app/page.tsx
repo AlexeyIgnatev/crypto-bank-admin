@@ -5,7 +5,7 @@ import Cards from "../components/Cards";
 import Table from "../components/Table";
 import Modal from "../components/Modal";
 import UserDetails from "../components/UserDetails";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
 import { getUserById } from "@/lib/api";
@@ -28,6 +28,11 @@ export default function Home() {
     dateFrom: startOfTodayIso(),
     dateTo: nowIso(),
   });
+  const handlePeriodChange = useCallback((period: { dateFrom?: string; dateTo?: string }) => {
+    setCardsPeriod((prev) => (
+      prev.dateFrom === period.dateFrom && prev.dateTo === period.dateTo ? prev : period
+    ));
+  }, []);
 
   const [openUser, setOpenUser] = useState(false);
   const [openUserEdit, setOpenUserEdit] = useState(false);
@@ -48,7 +53,7 @@ export default function Home() {
       <div className="shrink-0"><Cards dateFrom={cardsPeriod.dateFrom} dateTo={cardsPeriod.dateTo} /></div>
       <div className="min-h-0 flex-1 flex flex-col"><Table
         onOpen={(t) => { setSelected(t); setOpen(true); }}
-        onPeriodChange={(period) => setCardsPeriod(period)}
+        onPeriodChange={handlePeriodChange}
       /></div>
       <Modal open={open} onClose={() => setOpen(false)} title="Детали транзакции">
         {selected && (

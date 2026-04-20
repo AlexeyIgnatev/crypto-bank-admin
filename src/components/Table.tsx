@@ -160,7 +160,7 @@ export default function Table({
 
   useEffect(() => {
     onPeriodChange?.({ dateFrom, dateTo });
-  }, [dateFrom, dateTo, onPeriodChange]);
+  }, [dateFrom, dateTo]);
 
   // Догрузка следующей страницы
   const canPrev = offset > 0;
