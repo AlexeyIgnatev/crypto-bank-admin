@@ -100,11 +100,6 @@ export default function Home() {
             } />
             <Row label="ID получателя ABS" value={selected.recipientAbsId || selected.recipientCustomerId || "—"} mono />
             <Row label="ID клиента ABS" value={selected.clientAbsId || selected.senderCustomerId || selected.recipientCustomerId || "—"} mono />
-            <Row label="Назначение платежа" value={
-              <span className="break-all" title={selected.comment || "—"}>
-                {selected.comment || "—"}
-              </span>
-            } />
           </div>
         )}
       </Modal>

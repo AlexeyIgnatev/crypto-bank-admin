@@ -12,7 +12,6 @@ export interface Transaction {
   senderAbsId?: string;
   recipientAbsId?: string;
   clientAbsId?: string;
-  comment?: string;
   senderCustomerId?: string;
   recipientCustomerId?: string;
 }

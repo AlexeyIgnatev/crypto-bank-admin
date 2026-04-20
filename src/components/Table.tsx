@@ -250,7 +250,6 @@ export default function Table({
           { header: "Получатель", getValue: (row) => row.recipient },
           { header: "ID получателя ABS", getValue: (row) => row.recipientAbsId || row.recipientCustomerId || "—" },
           { header: "ID клиента ABS", getValue: (row) => row.clientAbsId || row.senderCustomerId || row.recipientCustomerId || "—" },
-          { header: "Назначение", getValue: (row) => row.comment || "—" },
         ],
         rows,
       });

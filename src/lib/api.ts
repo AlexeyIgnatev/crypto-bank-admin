@@ -84,7 +84,6 @@ export async function getTransactions(params: {
     senderAbsId: it.sender_abs_id != null ? String(it.sender_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : undefined),
     recipientAbsId: it.receiver_abs_id != null ? String(it.receiver_abs_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined),
     clientAbsId: it.client_abs_id != null ? String(it.client_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined)),
-    comment: it.comment || undefined,
     senderCustomerId: it.sender_customer_id != null ? String(it.sender_customer_id) : undefined,
     recipientCustomerId: it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined,
   } as Transaction));
