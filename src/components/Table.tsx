@@ -159,8 +159,9 @@ export default function Table({
   }, [limit, sortKey, sortDir, idQuery, senderQ, recipientQ, dateFrom, dateTo, minAmount, maxAmount, statusSet, currencySet]);
 
   useEffect(() => {
+    if (dateDD.open) return;
     onPeriodChange?.({ dateFrom, dateTo });
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, dateDD.open, onPeriodChange]);
 
   // Догрузка следующей страницы
   const canPrev = offset > 0;
