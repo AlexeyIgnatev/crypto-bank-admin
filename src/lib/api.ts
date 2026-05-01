@@ -449,6 +449,16 @@ export async function getAntifraudCases(params: {
   caseStatus?: AntiFraudCaseStatus;
   caseStatuses?: AntiFraudCaseStatus[];
 }): Promise<{ items: AntiFraudCaseItem[]; total: number; offset: number; limit: number; }> {
+  const unwrapListResponse = (raw: any) => {
+    const root = raw?.data && typeof raw.data === "object" ? raw.data : raw;
+    return {
+      items: Array.isArray(root?.items) ? root.items : [],
+      total: Number(root?.total ?? 0),
+      offset: Number(root?.offset ?? 0),
+      limit: Number(root?.limit ?? 0),
+    };
+  };
+
   const buildQuery = (singleStatus?: AntiFraudCaseStatus, offsetOverride?: number, limitOverride?: number) => {
     const q = new URLSearchParams();
     const offset = offsetOverride ?? params.offset;
@@ -508,34 +518,36 @@ export async function getAntifraudCases(params: {
     const q = buildQuery(requestedStatuses[0]);
     const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to load antifraud cases");
-    const data = await res.json();
-    const items: AntiFraudCaseItem[] = (data.items || []).map(mapCase);
-    return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+    const parsed = unwrapListResponse(await res.json());
+    const items: AntiFraudCaseItem[] = parsed.items.map(mapCase);
+    return {
+      items,
+      total: parsed.total || items.length,
+      offset: Number.isFinite(parsed.offset) ? parsed.offset : 0,
+      limit: Number.isFinite(parsed.limit) && parsed.limit > 0 ? parsed.limit : items.length,
+    };
   }
 
   // Backend supports only one case_status at a time; request each status and merge.
   const offset = params.offset ?? 0;
   const limit = params.limit ?? 20;
   const perStatusLimit = offset + limit;
-  const settled = await Promise.allSettled(
-    requestedStatuses.map(async (status) => {
-      const q = buildQuery(status, 0, perStatusLimit);
-      const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
-      if (!res.ok) {
-        const body = await res.text().catch(() => "");
-        throw new Error(`Failed to load antifraud cases for status=${status}. http=${res.status}. body=${body}`);
-      }
-      return await res.json();
-    }),
-  );
-
-  const responses = settled
-    .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
-    .map((r) => r.value);
+  // Fetch statuses sequentially to avoid refresh-token races between parallel requests.
+  const responses: any[] = [];
+  const errors: string[] = [];
+  for (const status of requestedStatuses) {
+    const q = buildQuery(status, 0, perStatusLimit);
+    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      errors.push(`status=${status}, http=${res.status}, body=${body}`);
+      continue;
+    }
+    responses.push(unwrapListResponse(await res.json()));
+  }
 
   if (!responses.length) {
-    const firstError = settled.find((r): r is PromiseRejectedResult => r.status === "rejected");
-    throw new Error(firstError?.reason?.message || "Failed to load antifraud cases");
+    throw new Error(`Failed to load antifraud cases. ${errors.join(" | ")}`);
   }
 
   const byId = new Map<string, AntiFraudCaseItem>();

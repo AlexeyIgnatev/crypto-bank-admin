@@ -59,6 +59,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
   const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
   const [items, setItems] = useState<AntiFraudCaseItem[]>([]);
+  const [errorText, setErrorText] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   useLayoutEffect(() => {
@@ -91,6 +92,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
   async function fetchPage(pageOffset: number, replace: boolean) {
     setLoading(true);
     try {
+      setErrorText(null);
       const res = await getAntifraudCases({
         offset: pageOffset,
         limit,
@@ -109,7 +111,8 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
       });
       setTotal(res.total ?? (res.items?.length || 0));
       setItems(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
-    } catch {
+    } catch (e: any) {
+      setErrorText(e?.message || "Не удалось загрузить кейсы финконтроля");
       if (replace) { setItems([]); setTotal(0); }
     } finally {
       setLoading(false);
@@ -240,6 +243,12 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
           </thead>
         </table>
       </div>
+
+      {errorText && (
+        <div className="shrink-0 px-4 py-2 text-sm text-red-700 bg-red-50 border-t border-red-100">
+          {errorText}
+        </div>
+      )}
 
       {/* Тело таблицы с виртуализацией */}
       <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">

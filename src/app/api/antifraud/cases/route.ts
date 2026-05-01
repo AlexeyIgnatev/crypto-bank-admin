@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { upstreamFetch } from "@/lib/http";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function withCookies(upstream: any, json: any, status: number) {
   const res = NextResponse.json(json, { status });
   if ((upstream as any)?.__newCookies) {
