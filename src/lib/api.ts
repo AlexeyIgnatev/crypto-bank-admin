@@ -517,14 +517,26 @@ export async function getAntifraudCases(params: {
   const offset = params.offset ?? 0;
   const limit = params.limit ?? 20;
   const perStatusLimit = offset + limit;
-  const responses = await Promise.all(
+  const settled = await Promise.allSettled(
     requestedStatuses.map(async (status) => {
       const q = buildQuery(status, 0, perStatusLimit);
       const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to load antifraud cases");
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        throw new Error(`Failed to load antifraud cases for status=${status}. http=${res.status}. body=${body}`);
+      }
       return await res.json();
     }),
   );
+
+  const responses = settled
+    .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
+    .map((r) => r.value);
+
+  if (!responses.length) {
+    const firstError = settled.find((r): r is PromiseRejectedResult => r.status === "rejected");
+    throw new Error(firstError?.reason?.message || "Failed to load antifraud cases");
+  }
 
   const byId = new Map<string, AntiFraudCaseItem>();
   let total = 0;
