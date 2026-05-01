@@ -72,6 +72,11 @@ export default function ControlCasesPage() {
                 <button className="btn btn-danger h-9" onClick={() => setConfirm({ open: true, action: "reject" })}>Отклонить</button>
               </div>
             )}
+            {selected.status === "REJECTED" && (
+              <div className="pt-2">
+                <button className="btn btn-success h-9 w-full" onClick={() => setConfirm({ open: true, action: "approve" })}>{"\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c"}</button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
