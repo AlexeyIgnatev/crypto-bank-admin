@@ -449,28 +449,37 @@ export async function getAntifraudCases(params: {
   caseStatus?: AntiFraudCaseStatus;
   caseStatuses?: AntiFraudCaseStatus[];
 }): Promise<{ items: AntiFraudCaseItem[]; total: number; offset: number; limit: number; }> {
-  const q = new URLSearchParams();
-  if (params.offset != null) q.set("offset", String(params.offset));
-  if (params.limit != null) q.set("limit", String(params.limit));
-  if (params.sortBy) q.set("sort_by", params.sortBy);
-  if (params.sortDir) q.set("sort_dir", params.sortDir);
-  if (params.id) q.set("id", params.id);
-  if (params.txHash) q.set("tx_hash", params.txHash);
-  if (params.sender) q.set("sender", params.sender);
-  if (params.receiver) q.set("receiver", params.receiver);
-  if (params.dateFrom) q.set("date_from", params.dateFrom);
-  if (params.dateTo) q.set("date_to", params.dateTo);
-  if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
-  if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
-  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
-  if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", o);
-  if (params.caseStatus) q.set("case_status", params.caseStatus);
-  if (params.caseStatuses && params.caseStatuses.length) for (const s of params.caseStatuses) q.append("case_status", s);
+  const buildQuery = (singleStatus?: AntiFraudCaseStatus, offsetOverride?: number, limitOverride?: number) => {
+    const q = new URLSearchParams();
+    const offset = offsetOverride ?? params.offset;
+    const limit = limitOverride ?? params.limit;
+    if (offset != null) q.set("offset", String(offset));
+    if (limit != null) q.set("limit", String(limit));
+    if (params.sortBy) q.set("sort_by", params.sortBy);
+    if (params.sortDir) q.set("sort_dir", params.sortDir);
+    if (params.id) q.set("id", params.id);
+    if (params.txHash) q.set("tx_hash", params.txHash);
+    if (params.sender) q.set("sender", params.sender);
+    if (params.receiver) q.set("receiver", params.receiver);
+    if (params.dateFrom) q.set("date_from", params.dateFrom);
+    if (params.dateTo) q.set("date_to", params.dateTo);
+    if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
+    if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
+    if (params.currencies && params.currencies.length) {
+      for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
+    }
+    if (params.operations && params.operations.length) {
+      for (const o of params.operations) q.append("kind", o);
+    }
+    if (singleStatus) {
+      q.set("case_status", singleStatus);
+    } else if (params.caseStatus) {
+      q.set("case_status", params.caseStatus);
+    }
+    return q;
+  };
 
-  const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load antifraud cases");
-  const data = await res.json();
-  const items: AntiFraudCaseItem[] = (data.items || []).map((it: any) => {
+  const mapCase = (it: any): AntiFraudCaseItem => {
     const tx = it.transaction || {};
     const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
     const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
@@ -486,9 +495,61 @@ export async function getAntifraudCases(params: {
       txHash: tx.tx_hash,
       ruleKey: it.rule_key,
       reason: it.reason,
-    } as AntiFraudCaseItem;
+    };
+  };
+
+  const requestedStatuses = params.caseStatuses && params.caseStatuses.length
+    ? Array.from(new Set(params.caseStatuses))
+    : params.caseStatus
+      ? [params.caseStatus]
+      : (["OPEN", "APPROVED", "REJECTED"] as AntiFraudCaseStatus[]);
+
+  if (requestedStatuses.length === 1) {
+    const q = buildQuery(requestedStatuses[0]);
+    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to load antifraud cases");
+    const data = await res.json();
+    const items: AntiFraudCaseItem[] = (data.items || []).map(mapCase);
+    return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+  }
+
+  // Backend supports only one case_status at a time; request each status and merge.
+  const offset = params.offset ?? 0;
+  const limit = params.limit ?? 20;
+  const perStatusLimit = offset + limit;
+  const responses = await Promise.all(
+    requestedStatuses.map(async (status) => {
+      const q = buildQuery(status, 0, perStatusLimit);
+      const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to load antifraud cases");
+      return await res.json();
+    }),
+  );
+
+  const byId = new Map<string, AntiFraudCaseItem>();
+  let total = 0;
+  for (const data of responses) {
+    total += Number(data?.total ?? 0);
+    for (const raw of (data?.items || [])) {
+      const item = mapCase(raw);
+      byId.set(item.id, item);
+    }
+  }
+  const allItems = Array.from(byId.values());
+  allItems.sort((a, b) => {
+    const dir = (params.sortDir || "desc") === "asc" ? 1 : -1;
+    const key = params.sortBy || "createdAt";
+    if (key === "amount") return (a.amount - b.amount) * dir;
+    if (key === "status") return a.status.localeCompare(b.status) * dir;
+    const ta = Date.parse(a.createdAt || "");
+    const tb = Date.parse(b.createdAt || "");
+    const va = Number.isFinite(ta) ? ta : 0;
+    const vb = Number.isFinite(tb) ? tb : 0;
+    return (va - vb) * dir;
   });
-  return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+
+  const items = allItems.slice(offset, offset + limit);
+  return { items, total, offset, limit };
 }
 
 export async function approveAntifraudCase(id: string|number) {
