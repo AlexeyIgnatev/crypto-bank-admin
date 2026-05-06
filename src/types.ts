@@ -61,4 +61,24 @@ export interface User {
   lastLoginDevice?: string;
 }
 
+export type SupportTicketStatus = "OPEN" | "CLOSED";
+export type SupportMessageRole = "USER" | "ASSISTANT" | "ADMIN";
+
+export interface SupportTicket {
+  id: number;
+  customerId: number;
+  status: SupportTicketStatus;
+  createdAt: string;
+  lastMessageAt: string;
+  closedAt: string | null;
+}
+
+export interface SupportMessage {
+  id: number;
+  ticketId: number;
+  role: SupportMessageRole;
+  text: string;
+  createdAt: string;
+}
+
 

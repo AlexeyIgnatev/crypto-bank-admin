@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
@@ -6,15 +6,16 @@ import { usePathname, useRouter } from "next/navigation";
 import { getCurrentAdminRole } from "@/lib/api";
 
 const allItems = [
-  { href: "/", label: "Главная", icon: "🏠" },
-  { href: "/admins", label: "Администраторы", icon: "👤" },
-  { href: "/users", label: "Пользователи", icon: "👥" },
-  { href: "/transactions", label: "Транзакции", icon: "💳" },
-  { href: "/control", label: "Фин. контроль", icon: "📊" },
-  { href: "/rates", label: "Проценты", icon: "%" },
-  { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
-  { href: "/logs", label: "Логи", icon: "🧾" },
-  { href: "/faq", label: "FAQ", icon: "❓" },
+  { href: "/", label: "Р“Р»Р°РІРЅР°СЏ", icon: "рџЏ " },
+  { href: "/admins", label: "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹", icon: "рџ‘¤" },
+  { href: "/users", label: "РџРѕР»СЊР·РѕРІР°С‚РµР»Рё", icon: "рџ‘Ґ" },
+  { href: "/transactions", label: "РўСЂР°РЅР·Р°РєС†РёРё", icon: "рџ’і" },
+  { href: "/control", label: "Р¤РёРЅ. РєРѕРЅС‚СЂРѕР»СЊ", icon: "рџ“Љ" },
+  { href: "/rates", label: "РџСЂРѕС†РµРЅС‚С‹", icon: "%" },
+  { href: "/control-cases", label: "РљРµР№СЃС‹ С„РёРЅ РєРѕРЅС‚СЂРѕР»СЏ", icon: "рџ›ЎпёЏ" },
+  { href: "/logs", label: "Р›РѕРіРё", icon: "рџ§ѕ" },
+  { href: "/faq", label: "FAQ", icon: "вќ“" },
+  { href: "/support", label: "Техподдержка", icon: "💬" },
 ];
 
 function allowedByRole(role?: string): string[] {
@@ -24,16 +25,16 @@ function allowedByRole(role?: string): string[] {
     case "UID":
       return allItems.map((i) => i.href);
     case "UIT":
-      return ["/admins", "/faq"];
+      return ["/admins", "/faq", "/support"];
     case "SKK":
-      return ["/control-cases", "/faq"];
+      return ["/control-cases", "/faq", "/support"];
     case "UDBO":
     case "UBUIO":
-      return ["/transactions", "/faq"];
+      return ["/transactions", "/faq", "/support"];
     case "TREASURY":
-      return ["/rates", "/faq"];
+      return ["/rates", "/faq", "/support"];
     default:
-      return ["/faq"];
+      return ["/support", "/faq"];
   }
 }
 
@@ -73,9 +74,9 @@ export default function Sidebar() {
           onClick={() => setOpen((o) => !o)}
           className="h-10 w-10 inline-flex items-center justify-center rounded-md hover-surface transition-transform duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
-          ☰
+          в°
         </button>
-        {/* Бренд перенесён в Topbar для выравнивания с заголовком */}
+        {/* Р‘СЂРµРЅРґ РїРµСЂРµРЅРµСЃС‘РЅ РІ Topbar РґР»СЏ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ СЃ Р·Р°РіРѕР»РѕРІРєРѕРј */}
         {open && <div className="text-sm opacity-60">&nbsp;</div>}
       </div>
       <nav className="mt-2 space-y-1">
@@ -102,7 +103,7 @@ export default function Sidebar() {
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
         <button
           className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? '' : 'justify-center'}`}
-          title="Выйти"
+          title="Р’С‹Р№С‚Рё"
           onClick={async () => {
             try {
               await fetch('/api/auth/logout', { method: 'POST' });
@@ -117,9 +118,11 @@ export default function Sidebar() {
               <path d="M18 8l4 4-4 4" />
             </svg>
           </span>
-          {open && <span>Выйти</span>}
+          {open && <span>Р’С‹Р№С‚Рё</span>}
         </button>
       </div>
     </aside>
   );
 }
+
+

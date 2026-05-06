@@ -1,4 +1,12 @@
-﻿import { Admin, Transaction, TransactionStatus, User } from "@/types";
+﻿import {
+  Admin,
+  SupportMessage,
+  SupportTicket,
+  SupportTicketStatus,
+  Transaction,
+  TransactionStatus,
+  User,
+} from "@/types";
 
 function mapCurrency(x?: string): string {
   switch (x) {
@@ -589,3 +597,82 @@ export async function rejectAntifraudCase(id: string|number) {
 
 
 
+
+
+export async function getSupportTickets(params?: {
+  status?: SupportTicketStatus;
+  offset?: number;
+  limit?: number;
+}): Promise<{ items: SupportTicket[]; total: number; offset: number; limit: number; }> {
+  const q = new URLSearchParams();
+  q.set("status", params?.status || "OPEN");
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  if (params?.limit != null) q.set("limit", String(params.limit));
+
+  const res = await fetch(`/api/support/tickets?${q.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load support tickets");
+  const data = await res.json().catch(() => ({} as any));
+  const rawItems = Array.isArray(data?.items) ? data.items : [];
+
+  const items: SupportTicket[] = rawItems.map((item: any) => ({
+    id: Number(item.id),
+    customerId: Number(item.customer_id),
+    status: (item.status || "OPEN") as SupportTicketStatus,
+    createdAt: new Date(Number(item.created_at || 0)).toISOString(),
+    lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),
+    closedAt: item.closed_at != null ? new Date(Number(item.closed_at)).toISOString() : null,
+  }));
+
+  return {
+    items,
+    total: Number(data?.total ?? items.length),
+    offset: Number(data?.offset ?? 0),
+    limit: Number(data?.limit ?? items.length),
+  };
+}
+
+export async function getSupportTicketMessages(ticketId: number): Promise<SupportMessage[]> {
+  const res = await fetch(`/api/support/tickets/${ticketId}/messages`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load support ticket messages");
+  const data = await res.json().catch(() => []);
+  const rawItems = Array.isArray(data) ? data : [];
+
+  return rawItems.map((item: any) => ({
+    id: Number(item.id),
+    ticketId: Number(item.ticket_id),
+    role: (item.role || "USER") as SupportMessage["role"],
+    text: String(item.text || ""),
+    createdAt: new Date(Number(item.created_at || 0)).toISOString(),
+  }));
+}
+
+export async function replySupportTicket(ticketId: number, text: string): Promise<SupportMessage> {
+  const res = await fetch(`/api/support/tickets/${ticketId}/messages`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error("Failed to reply support ticket");
+  const item = await res.json();
+  return {
+    id: Number(item.id),
+    ticketId: Number(item.ticket_id),
+    role: (item.role || "ADMIN") as SupportMessage["role"],
+    text: String(item.text || ""),
+    createdAt: new Date(Number(item.created_at || 0)).toISOString(),
+  };
+}
+
+export async function closeSupportTicket(ticketId: number): Promise<SupportTicket> {
+  const res = await fetch(`/api/support/tickets/${ticketId}/close`, { method: "PATCH" });
+  if (!res.ok) throw new Error("Failed to close support ticket");
+  const item = await res.json();
+  return {
+    id: Number(item.id),
+    customerId: Number(item.customer_id),
+    status: (item.status || "CLOSED") as SupportTicketStatus,
+    createdAt: new Date(Number(item.created_at || 0)).toISOString(),
+    lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),
+    closedAt: item.closed_at != null ? new Date(Number(item.closed_at)).toISOString() : null,
+  };
+}
