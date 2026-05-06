@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useTheme } from "./ThemeProvider";
 
 export default function Topbar({ title }: { title?: string }) {
@@ -23,11 +23,12 @@ function ThemeSwitch({ theme, onToggle }: { theme: "light" | "dark"; onToggle: (
     <button
       aria-label="Toggle theme"
       onClick={onToggle}
-      className={`relative w-16 h-8 rounded-full transition-colors`} style={{ background: "var(--primary)" }}
+      className="relative w-16 h-8 rounded-full transition-colors"
+      style={{ background: "var(--primary)" }}
     >
       <span className={`absolute inset-y-0 left-1 my-auto w-6 h-6 rounded-full bg-white shadow transition-transform duration-300 ${isDark ? "translate-x-8" : "translate-x-0"}`} />
       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs">{isDark ? "🌙" : "☀️"}</span>
-      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">{isDark ? "" : ""}</span>
+      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">&nbsp;</span>
     </button>
   );
 }

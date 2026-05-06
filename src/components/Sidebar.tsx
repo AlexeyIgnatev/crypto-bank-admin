@@ -1,20 +1,19 @@
 ﻿"use client";
 import { useEffect, useState } from "react";
-import { useTheme } from "./ThemeProvider";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { getCurrentAdminRole } from "@/lib/api";
 
 const allItems = [
-  { href: "/", label: "Р“Р»Р°РІРЅР°СЏ", icon: "рџЏ " },
-  { href: "/admins", label: "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂС‹", icon: "рџ‘¤" },
-  { href: "/users", label: "РџРѕР»СЊР·РѕРІР°С‚РµР»Рё", icon: "рџ‘Ґ" },
-  { href: "/transactions", label: "РўСЂР°РЅР·Р°РєС†РёРё", icon: "рџ’і" },
-  { href: "/control", label: "Р¤РёРЅ. РєРѕРЅС‚СЂРѕР»СЊ", icon: "рџ“Љ" },
-  { href: "/rates", label: "РџСЂРѕС†РµРЅС‚С‹", icon: "%" },
-  { href: "/control-cases", label: "РљРµР№СЃС‹ С„РёРЅ РєРѕРЅС‚СЂРѕР»СЏ", icon: "рџ›ЎпёЏ" },
-  { href: "/logs", label: "Р›РѕРіРё", icon: "рџ§ѕ" },
-  { href: "/faq", label: "FAQ", icon: "вќ“" },
+  { href: "/", label: "Главная", icon: "🏠" },
+  { href: "/admins", label: "Администраторы", icon: "👤" },
+  { href: "/users", label: "Пользователи", icon: "👥" },
+  { href: "/transactions", label: "Транзакции", icon: "💳" },
+  { href: "/control", label: "Фин. контроль", icon: "📊" },
+  { href: "/rates", label: "Проценты", icon: "%" },
+  { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
+  { href: "/logs", label: "Логи", icon: "🧾" },
+  { href: "/faq", label: "FAQ", icon: "❓" },
   { href: "/support", label: "Техподдержка", icon: "💬" },
 ];
 
@@ -41,9 +40,7 @@ function allowedByRole(role?: string): string[] {
 export default function Sidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(true);
-  const { theme, toggle } = useTheme();
   const pathname = usePathname();
-  const labelClass = open ? "inline" : "sr-only";
 
   const [role, setRole] = useState<string | null>(null);
   const allowedHrefs = allowedByRole(role || "");
@@ -74,41 +71,40 @@ export default function Sidebar() {
           onClick={() => setOpen((o) => !o)}
           className="h-10 w-10 inline-flex items-center justify-center rounded-md hover-surface transition-transform duration-150 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
-          в°
+          ☰
         </button>
-        {/* Р‘СЂРµРЅРґ РїРµСЂРµРЅРµСЃС‘РЅ РІ Topbar РґР»СЏ РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ СЃ Р·Р°РіРѕР»РѕРІРєРѕРј */}
         {open && <div className="text-sm opacity-60">&nbsp;</div>}
       </div>
       <nav className="mt-2 space-y-1">
-        {allItems.filter(it => allowedHrefs.includes(it.href)).map((it) => {
-          const active = pathname === it.href;
-          return (
-            <Link key={it.href} href={it.href} className="block">
-              <div
-                className={`mx-2 flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${open ? "gap-3 justify-start" : "justify-center"} ${
-                  active
-                    ? "text-white"
-                    : "opacity-90 hover:opacity-100"
-                }`}
-                style={active ? { background: "var(--primary)" } : {}}
-                title={it.label}
-              >
-                <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
-                {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}
-              </div>
-            </Link>
-          );
-        })}
+        {allItems
+          .filter((it) => allowedHrefs.includes(it.href))
+          .map((it) => {
+            const active = pathname === it.href;
+            return (
+              <Link key={it.href} href={it.href} className="block">
+                <div
+                  className={`mx-2 flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${
+                    open ? "gap-3 justify-start" : "justify-center"
+                  } ${active ? "text-white" : "opacity-90 hover:opacity-100"}`}
+                  style={active ? { background: "var(--primary)" } : {}}
+                  title={it.label}
+                >
+                  <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
+                  {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}
+                </div>
+              </Link>
+            );
+          })}
       </nav>
       <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
         <button
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? '' : 'justify-center'}`}
-          title="Р’С‹Р№С‚Рё"
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? "" : "justify-center"}`}
+          title="Выйти"
           onClick={async () => {
             try {
-              await fetch('/api/auth/logout', { method: 'POST' });
+              await fetch("/api/auth/logout", { method: "POST" });
             } catch {}
-            router.replace('/login');
+            router.replace("/login");
           }}
         >
           <span className="shrink-0 inline-flex items-center justify-center" style={{ color: "#2563eb" }} aria-hidden="true">
@@ -118,11 +114,9 @@ export default function Sidebar() {
               <path d="M18 8l4 4-4 4" />
             </svg>
           </span>
-          {open && <span>Р’С‹Р№С‚Рё</span>}
+          {open && <span>Выйти</span>}
         </button>
       </div>
     </aside>
   );
 }
-
-
