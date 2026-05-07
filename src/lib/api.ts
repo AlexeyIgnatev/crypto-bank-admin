@@ -676,3 +676,26 @@ export async function closeSupportTicket(ticketId: number): Promise<SupportTicke
     closedAt: item.closed_at != null ? new Date(Number(item.closed_at)).toISOString() : null,
   };
 }
+
+export async function sendBroadcastPush(payload: {
+  title: string;
+  text: string;
+  url?: string;
+}): Promise<{ successful: boolean; skipped?: boolean; sent?: number; failed?: number; details?: string[] }> {
+  const res = await fetch(`/api/notifications/push/broadcast`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(data?.message || "Не удалось отправить push-рассылку");
+  }
+  return {
+    successful: Boolean(data?.successful),
+    skipped: typeof data?.skipped === "boolean" ? data.skipped : undefined,
+    sent: typeof data?.sent === "number" ? data.sent : undefined,
+    failed: typeof data?.failed === "number" ? data.failed : undefined,
+    details: Array.isArray(data?.details) ? data.details : undefined,
+  };
+}

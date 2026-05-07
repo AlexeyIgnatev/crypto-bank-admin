@@ -40,6 +40,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ? "Логи"
       : pathname === "/support"
       ? "Техподдержка"
+      : pathname === "/push"
+      ? "Push-уведомления"
       : pathname === "/faq"
       ? "FAQ"
       : "";

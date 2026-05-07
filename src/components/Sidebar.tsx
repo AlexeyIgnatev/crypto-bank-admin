@@ -15,6 +15,7 @@ const allItems = [
   { href: "/logs", label: "Логи", icon: "🧾" },
   { href: "/faq", label: "FAQ", icon: "❓" },
   { href: "/support", label: "Техподдержка", icon: "💬" },
+  { href: "/push", label: "Push-уведомления", icon: "🔔" },
 ];
 
 function allowedByRole(role?: string): string[] {
@@ -24,16 +25,16 @@ function allowedByRole(role?: string): string[] {
     case "UID":
       return allItems.map((i) => i.href);
     case "UIT":
-      return ["/admins", "/faq", "/support"];
+      return ["/admins", "/faq", "/support", "/push"];
     case "SKK":
-      return ["/control-cases", "/faq", "/support"];
+      return ["/control-cases", "/faq", "/support", "/push"];
     case "UDBO":
     case "UBUIO":
-      return ["/transactions", "/faq", "/support"];
+      return ["/transactions", "/faq", "/support", "/push"];
     case "TREASURY":
-      return ["/rates", "/faq", "/support"];
+      return ["/rates", "/faq", "/support", "/push"];
     default:
-      return ["/support", "/faq"];
+      return ["/support", "/push", "/faq"];
   }
 }
 
