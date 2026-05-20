@@ -146,14 +146,11 @@ export default function UsersPage() {
         ) : error ? (
           <div className="m-auto text-red-500">{error}</div>
         ) : (
-          <div className="flex-1 min-h-0" onScroll={(e) => {
-            const el = e.currentTarget as HTMLDivElement;
-            const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
-            if (nearEnd) onEndReached();
-          }}>
+          <div className="flex-1 min-h-0">
             <UsersTable
               data={data}
               onOpen={(u) => { setSelected(u); setOpenView(true); }}
+              onEndReached={onEndReached}
               filters={filters}
               onChangeFilters={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
               sort={sort}

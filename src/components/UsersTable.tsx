@@ -42,9 +42,10 @@ function useDropdown(): DropdownState {
   return { open, setOpen, btnRef, panelRef, pos } as DropdownState;
 }
 
-export default function UsersTable({ data, onOpen, filters, onChangeFilters, sort, onChangeSort }: {
+export default function UsersTable({ data, onOpen, onEndReached, filters, onChangeFilters, sort, onChangeSort }: {
   data: User[];
   onOpen: (u: User) => void;
+  onEndReached?: () => void;
   filters: { nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number };
   onChangeFilters: (patch: Partial<{ nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number }>) => void;
   sort: { key: UserSortKey; dir: SortDir };
@@ -111,6 +112,17 @@ export default function UsersTable({ data, onOpen, filters, onChangeFilters, sor
   }, [data.length]);
 
   const rowVirtualizer = useVirtualizer({ count: data.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const nearEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - 200;
+      if (nearEnd) onEndReached?.();
+    };
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [onEndReached, data.length]);
 
   function toggleSort(key: UserSortKey) {
     const nextDir: SortDir = (sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : "asc");
