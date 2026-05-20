@@ -39,10 +39,10 @@ export default function RatesPage() {
     return () => { alive = false; };
   }, []);
 
-  const [modal, setModal] = useState<{ open: boolean; key: keyof Settings | null; title: string; suffix?: string; step?: string }>({ open: false, key: null, title: "" });
+  const [modal, setModal] = useState<{ open: boolean; key: keyof Settings | null; title: string; suffix?: string; step?: string; max?: string; maxDecimals?: number }>({ open: false, key: null, title: "" });
   const value = useMemo(() => (modal.key && settings ? settings[modal.key] : ""), [modal.key, settings]);
 
-  const openEdit = (key: keyof Settings, title: string, opts?: { suffix?: string; step?: string }) => setModal({ open: true, key, title, suffix: opts?.suffix, step: opts?.step });
+  const openEdit = (key: keyof Settings, title: string, opts?: { suffix?: string; step?: string; max?: string; maxDecimals?: number }) => setModal({ open: true, key, title, suffix: opts?.suffix, step: opts?.step, max: opts?.max, maxDecimals: opts?.maxDecimals });
   const closeEdit = () => setModal({ open: false, key: null, title: "" });
   const saveValue = async (next: string) => {
     if (!modal.key || !settings) return;
@@ -70,7 +70,7 @@ export default function RatesPage() {
             </header>
             <div className="p-4 space-y-3">
               <SettingRow label="Курс САЛАМ за 1 USD" value={`${fmt2(settings.esom_per_usd)} САЛАМ`} onEdit={() => openEdit("esom_per_usd", "Курс САЛАМ за 1 USD", { step: "0.01" })} />
-              <SettingRow label="Конвертация СОМ ↔ САЛАМ" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию СОМ ↔ САЛАМ (%)", { suffix: "%", step: "0.01" })} />
+              <SettingRow label="Конвертация СОМ ↔ САЛАМ" value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`} onEdit={() => openEdit("esom_som_conversion_fee_pct", "Комиссия за конвертацию СОМ ↔ САЛАМ (%)", { suffix: "%", step: "0.01", max: "100", maxDecimals: 2 })} />
               <SettingRow label="Мин. комиссия конвертации СОМ ↔ САЛАМ" value={`${fmt(settings.esom_som_conversion_fee_min)} СОМ/САЛАМ`} onEdit={() => openEdit("esom_som_conversion_fee_min", "Минимальная комиссия конвертации СОМ ↔ САЛАМ", { step: "0.01" })} />
               <div className="pt-2 text-sm font-medium text-muted">Торговля</div>
               <SettingRow label="BTC торговая комиссия" value={`${fmtPct(settings.btc_trade_fee_pct)}`} onEdit={() => openEdit("btc_trade_fee_pct", "BTC торговая комиссия (%)", { suffix: "%", step: "0.01" })} />
@@ -98,7 +98,7 @@ export default function RatesPage() {
         </div>
       </div>
 
-      <EditModal open={modal.open} title={modal.title} value={value} suffix={modal.suffix} step={modal.step} onClose={closeEdit} onSave={saveValue} fieldKey={modal.key} />
+      <EditModal open={modal.open} title={modal.title} value={value} suffix={modal.suffix} step={modal.step} max={modal.max} maxDecimals={modal.maxDecimals} onClose={closeEdit} onSave={saveValue} fieldKey={modal.key} />
     </div>
   );
 }
@@ -115,7 +115,7 @@ function SettingRow({ label, value, onEdit }: { label: string; value: string; on
   );
 }
 
-function EditModal({ open, onClose, onSave, title, value, suffix, step, fieldKey }: { open: boolean; onClose: () => void; onSave: (v: string) => void; title: string; value: string; suffix?: string; step?: string; fieldKey: keyof Settings | null; }) {
+function EditModal({ open, onClose, onSave, title, value, suffix, step, max, maxDecimals, fieldKey }: { open: boolean; onClose: () => void; onSave: (v: string) => void; title: string; value: string; suffix?: string; step?: string; max?: string; maxDecimals?: number; fieldKey: keyof Settings | null; }) {
   const [v, setV] = useState<string>(value);
   const [err, setErr] = useState<string | null>(null);
 
@@ -128,10 +128,15 @@ function EditModal({ open, onClose, onSave, title, value, suffix, step, fieldKey
     if (!s) return "Введите значение";
     const num = Number(s);
     if (!Number.isFinite(num)) return "Некорректное число";
+    if (typeof maxDecimals === "number" && maxDecimals >= 0) {
+      const parts = s.split(".");
+      const decimals = parts.length > 1 ? (parts[1] || "").length : 0;
+      if (decimals > maxDecimals) return `Допустимо не более ${maxDecimals} знаков после запятой`;
+    }
+    if (max != null && max !== "" && num > Number(max)) return `Значение не должно быть больше ${max}`;
     // percentage fields must be >= 0
     if (title.toLowerCase().includes("комиссия") && title.includes("%")) {
       if (num < 0) return "Процент не может быть отрицательным";
-      if (num > 1000) return "Слишком большой процент";
     }
     // fixed/amount fields must be >= 0
     if (!title.includes("%") && num < 0) return "Значение не может быть отрицательным";
@@ -150,7 +155,7 @@ function EditModal({ open, onClose, onSave, title, value, suffix, step, fieldKey
         <label className="block text-sm">
           <span className="text-muted">Значение{suffix ? `, ${suffix}` : ""}</span>
           <div className="flex items-center gap-2 mt-1">
-            <input className={`ui-input w-full ${err ? 'border-red-500' : ''}`} inputMode="decimal" step={step} value={v} onChange={e => { setV(e.target.value); if (err) setErr(null); }} placeholder="0" />
+            <input className={`ui-input w-full ${err ? 'border-red-500' : ''}`} inputMode="decimal" step={step} max={max} value={v} onChange={e => { setV(e.target.value); if (err) setErr(null); }} placeholder="0" />
             {suffix && <span className="px-2 text-sm text-muted">{suffix}</span>}
           </div>
         </label>

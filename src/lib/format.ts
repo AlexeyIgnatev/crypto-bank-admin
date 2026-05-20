@@ -10,3 +10,8 @@ export function formatAmount6(n: number): string {
   const fractionDigits = f.length; // 0..6
   return (sign * absVal).toLocaleString(undefined, { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits });
 }
+
+export function formatAmount2(n: number): string {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "";
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}

@@ -6,7 +6,7 @@ import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Transaction, TransactionStatus } from "../types";
-import { formatAmount6 } from "@/lib/format";
+import { formatAmount2, formatAmount6 } from "@/lib/format";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
@@ -244,7 +244,7 @@ export default function Table({
           { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
           { header: "Сумма", getValue: (row) => formatAmount6(row.amount) },
           { header: "Валюта", getValue: (row) => row.currency },
-          { header: "Комиссия", getValue: (row) => formatAmount6(Number(row.feeAmount || 0)) },
+          { header: "Комиссия", getValue: (row) => formatAmount2(Number(row.feeAmount || 0)) },
           { header: "Отправитель", getValue: (row) => row.sender },
           { header: "ID отправителя ABS", getValue: (row) => row.senderAbsId || row.senderCustomerId || "—" },
           { header: "Получатель", getValue: (row) => row.recipient },
@@ -465,7 +465,7 @@ export default function Table({
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(t.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{t.currency}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(Number(t.feeAmount || 0))}</td>
+                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount2(Number(t.feeAmount || 0))}</td>
                         <td className="px-4 py-3 truncate" title={t.sender}>{t.sender}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{t.senderAbsId || t.senderCustomerId || "—"}</td>
                         <td className="px-4 py-3 truncate" title={t.recipient}>{t.recipient}</td>

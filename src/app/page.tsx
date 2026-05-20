@@ -6,7 +6,7 @@ import Table from "../components/Table";
 import Modal from "../components/Modal";
 import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { formatAmount6 } from "@/lib/format";
+import { formatAmount2, formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
 import { getUserById } from "@/lib/api";
 
@@ -62,7 +62,7 @@ export default function Home() {
             <Row label="Статус" value={<StatusBadge status={selected.status} />} />
             <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
             <Row label="Сумма" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
-            <Row label="Комиссия" value={formatAmount6(Number(selected.feeAmount || 0))} />
+            <Row label="Комиссия" value={formatAmount2(Number(selected.feeAmount || 0))} />
             <Row label="Отправитель" value={
               <div className="flex items-center gap-2 min-w-0">
                 <span className="truncate" title={selected.sender}>{selected.sender}</span>
