@@ -222,7 +222,11 @@ export async function updateUser(id: string|number, payload: Partial<{ firstName
   };
   if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
   const res = await fetch(`/api/user-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error("Failed to update user");
+  if (!res.ok) {
+    const data = await res.json().catch(() => null) as any;
+    const message = Array.isArray(data?.message) ? data.message.join("; ") : (data?.message || "Failed to update user");
+    throw new Error(message);
+  }
   return res.json();
 }
 

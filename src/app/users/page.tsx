@@ -173,7 +173,14 @@ export default function UsersPage() {
       </button>
 
       <Modal open={openCreate} onClose={() => setOpenCreate(false)} title="Создать пользователя">
-        <CreateUserForm onCancel={() => setOpenCreate(false)} onSave={() => setOpenCreate(false)} />
+        <CreateUserForm
+          onCancel={() => setOpenCreate(false)}
+          onSave={async () => {
+            setOpenCreate(false);
+            setOffset(0);
+            await fetchPage(0, true);
+          }}
+        />
       </Modal>
 
       <Modal open={openView} onClose={() => setOpenView(false)} title="Пользователь">
@@ -184,12 +191,28 @@ export default function UsersPage() {
 
       <Modal open={openEdit} onClose={() => setOpenEdit(false)} title="Редактировать пользователя">
         {selected && (
-          <EditUserForm user={selected} onCancel={() => setOpenEdit(false)} onSave={() => setOpenEdit(false)} />
+          <EditUserForm
+            user={selected}
+            onCancel={() => setOpenEdit(false)}
+            onSave={async () => {
+              setOpenEdit(false);
+              setOffset(0);
+              await fetchPage(0, true);
+            }}
+          />
         )}
       </Modal>
 
       <Modal open={openDelete} onClose={() => setOpenDelete(false)} title="Удалить пользователя">
-        <DeleteUserConfirm user={selected} onCancel={() => setOpenDelete(false)} onDelete={() => setOpenDelete(false)} />
+        <DeleteUserConfirm
+          user={selected}
+          onCancel={() => setOpenDelete(false)}
+          onDelete={async () => {
+            setOpenDelete(false);
+            setOffset(0);
+            await fetchPage(0, true);
+          }}
+        />
       </Modal>
     </div>
   );
@@ -240,7 +263,7 @@ function UserDetails({ user, onClose, onEdit, onDelete }: { user: User; onClose:
   );
 }
 
-function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: () => void; }) {
+function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: () => Promise<void> | void; }) {
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -254,9 +277,9 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
       e.preventDefault(); setErr(null); setSubmitting(true);
       try {
         await createUser({ firstName, lastName, middleName, phone, email, status });
-        onSave();
-      } catch {
-        setErr("Не удалось создать пользователя");
+        await onSave();
+      } catch (e: any) {
+        setErr(e?.message || "Не удалось создать пользователя");
       } finally {
         setSubmitting(false);
       }
@@ -300,7 +323,7 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
   );
 }
 
-function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => void; }) {
+function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => Promise<void> | void; }) {
   const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
   const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
   const [middleName, setMiddleName] = useState(user.fullName.split(" ")[2] || "");
@@ -314,9 +337,9 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
       e.preventDefault(); setErr(null); setSubmitting(true);
       try {
         await updateUser(user.id, { firstName, lastName, middleName, phone, email, status });
-        onSave();
-      } catch {
-        setErr("Не удалось сохранить пользователя");
+        await onSave();
+      } catch (e: any) {
+        setErr(e?.message || "Не удалось сохранить пользователя");
       } finally {
         setSubmitting(false);
       }
@@ -360,7 +383,7 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
   );
 }
 
-function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; onCancel: () => void; onDelete: () => void; }) {
+function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; onCancel: () => void; onDelete: () => Promise<void> | void; }) {
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   return (
@@ -374,7 +397,7 @@ function DeleteUserConfirm({ user, onCancel, onDelete }: { user: User | null; on
         <button className="btn btn-danger w-full h-9" disabled={submitting} onClick={async ()=>{
           if (!user) return;
           setErr(null); setSubmitting(true);
-          try { await deleteUser(user.id); onDelete(); } catch(e){ setErr("Не удалось удалить пользователя"); } finally { setSubmitting(false); }
+          try { await deleteUser(user.id); await onDelete(); } catch (e: any) { setErr(e?.message || "Не удалось удалить пользователя"); } finally { setSubmitting(false); }
         }}>Удалить</button>
       </div>
     </div>
