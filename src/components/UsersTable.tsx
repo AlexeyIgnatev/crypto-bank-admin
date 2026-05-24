@@ -50,12 +50,6 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
   sort: { key: UserSortKey; dir: SortDir };
   onChangeSort: (key: UserSortKey, dir: SortDir) => void;
 }) {
-  // server data state (for virtualization and infinite scroll trigger)
-  const [offset, setOffset] = useState(0);
-  const [limit] = useState(20);
-  const [total, setTotal] = useState(0);
-
-
   // local inputs mirror external filters, apply on Save inside dropdowns
   const [nameQ, setNameQ] = useState(filters.nameQuery || "");
   const [phoneQ, setPhoneQ] = useState(filters.phoneQuery || "");
@@ -120,16 +114,6 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, [onEndReached, data.length]);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el || !onEndReached) return;
-    const raf = requestAnimationFrame(() => {
-      const notScrollable = el.scrollHeight <= el.clientHeight + 1;
-      if (notScrollable) onEndReached();
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [data.length, onEndReached]);
 
   function toggleSort(key: UserSortKey) {
     const nextDir: SortDir = (sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : "asc");

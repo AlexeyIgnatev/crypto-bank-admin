@@ -21,51 +21,50 @@ export default function UsersPage() {
   const [filters, setFilters] = useState<{ nameQuery?: string; phoneQuery?: string; emailQuery?: string; statuses?: UserStatus[]; dateFrom?: string; dateTo?: string; minCOM?: number; maxCOM?: number; minTotal?: number; maxTotal?: number }>({});
   const [sort, setSort] = useState<{ key: import("@/components/UsersTable").UserSortKey; dir: import("@/components/UsersTable").SortDir }>({ key: "createdAt", dir: "desc" });
 
-  const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(20);
   const [total, setTotal] = useState(0);
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
-  async function fetchPage(pageOffset: number, replace: boolean) {
+  async function fetchUsers() {
     setLoading(true);
     try {
+      const pageLimit = 200;
+      let pageOffset = 0;
+      const all: User[] = [];
       const statuses = mapUiStatuses(filters.statuses);
-      const res = await getUsers({
-        offset: pageOffset,
-        limit,
-        search: [filters.nameQuery, filters.phoneQuery, filters.emailQuery].filter(Boolean).join(" ") || undefined,
-        statuses: statuses.length ? statuses : undefined,
-        sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : sort.key === "lastLoginAt" ? "last_login_at" : "createdAt",
-        sortDir: sort.dir,
-      });
-      setTotal(res.total ?? (res.items?.length || 0));
-      setData((prev) => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
-    } catch {
-      if (replace) {
-        setData([]);
-        setTotal(0);
+
+      for (;;) {
+        const res = await getUsers({
+          offset: pageOffset,
+          limit: pageLimit,
+          search: [filters.nameQuery, filters.phoneQuery, filters.emailQuery].filter(Boolean).join(" ") || undefined,
+          statuses: statuses.length ? statuses : undefined,
+          sortBy: sort.key === "fullName" ? "fio" : sort.key === "phone" ? "phone" : sort.key === "email" ? "email" : sort.key === "status" ? "status" : sort.key === "balanceCOM" ? "som_balance" : sort.key === "balanceTotal" ? "total_balance" : sort.key === "lastLoginAt" ? "last_login_at" : "createdAt",
+          sortDir: sort.dir,
+        });
+
+        const pageItems = res.items || [];
+        all.push(...pageItems);
+        pageOffset += pageItems.length;
+        if (pageItems.length === 0 || all.length >= (res.total ?? 0)) break;
       }
+
+      setData(all);
+      setTotal(all.length);
+    } catch {
+      setData([]);
+      setTotal(0);
       setError("Не удалось загрузить пользователей");
     } finally {
       setLoading(false);
     }
   }
 
-  // первый запрос и обновления при изменении фильтров/сортировок/лимита
+  // первый запрос и обновления при изменении фильтров/сортировок
   useEffect(() => {
     setData([]);
-    setOffset(0);
-    fetchPage(0, true);
+    fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit, JSON.stringify(filters), sort.key, sort.dir]);
-
-  const canNext = offset + data.length < total;
-  const onEndReached = () => {
-    if (loading || !canNext) return;
-    const nextOffset = offset + data.length;
-    setOffset(nextOffset);
-    fetchPage(nextOffset, false);
-  };
+  }, [JSON.stringify(filters), sort.key, sort.dir]);
 
   async function loadAllUsersForExport(): Promise<User[]> {
     const pageLimit = 200;
@@ -150,7 +149,6 @@ export default function UsersPage() {
             <UsersTable
               data={data}
               onOpen={(u) => { setSelected(u); setOpenView(true); }}
-              onEndReached={onEndReached}
               filters={filters}
               onChangeFilters={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
               sort={sort}
@@ -174,8 +172,7 @@ export default function UsersPage() {
           onCancel={() => setOpenCreate(false)}
           onSave={async () => {
             setOpenCreate(false);
-            setOffset(0);
-            await fetchPage(0, true);
+            await fetchUsers();
           }}
         />
       </Modal>
@@ -195,8 +192,7 @@ export default function UsersPage() {
               setData((prev) => prev.map((u) => (u.id === selected.id ? { ...u, ...next } : u)));
               setSelected((prev) => (prev && prev.id === selected.id ? { ...prev, ...next } : prev));
               setOpenEdit(false);
-              setOffset(0);
-              void fetchPage(0, true);
+              void fetchUsers();
             }}
           />
         )}
@@ -208,8 +204,7 @@ export default function UsersPage() {
           onCancel={() => setOpenDelete(false)}
           onDelete={async () => {
             setOpenDelete(false);
-            setOffset(0);
-            await fetchPage(0, true);
+            await fetchUsers();
           }}
         />
       </Modal>
