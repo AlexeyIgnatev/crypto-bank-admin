@@ -8,7 +8,7 @@ import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { formatAmount2, formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
-import { getUserById } from "@/lib/api";
+import { getUserById, updateUser } from "@/lib/api";
 
 function startOfTodayIso(): string {
   const d = new Date();
@@ -125,9 +125,23 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState(user.status);
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSave({ ...user, fullName: [lastName, firstName, middleName].filter(Boolean).join(" "), phone, email, status }); }}>
+    <form className="space-y-3" onSubmit={async (e) => {
+      e.preventDefault();
+      setErr(null);
+      setSubmitting(true);
+      try {
+        await updateUser(user.id, { firstName, lastName, middleName, phone, email, status });
+        onSave({ ...user, fullName: [lastName, firstName, middleName].filter(Boolean).join(" "), phone, email, status });
+      } catch (e: any) {
+        setErr(e?.message || "Не удалось сохранить пользователя");
+      } finally {
+        setSubmitting(false);
+      }
+    }}>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <div className="text-sm mb-1">Фамилия</div>
@@ -154,12 +168,14 @@ function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () =
           <select className="ui-input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
             <option>Активен</option>
             <option>Заблокирован</option>
+            <option>Фин контроль</option>
           </select>
         </div>
       </div>
+      {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-4">
-        <button type="button" className="btn w-full h-9" onClick={onCancel}>Отмена</button>
-        <button type="submit" className="btn btn-success w-full h-9">Сохранить</button>
+        <button type="button" className="btn w-full h-9" onClick={onCancel} disabled={submitting}>Отмена</button>
+        <button type="submit" className="btn btn-success w-full h-9" disabled={submitting}>{submitting ? "Сохранение..." : "Сохранить"}</button>
       </div>
     </form>
   );

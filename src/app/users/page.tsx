@@ -191,10 +191,12 @@ export default function UsersPage() {
           <EditUserForm
             user={selected}
             onCancel={() => setOpenEdit(false)}
-            onSave={async () => {
+            onSave={async (next) => {
+              setData((prev) => prev.map((u) => (u.id === selected.id ? { ...u, ...next } : u)));
+              setSelected((prev) => (prev && prev.id === selected.id ? { ...prev, ...next } : prev));
               setOpenEdit(false);
               setOffset(0);
-              await fetchPage(0, true);
+              void fetchPage(0, true);
             }}
           />
         )}
@@ -320,7 +322,7 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
   );
 }
 
-function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: () => Promise<void> | void; }) {
+function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: (next: Pick<User, "fullName" | "phone" | "email" | "status">) => Promise<void> | void; }) {
   const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
   const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
   const [middleName, setMiddleName] = useState(user.fullName.split(" ")[2] || "");
@@ -334,7 +336,12 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
       e.preventDefault(); setErr(null); setSubmitting(true);
       try {
         await updateUser(user.id, { firstName, lastName, middleName, phone, email, status });
-        await onSave();
+        await onSave({
+          fullName: [lastName, firstName, middleName].filter(Boolean).join(" "),
+          phone,
+          email,
+          status,
+        });
       } catch (e: any) {
         setErr(e?.message || "Не удалось сохранить пользователя");
       } finally {
