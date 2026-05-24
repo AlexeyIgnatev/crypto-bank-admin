@@ -1,6 +1,5 @@
 ﻿"use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
@@ -111,8 +110,6 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
     return () => { ro.disconnect(); window.removeEventListener('resize', update); };
   }, [data.length]);
 
-  const rowVirtualizer = useVirtualizer({ count: data.length, getScrollElement: () => containerRef.current, estimateSize: () => 48, overscan: 8, initialRect: { width: 0, height: 600 } });
-
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -123,6 +120,16 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
     el.addEventListener("scroll", onScroll);
     return () => el.removeEventListener("scroll", onScroll);
   }, [onEndReached, data.length]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !onEndReached) return;
+    const raf = requestAnimationFrame(() => {
+      const notScrollable = el.scrollHeight <= el.clientHeight + 1;
+      if (notScrollable) onEndReached();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [data.length, onEndReached]);
 
   function toggleSort(key: UserSortKey) {
     const nextDir: SortDir = (sort.key === key ? (sort.dir === "asc" ? "desc" : "asc") : "asc");
@@ -222,36 +229,23 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
             <col className="w-[200px]" />
           </colgroup>
           <tbody>
-            {(() => {
-              const items = rowVirtualizer.getVirtualItems();
-              const totalSize = rowVirtualizer.getTotalSize();
-              const paddingTop = items.length > 0 ? items[0].start : 0;
-              const paddingBottom = items.length > 0 ? totalSize - items[items.length - 1].end : 0;
+            {data.map((u, index) => {
+              const totalBalance = u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT;
               return (
-                <>
-                  {paddingTop > 0 && (<tr aria-hidden="true"><td colSpan={8} style={{ height: paddingTop }} /></tr>)}
-                  {items.map(v => {
-                    const u = data[v.index]; if (!u) return null;
-                    const totalBalance = u.balances.COM + u.balances.SALAM + u.balances.BTC + u.balances.ETH + u.balances.USDT;
-                    return (
-                      <tr key={u.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer" style={{ height: v.size }} onClick={() => onOpen(u)}>
-                        <td className="px-4 py-3 tabular-nums text-muted">{v.index + 1}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{u.absClientId || u.id}</td>
-                        <td className="px-4 py-3 whitespace-pre-wrap">{u.fullName}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{u.phone}</td>
-                        <td className="px-4 py-3 truncate" title={u.email}>{u.email}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : u.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "—"}</td>
-                        <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
-                      </tr>
-                    );
-                  })}
-                  {paddingBottom > 0 && (<tr aria-hidden="true"><td colSpan={8} style={{ height: paddingBottom }} /></tr>)}
-                </>
+                <tr key={u.id} className="border-b border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer h-12" onClick={() => onOpen(u)}>
+                  <td className="px-4 py-3 tabular-nums text-muted">{index + 1}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{u.absClientId || u.id}</td>
+                  <td className="px-4 py-3 whitespace-pre-wrap">{u.fullName}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{u.phone}</td>
+                  <td className="px-4 py-3 truncate" title={u.email}>{u.email}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${u.status === "Активен" ? "bg-green-500/20 text-green-700" : u.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{u.status}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">{u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString() : "—"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(totalBalance)}</td>
+                </tr>
               );
-            })()}
+            })}
           </tbody>
         </table>
       </div>
