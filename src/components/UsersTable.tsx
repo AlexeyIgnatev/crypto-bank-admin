@@ -199,7 +199,11 @@ export default function UsersTable({ data, onOpen, onEndReached, filters, onChan
         </table>
       </div>
 
-      <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]">
+      <div
+        ref={containerRef}
+        className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-hidden [overscroll-behavior:contain] bg-[var(--card)]"
+        style={{ maxHeight: "calc(100svh - 270px)" }}
+      >
 
         <table className="w-full text-sm table-fixed">
           <colgroup>
