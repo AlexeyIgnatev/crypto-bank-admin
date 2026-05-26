@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
@@ -12,7 +12,7 @@ export type SortDir = "asc" | "desc";
 
 function StatusBadge({ status }: { status: AntiFraudCaseStatus }) {
   const cls = status === "APPROVED" ? "badge-success" : status === "OPEN" ? "badge-warning" : "badge-danger";
-  const text = status === "APPROVED" ? "Подтверждено" : status === "OPEN" ? "На рассмотрении" : "Отклонено";
+  const text = status === "APPROVED" ? "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ" : status === "OPEN" ? "РќР° СЂР°СЃСЃРјРѕС‚СЂРµРЅРёРё" : "РћС‚РєР»РѕРЅРµРЅРѕ";
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
 
@@ -67,7 +67,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
     if (!el) return;
   }, []);
 
-  // ===== Фильтры =====
+  // ===== Р¤РёР»СЊС‚СЂС‹ =====
   const [idQuery, setIdQuery] = useState("");
   const [statusSet, setStatusSet] = useState<Set<AntiFraudCaseStatus>>(new Set());
   const [dateFrom, setDateFrom] = useState<string | undefined>();
@@ -80,7 +80,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
 
   const availableCurrencies = ["COM", "SALAM", "BTC", "ETH", "USDT"];
 
-  // выпадающие меню
+  // РІС‹РїР°РґР°СЋС‰РёРµ РјРµРЅСЋ
   const idDD = useDropdown();
   const statusDD = useDropdown();
   const dateDD = useDropdown();
@@ -112,14 +112,14 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
       setTotal(res.total ?? (res.items?.length || 0));
       setItems(prev => replace ? (res.items || []) : [...prev, ...(res.items || [])]);
     } catch (e: any) {
-      setErrorText(e?.message || "Не удалось загрузить кейсы финконтроля");
+      setErrorText(e?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РєРµР№СЃС‹ С„РёРЅРєРѕРЅС‚СЂРѕР»СЏ");
       if (replace) { setItems([]); setTotal(0); }
     } finally {
       setLoading(false);
     }
   }
 
-  // Первый запрос и обновления при изменении фильтров/сортировки/лимита/refreshToken
+  // РџРµСЂРІС‹Р№ Р·Р°РїСЂРѕСЃ Рё РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё С„РёР»СЊС‚СЂРѕРІ/СЃРѕСЂС‚РёСЂРѕРІРєРё/Р»РёРјРёС‚Р°/refreshToken
   useEffect(() => {
     setItems([]);
     setOffset(0);
@@ -179,69 +179,69 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
           </colgroup>
           <thead className="text-white">
             <tr>
-              <Th>№</Th>
+              <Th>в„–</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "id"} dir={sortDir} />
                   <span className="px-1">ID/tx_hash</span>
-                  <button ref={idDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); idDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <button ref={idDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); idDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("status")} active={sortKey === "status"} dir={sortDir}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "status"} dir={sortDir} />
-                  <span className="px-1">Статус</span>
-                  <button ref={statusDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); statusDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">РЎС‚Р°С‚СѓСЃ</span>
+                  <button ref={statusDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); statusDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "createdAt"} dir={sortDir} />
-                  <span className="px-1">Дата</span>
-                  <button ref={dateDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); dateDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">Р”Р°С‚Р°</span>
+                  <button ref={dateDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); dateDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("amount")} active={sortKey === "amount"} dir={sortDir}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "amount"} dir={sortDir} />
-                  <span className="px-1">Сумма</span>
-                  <button ref={amountDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); amountDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">РЎСѓРјРјР°</span>
+                  <button ref={amountDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); amountDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">Валюта</span>
-                  <button ref={currencyDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); currencyDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">Р’Р°Р»СЋС‚Р°</span>
+                  <button ref={currencyDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); currencyDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">???????</span>
+                  <span className="px-1">Причина</span>
                 </div>
               </Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">Отправитель</span>
-                  <button ref={senderDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); senderDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">РћС‚РїСЂР°РІРёС‚РµР»СЊ</span>
+                  <button ref={senderDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); senderDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">Получатель</span>
-                  <button ref={recipientDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); recipientDD.setOpen(o => !o); }}>
-                    <span className="chev">▾</span>
+                  <span className="px-1">РџРѕР»СѓС‡Р°С‚РµР»СЊ</span>
+                  <button ref={recipientDD.btnRef as any} className="hdr-chip" aria-label="Р¤РёР»СЊС‚СЂ" onClick={(e) => { e.stopPropagation(); recipientDD.setOpen(o => !o); }}>
+                    <span className="chev">в–ѕ</span>
                   </button>
                 </div>
               </Th>
@@ -256,7 +256,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
         </div>
       )}
 
-      {/* Тело таблицы с виртуализацией */}
+      {/* РўРµР»Рѕ С‚Р°Р±Р»РёС†С‹ СЃ РІРёСЂС‚СѓР°Р»РёР·Р°С†РёРµР№ */}
       <div ref={containerRef} className="table-scroll flex-1 min-h-0 overflow-y-auto overflow-x-auto [overscroll-behavior:contain] bg-[var(--card)] pb-3">
         <table className="w-full text-sm table-fixed">
           <colgroup>
@@ -298,7 +298,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(item.createdAt).toLocaleString()}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(item.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{item.currency}</td>
-                        <td className="px-4 py-3 truncate" title={typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "?")}>{typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "?")}</td>
+                        <td className="px-4 py-3 truncate" title={typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "—")}>{typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "—")}</td>
                         <td className="px-4 py-3 truncate" title={item.sender}>{item.sender}</td>
                         <td className="px-4 py-3 truncate" title={item.recipient}>{item.recipient}</td>
                       </tr>
@@ -315,14 +315,14 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
         </table>
       </div>
 
-      {/* Панели фильтров */}
+      {/* РџР°РЅРµР»Рё С„РёР»СЊС‚СЂРѕРІ */}
       {idDD.open && (
         <DropdownPanel state={idDD} title="ID/tx_hash">
-          <input className="ui-input w-full" placeholder="Поиск по id/tx_hash" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
+          <input className="ui-input w-full" placeholder="РџРѕРёСЃРє РїРѕ id/tx_hash" value={idQuery} onChange={(e) => setIdQuery(e.target.value)} />
         </DropdownPanel>
       )}
       {statusDD.open && (
-        <DropdownPanel state={statusDD} title="Статус">
+        <DropdownPanel state={statusDD} title="РЎС‚Р°С‚СѓСЃ">
           <div className="space-y-1">
             {(["OPEN","APPROVED","REJECTED"] as AntiFraudCaseStatus[]).map(s => (
               <label key={s} className="flex items-center gap-2 text-sm">
@@ -334,23 +334,23 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
         </DropdownPanel>
       )}
       {dateDD.open && (
-        <DropdownPanel state={dateDD} title="Дата">
+        <DropdownPanel state={dateDD} title="Р”Р°С‚Р°">
           <div className="grid grid-cols-1 gap-2">
-            <Flatpickr className="ui-input w-full" options={{ locale: Russian, dateFormat: "Y-m-d" }} placeholder="с" value={dateFrom as any} onChange={(d) => setDateFrom(d?.[0] ? formatDate(d[0]) : undefined)} />
-            <Flatpickr className="ui-input w-full" options={{ locale: Russian, dateFormat: "Y-m-d" }} placeholder="по" value={dateTo as any} onChange={(d) => setDateTo(d?.[0] ? formatDate(d[0]) : undefined)} />
+            <Flatpickr className="ui-input w-full" options={{ locale: Russian, dateFormat: "Y-m-d" }} placeholder="СЃ" value={dateFrom as any} onChange={(d) => setDateFrom(d?.[0] ? formatDate(d[0]) : undefined)} />
+            <Flatpickr className="ui-input w-full" options={{ locale: Russian, dateFormat: "Y-m-d" }} placeholder="РїРѕ" value={dateTo as any} onChange={(d) => setDateTo(d?.[0] ? formatDate(d[0]) : undefined)} />
           </div>
         </DropdownPanel>
       )}
       {amountDD.open && (
-        <DropdownPanel state={amountDD} title="Сумма">
+        <DropdownPanel state={amountDD} title="РЎСѓРјРјР°">
           <div className="grid grid-cols-2 gap-2">
-            <input className="ui-input" type="number" inputMode="decimal" placeholder="от" value={minAmount ?? ""} onChange={(e) => setMinAmount(num(e.target.value))} />
-            <input className="ui-input" type="number" inputMode="decimal" placeholder="до" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(num(e.target.value))} />
+            <input className="ui-input" type="number" inputMode="decimal" placeholder="РѕС‚" value={minAmount ?? ""} onChange={(e) => setMinAmount(num(e.target.value))} />
+            <input className="ui-input" type="number" inputMode="decimal" placeholder="РґРѕ" value={maxAmount ?? ""} onChange={(e) => setMaxAmount(num(e.target.value))} />
           </div>
         </DropdownPanel>
       )}
       {currencyDD.open && (
-        <DropdownPanel state={currencyDD} title="Валюта">
+        <DropdownPanel state={currencyDD} title="Р’Р°Р»СЋС‚Р°">
           <div className="space-y-1">
             {availableCurrencies.map(c => (
               <label key={c} className="flex items-center gap-2 text-sm">
@@ -362,13 +362,13 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
         </DropdownPanel>
       )}
       {senderDD.open && (
-        <DropdownPanel state={senderDD} title="Отправитель">
-          <input className="ui-input w-full" placeholder="Имя/кошелёк" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
+        <DropdownPanel state={senderDD} title="РћС‚РїСЂР°РІРёС‚РµР»СЊ">
+          <input className="ui-input w-full" placeholder="РРјСЏ/РєРѕС€РµР»С‘Рє" value={senderQ} onChange={(e) => setSenderQ(e.target.value)} />
         </DropdownPanel>
       )}
       {recipientDD.open && (
-        <DropdownPanel state={recipientDD} title="Получатель">
-          <input className="ui-input w-full" placeholder="Имя/кошелёк" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
+        <DropdownPanel state={recipientDD} title="РџРѕР»СѓС‡Р°С‚РµР»СЊ">
+          <input className="ui-input w-full" placeholder="РРјСЏ/РєРѕС€РµР»С‘Рє" value={recipientQ} onChange={(e) => setRecipientQ(e.target.value)} />
         </DropdownPanel>
       )}
     </div>
@@ -391,7 +391,7 @@ function DropdownPanel({ state, title, children }: { state: any; title: string; 
       <div className="text-sm font-medium mb-2">{title}</div>
       {children}
       <div className="pt-2 text-right">
-        <button className="btn h-8" onClick={() => state.setOpen(false)}>Закрыть</button>
+        <button className="btn h-8" onClick={() => state.setOpen(false)}>Р—Р°РєСЂС‹С‚СЊ</button>
       </div>
     </div>
   );
@@ -402,3 +402,4 @@ function formatDate(d: Date) {
   return `${y}-${m}-${day}`;
 }
 function num(v: string) { const x = Number(v.replace(/,/g, ".")); return Number.isFinite(x) ? x : undefined; }
+
