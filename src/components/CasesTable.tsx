@@ -179,7 +179,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
           </colgroup>
           <thead className="text-white">
             <tr>
-              <Th>в„–</Th>
+              <Th>№</Th>
               <Th onClick={() => toggleSort("id")} active={sortKey === "id"} dir={sortDir}>
                 <div className="flex items-center gap-1">
                   <SortIcon active={sortKey === "id"} dir={sortDir} />
