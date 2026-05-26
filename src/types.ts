@@ -7,6 +7,8 @@ export interface Transaction {
   amount: number; // in minor units (e.g., cents) or plain number
   feeAmount?: number;
   currency: string; // e.g., KGS, USD
+  kind?: string;
+  comment?: string;
   sender: string;
   recipient: string;
   senderAbsId?: string;

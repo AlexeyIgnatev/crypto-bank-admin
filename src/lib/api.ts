@@ -87,6 +87,8 @@ export async function getTransactions(params: {
     amount: Number(it.amount ?? 0),
     feeAmount: Number(it.fee_amount ?? 0),
     currency: mapCurrency(it.asset),
+    kind: it.kind,
+    comment: typeof it.comment === "string" ? it.comment : undefined,
     sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
     recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),
     senderAbsId: it.sender_abs_id != null ? String(it.sender_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : undefined),
