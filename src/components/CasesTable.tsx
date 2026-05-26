@@ -173,7 +173,6 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
             <col className="w-[180px]" />
             <col className="w-[160px]" />
             <col className="w-[120px]" />
-            <col className="w-[260px]" />
             <col />
             <col />
           </colgroup>
@@ -226,11 +225,6 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
               </Th>
               <Th>
                 <div className="flex items-center gap-1">
-                  <span className="px-1">Причина</span>
-                </div>
-              </Th>
-              <Th>
-                <div className="flex items-center gap-1">
                   <span className="px-1">Отправитель</span>
                   <button ref={senderDD.btnRef as any} className="hdr-chip" aria-label="Фильтр" onClick={(e) => { e.stopPropagation(); senderDD.setOpen(o => !o); }}>
                     <span className="chev">в–ѕ</span>
@@ -266,7 +260,6 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
             <col className="w-[180px]" />
             <col className="w-[160px]" />
             <col className="w-[120px]" />
-            <col className="w-[260px]" />
             <col />
             <col />
           </colgroup>
@@ -279,7 +272,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
               return (
                 <>
                   {paddingTop > 0 && (
-                    <tr aria-hidden="true"><td colSpan={9} style={{ height: paddingTop }} /></tr>
+                    <tr aria-hidden="true"><td colSpan={8} style={{ height: paddingTop }} /></tr>
                   )}
 
                   {vItems.map((vRow) => {
@@ -298,7 +291,6 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(item.createdAt).toLocaleString()}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(item.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{item.currency}</td>
-                        <td className="px-4 py-3 truncate" title={typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "—")}>{typeof item.reason === "string" ? item.reason : (item.reason ? JSON.stringify(item.reason) : "—")}</td>
                         <td className="px-4 py-3 truncate" title={item.sender}>{item.sender}</td>
                         <td className="px-4 py-3 truncate" title={item.recipient}>{item.recipient}</td>
                       </tr>
@@ -306,7 +298,7 @@ export default function CasesTable({ onOpen, refreshToken = 0 }: { onOpen: (t: A
                   })}
 
                   {paddingBottom > 0 && (
-                    <tr aria-hidden="true"><td colSpan={9} style={{ height: paddingBottom }} /></tr>
+                    <tr aria-hidden="true"><td colSpan={8} style={{ height: paddingBottom }} /></tr>
                   )}
                 </>
               );

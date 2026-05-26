@@ -210,6 +210,13 @@ export default function Table({
     if (status === "REJECTED") return "Отклонено";
     return "Ошибка";
   }
+  function rejectReason(t: Transaction): string {
+    if (t.status !== "REJECTED") return "—";
+    const src = (t.comment || "").trim();
+    if (!src) return "—";
+    const m = src.match(/reason=(.+)$/i);
+    return (m?.[1] || src).trim();
+  }
 
   function currencySummary(rows: Transaction[]): string {
     const sums = new Map<string, number>();
@@ -241,6 +248,7 @@ export default function Table({
           { header: "№", getValue: (_row, index) => index + 1 },
           { header: "ID/tx_hash", getValue: (row) => row.id },
           { header: "Статус", getValue: (row) => statusLabel(row.status) },
+          { header: "Причина отклонения", getValue: (row) => rejectReason(row) },
           { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
           { header: "Сумма", getValue: (row) => formatAmount6(row.amount) },
           { header: "Валюта", getValue: (row) => row.currency },
@@ -305,6 +313,7 @@ export default function Table({
             <col className="w-[72px]" />
             <col className="w-[220px]" />
             <col className="w-[130px]" />
+            <col className="w-[260px]" />
             <col className="w-[170px]" />
             <col className="w-[120px]" />
             <col className="w-[100px]" />
@@ -336,6 +345,11 @@ export default function Table({
                     onClick={(e) => { e.stopPropagation(); statusDD.setOpen((o) => !o); }}>
                     <span className="chev">v</span>
                   </button>
+                </div>
+              </Th>
+              <Th>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Причина отклонения</span>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("createdAt")} active={sortKey === "createdAt"} dir={sortDir}>
@@ -417,6 +431,7 @@ export default function Table({
             <col className="w-[72px]" />
             <col className="w-[220px]" />
             <col className="w-[130px]" />
+            <col className="w-[260px]" />
             <col className="w-[170px]" />
             <col className="w-[120px]" />
             <col className="w-[100px]" />
@@ -437,7 +452,7 @@ export default function Table({
                 <>
                   {paddingTop > 0 && (
                     <tr aria-hidden="true">
-                      <td colSpan={12} style={{ height: paddingTop }} />
+                      <td colSpan={13} style={{ height: paddingTop }} />
                     </tr>
                   )}
 
@@ -462,6 +477,7 @@ export default function Table({
                             {t.status === "SUCCESS" ? "Успешно" : t.status === "PENDING" ? "В ожидании" : t.status === "REJECTED" ? "Отклонено" : "Ошибка"}
                           </span>
                         </td>
+                        <td className="px-4 py-3 truncate" title={rejectReason(t)}>{rejectReason(t)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatAmount6(t.amount)}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{t.currency}</td>
@@ -477,7 +493,7 @@ export default function Table({
 
                   {paddingBottom > 0 && (
                     <tr aria-hidden="true">
-                      <td colSpan={12} style={{ height: paddingBottom }} />
+                      <td colSpan={13} style={{ height: paddingBottom }} />
                     </tr>
                   )}
                 </>
