@@ -507,11 +507,16 @@ export async function getAntifraudCases(params: {
     const tx = it.transaction || {};
     const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
     const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
+    const amountValue =
+      tx.amount ??
+      tx.amount_out ??
+      tx.amount_in ??
+      0;
     return {
       id: String(it.id),
       status: (it.status || it.case_status || "OPEN") as AntiFraudCaseStatus,
       createdAt: tx.createdAt || it.createdAt,
-      amount: Number(tx.amount ?? 0),
+      amount: Number(amountValue),
       currency: mapAssetToDisplay(tx.asset),
       sender: senderLabel,
       recipient: receiverLabel,
