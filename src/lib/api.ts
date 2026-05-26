@@ -505,19 +505,34 @@ export async function getAntifraudCases(params: {
 
   const mapCase = (it: any): AntiFraudCaseItem => {
     const tx = it.transaction || {};
+    const asNumber = (v: any): number | null => {
+      if (v == null || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
     const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
     const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
     const amountValue =
-      tx.amount ??
-      tx.amount_out ??
-      tx.amount_in ??
+      asNumber(tx.amount) ??
+      asNumber(tx.amount_out) ??
+      asNumber(tx.amount_in) ??
+      asNumber(it.amount) ??
+      asNumber(it.amount_out) ??
+      asNumber(it.amount_in) ??
       0;
+    const assetValue =
+      tx.asset ??
+      tx.asset_out ??
+      tx.asset_in ??
+      it.asset ??
+      it.asset_out ??
+      it.asset_in;
     return {
       id: String(it.id),
       status: (it.status || it.case_status || "OPEN") as AntiFraudCaseStatus,
       createdAt: tx.createdAt || it.createdAt,
-      amount: Number(amountValue),
-      currency: mapAssetToDisplay(tx.asset),
+      amount: amountValue,
+      currency: mapAssetToDisplay(assetValue),
       sender: senderLabel,
       recipient: receiverLabel,
       txId: String(tx.id || ""),
