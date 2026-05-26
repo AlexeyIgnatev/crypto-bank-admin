@@ -507,6 +507,21 @@ export async function getAntifraudCases(params: {
     const tx = it.transaction || {};
     const asNumber = (v: any): number | null => {
       if (v == null || v === "") return null;
+      if (typeof v === "number") return Number.isFinite(v) ? v : null;
+      if (typeof v === "string") {
+        const normalized = v.replace(/\s+/g, "").replace(",", ".");
+        const n = Number(normalized);
+        return Number.isFinite(n) ? n : null;
+      }
+      if (typeof v === "object") {
+        const nested =
+          (v as any).value ??
+          (v as any).amount ??
+          (v as any).decimal ??
+          (v as any).$numberDecimal ??
+          (v as any).$numberLong;
+        if (nested != null) return asNumber(nested);
+      }
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
     };
