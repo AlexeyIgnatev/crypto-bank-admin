@@ -20,6 +20,8 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
       <Row label="Телефон" value={user.phone} />
       <Row label="E-mail" value={user.email} />
       <Row label="Статус" value={<span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${user.status === "Активен" ? "bg-green-500/20 text-green-700" : user.status === "Фин контроль" ? "bg-amber-500/20 text-amber-700" : "bg-red-500/20 text-red-700"}`}>{user.status}</span>} />
+      <Row label="Тариф" value={user.tariffCategory || "K1"} />
+      <Row label="Резидентство" value={user.residency === "NON_RESIDENT" ? "Нерезидент" : "Резидент"} />
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">

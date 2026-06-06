@@ -42,6 +42,8 @@ export interface Admin {
 }
 
 export type UserStatus = "Активен" | "Заблокирован" | "Фин контроль";
+export type TariffCategory = "K1" | "K2" | "K3" | "K4" | "K5" | "K6";
+export type CustomerResidency = "RESIDENT" | "NON_RESIDENT";
 
 export interface User {
   id: string;
@@ -50,6 +52,8 @@ export interface User {
   phone: string;
   email: string;
   status: UserStatus;
+  tariffCategory: TariffCategory;
+  residency: CustomerResidency;
   balances: {
     COM: number;
     SALAM: number;

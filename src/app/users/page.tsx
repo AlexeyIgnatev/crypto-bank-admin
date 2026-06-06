@@ -5,7 +5,7 @@ import Modal from "../../components/Modal";
 import { User } from "../../types";
 import UserDetailsCard from "../../components/UserDetails";
 import { createUser, updateUser, deleteUser, getUsers } from "@/lib/api";
-import { UserStatus } from "@/types";
+import { CustomerResidency, TariffCategory, UserStatus } from "@/types";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
 
 function mapUiStatuses(statuses?: UserStatus[]) {
@@ -317,25 +317,29 @@ function CreateUserForm({ onCancel, onSave }: { onCancel: () => void; onSave: ()
   );
 }
 
-function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: (next: Pick<User, "fullName" | "phone" | "email" | "status">) => Promise<void> | void; }) {
+function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: (next: Pick<User, "fullName" | "phone" | "email" | "status" | "tariffCategory" | "residency">) => Promise<void> | void; }) {
   const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
   const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
   const [middleName, setMiddleName] = useState(user.fullName.split(" ")[2] || "");
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState(user.status);
+  const [tariffCategory, setTariffCategory] = useState<TariffCategory>(user.tariffCategory || "K1");
+  const [residency, setResidency] = useState<CustomerResidency>(user.residency || "RESIDENT");
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   return (
     <form className="space-y-3" onSubmit={async (e) => {
       e.preventDefault(); setErr(null); setSubmitting(true);
       try {
-        await updateUser(user.id, { firstName, lastName, middleName, phone, email, status });
+        await updateUser(user.id, { firstName, lastName, middleName, phone, email, status, tariffCategory, residency });
         await onSave({
           fullName: [lastName, firstName, middleName].filter(Boolean).join(" "),
           phone,
           email,
           status,
+          tariffCategory,
+          residency,
         });
       } catch (e: any) {
         setErr(e?.message || "Не удалось сохранить пользователя");
@@ -370,6 +374,19 @@ function EditUserForm({ user, onCancel, onSave }: { user: User; onCancel: () => 
             <option>Активен</option>
             <option>Заблокирован</option>
             <option>Фин контроль</option>
+          </select>
+        </div>
+        <div>
+          <div className="text-sm mb-1">Тариф</div>
+          <select className="ui-input w-full" value={tariffCategory} onChange={(e) => setTariffCategory(e.target.value as TariffCategory)}>
+            {(["K1", "K2", "K3", "K4", "K5", "K6"] as TariffCategory[]).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </div>
+        <div>
+          <div className="text-sm mb-1">Резидентство</div>
+          <select className="ui-input w-full" value={residency} onChange={(e) => setResidency(e.target.value as CustomerResidency)}>
+            <option value="RESIDENT">Резидент</option>
+            <option value="NON_RESIDENT">Нерезидент</option>
           </select>
         </div>
       </div>

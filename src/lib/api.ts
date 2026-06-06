@@ -1,12 +1,34 @@
 ﻿import {
   Admin,
+  CustomerResidency,
   SupportMessage,
   SupportTicket,
   SupportTicketStatus,
+  TariffCategory,
   Transaction,
   TransactionStatus,
   User,
 } from "@/types";
+
+export type TariffOperation =
+  | "ESOM_TO_BTC"
+  | "ESOM_TO_USDT_TRC20"
+  | "ESOM_TO_ETH"
+  | "BTC_TO_ETH"
+  | "BTC_TO_USDT_TRC20"
+  | "USDT_TRC20_TO_ETH"
+  | "WALLET_TRANSFER_ESOM"
+  | "WALLET_TRANSFER_BTC"
+  | "WALLET_TRANSFER_ETH"
+  | "WALLET_TRANSFER_USDT_TRC20";
+
+export type TariffSetting = {
+  category: TariffCategory;
+  residency: CustomerResidency;
+  operation: TariffOperation;
+  percent_fee: string;
+  fixed_fee: string;
+};
 
 function mapCurrency(x?: string): string {
   switch (x) {
@@ -158,6 +180,8 @@ export async function getUsers(params: {
     phone: u.phone || "",
     email: u.email || "",
     status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
+    tariffCategory: (u.tariff_category || u.tariffCategory || "K1") as TariffCategory,
+    residency: (u.residency || "RESIDENT") as CustomerResidency,
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -184,6 +208,8 @@ export async function getUserById(id: string|number): Promise<User> {
     phone: u.phone || "",
     email: u.email || "",
     status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
+    tariffCategory: (u.tariff_category || u.tariffCategory || "K1") as TariffCategory,
+    residency: (u.residency || "RESIDENT") as CustomerResidency,
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
@@ -213,7 +239,7 @@ export async function createUser(payload: { firstName: string; lastName: string;
   return res.json();
 }
 
-export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }>) {
+export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; tariffCategory: TariffCategory; residency: CustomerResidency; }>) {
   const body: any = {
     ...(payload.firstName != null ? { first_name: payload.firstName } : {}),
     ...(payload.lastName != null ? { last_name: payload.lastName } : {}),
@@ -221,6 +247,8 @@ export async function updateUser(id: string|number, payload: Partial<{ firstName
     ...(payload.phone != null ? { phone: payload.phone } : {}),
     ...(payload.email != null ? { email: payload.email } : {}),
     ...(payload.status != null ? { status: payload.status } : {}),
+    ...(payload.tariffCategory != null ? { tariff_category: payload.tariffCategory } : {}),
+    ...(payload.residency != null ? { residency: payload.residency } : {}),
   };
   if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
   const res = await fetch(`/api/user-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -623,6 +651,22 @@ export async function getAntifraudCases(params: {
 
   const items = allItems.slice(offset, offset + limit);
   return { items, total, offset, limit };
+}
+
+export async function getTariffs(): Promise<TariffSetting[]> {
+  const res = await fetch(`/api/blockchain-config/tariffs`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load tariffs");
+  return res.json();
+}
+
+export async function putTariffs(items: TariffSetting[]): Promise<TariffSetting[]> {
+  const res = await fetch(`/api/blockchain-config/tariffs`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items }),
+  });
+  if (!res.ok) throw new Error("Failed to save tariffs");
+  return res.json();
 }
 
 export async function approveAntifraudCase(id: string|number) {

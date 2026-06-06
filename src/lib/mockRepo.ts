@@ -52,6 +52,8 @@ export function generateUsers(count = 300): User[] {
       phone,
       email,
       status,
+      tariffCategory: "K1",
+      residency: "RESIDENT",
       balances,
       createdAt: randomDateWithin(120),
     });

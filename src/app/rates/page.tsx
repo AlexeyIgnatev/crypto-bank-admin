@@ -1,6 +1,8 @@
 ﻿"use client";
 import { useMemo, useState, useEffect } from "react";
 import Modal from "@/components/Modal";
+import { CustomerResidency, TariffCategory } from "@/types";
+import { getTariffs, putTariffs, TariffOperation, TariffSetting } from "@/lib/api";
 
 type Settings = {
   esom_per_usd: string;
@@ -19,8 +21,30 @@ type Settings = {
 
 import { getSettings, putSettings } from "@/lib/api";
 
+const TARIFF_CATEGORIES: TariffCategory[] = ["K1", "K2", "K3", "K4", "K5", "K6"];
+const TARIFF_RESIDENCIES: { value: CustomerResidency; label: string }[] = [
+  { value: "RESIDENT", label: "Резидент" },
+  { value: "NON_RESIDENT", label: "Нерезидент" },
+];
+const TARIFF_OPERATIONS: { operation: TariffOperation; label: string }[] = [
+  { operation: "ESOM_TO_BTC", label: "САЛАМ → BTC" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ → USDT" },
+  { operation: "ESOM_TO_ETH", label: "САЛАМ → ETH" },
+  { operation: "BTC_TO_ETH", label: "BTC → ETH" },
+  { operation: "BTC_TO_USDT_TRC20", label: "BTC → USDT" },
+  { operation: "USDT_TRC20_TO_ETH", label: "USDT → ETH" },
+  { operation: "WALLET_TRANSFER_ESOM", label: "Перевод САЛАМ между пользователями" },
+  { operation: "WALLET_TRANSFER_BTC", label: "Перевод BTC между пользователями" },
+  { operation: "WALLET_TRANSFER_ETH", label: "Перевод ETH между пользователями" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "Перевод USDT между пользователями" },
+];
+
 export default function RatesPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [tariffs, setTariffs] = useState<TariffSetting[]>([]);
+  const [activeCategory, setActiveCategory] = useState<TariffCategory>("K1");
+  const [activeResidency, setActiveResidency] = useState<CustomerResidency>("RESIDENT");
+  const [savingTariffs, setSavingTariffs] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +53,11 @@ export default function RatesPage() {
     (async () => {
       try {
         const s = await getSettings();
-        if (alive) setSettings(s as unknown as Settings);
+        const tariffRows = await getTariffs();
+        if (alive) {
+          setSettings(s as unknown as Settings);
+          setTariffs(tariffRows);
+        }
       } catch {
         setError("Не удалось загрузить настройки");
       } finally {
@@ -96,10 +124,129 @@ export default function RatesPage() {
             </div>
           </section>
         </div>
+        <TariffsPanel
+          tariffs={tariffs}
+          activeCategory={activeCategory}
+          activeResidency={activeResidency}
+          saving={savingTariffs}
+          onCategory={setActiveCategory}
+          onResidency={setActiveResidency}
+          onChange={(next) => setTariffs(next)}
+          onSave={async () => {
+            setSavingTariffs(true);
+            try {
+              const saved = await putTariffs(tariffs);
+              setTariffs(saved);
+            } finally {
+              setSavingTariffs(false);
+            }
+          }}
+        />
       </div>
 
       <EditModal open={modal.open} title={modal.title} value={value} suffix={modal.suffix} step={modal.step} max={modal.max} maxDecimals={modal.maxDecimals} onClose={closeEdit} onSave={saveValue} fieldKey={modal.key} />
     </div>
+  );
+}
+
+function TariffsPanel({
+  tariffs,
+  activeCategory,
+  activeResidency,
+  saving,
+  onCategory,
+  onResidency,
+  onChange,
+  onSave,
+}: {
+  tariffs: TariffSetting[];
+  activeCategory: TariffCategory;
+  activeResidency: CustomerResidency;
+  saving: boolean;
+  onCategory: (value: TariffCategory) => void;
+  onResidency: (value: CustomerResidency) => void;
+  onChange: (value: TariffSetting[]) => void;
+  onSave: () => Promise<void>;
+}) {
+  const rowFor = (operation: TariffOperation): TariffSetting => tariffs.find((item) =>
+    item.category === activeCategory && item.residency === activeResidency && item.operation === operation
+  ) || { category: activeCategory, residency: activeResidency, operation, percent_fee: "0", fixed_fee: "0" };
+
+  const updateRow = (operation: TariffOperation, patch: Partial<Pick<TariffSetting, "percent_fee" | "fixed_fee">>) => {
+    const exists = tariffs.some((item) => item.category === activeCategory && item.residency === activeResidency && item.operation === operation);
+    const next = exists
+      ? tariffs.map((item) => item.category === activeCategory && item.residency === activeResidency && item.operation === operation ? { ...item, ...patch } : item)
+      : [...tariffs, { ...rowFor(operation), ...patch }];
+    onChange(next);
+  };
+
+  return (
+    <section className="mt-4 card rounded-xl border border-soft shadow-sm overflow-hidden">
+      <header className="p-4 border-b border-soft flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-lg font-semibold">Тарифная сетка клиентов</div>
+            <div className="text-sm text-muted">Комиссия в процентах и фиксированная сумма по категории и резидентству</div>
+          </div>
+          <button className="btn btn-success h-9 px-4" onClick={onSave} disabled={saving}>
+            {saving ? "Сохранение..." : "Сохранить тарифы"}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {TARIFF_CATEGORIES.map((category) => (
+            <button key={category} className={`btn h-8 ${activeCategory === category ? "btn-primary" : ""}`} onClick={() => onCategory(category)}>
+              ТАРИФ {category}
+            </button>
+          ))}
+          <div className="w-px bg-[var(--border-soft)] mx-1" />
+          {TARIFF_RESIDENCIES.map((item) => (
+            <button key={item.value} className={`btn h-8 ${activeResidency === item.value ? "btn-info" : ""}`} onClick={() => onResidency(item.value)}>
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </header>
+      <div className="overflow-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-[var(--card)]">
+            <tr className="border-b border-soft">
+              <th className="text-left px-4 py-3">Тип транзакции</th>
+              <th className="text-left px-4 py-3 w-44">Комиссия, %</th>
+              <th className="text-left px-4 py-3 w-44">Фикс. сумма</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TARIFF_OPERATIONS.map((item) => {
+              const row = rowFor(item.operation);
+              return (
+                <tr key={item.operation} className="border-b border-soft">
+                  <td className="px-4 py-3">{item.label}</td>
+                  <td className="px-4 py-3">
+                    <input
+                      className="ui-input w-full"
+                      inputMode="decimal"
+                      value={row.percent_fee}
+                      onChange={(e) => updateRow(item.operation, { percent_fee: normalizeDecimalInput(e.target.value, { max: "100", maxDecimals: 2 }) })}
+                      onBlur={(e) => updateRow(item.operation, { percent_fee: formatFixed2(e.target.value) })}
+                      placeholder="0.00"
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      className="ui-input w-full"
+                      inputMode="decimal"
+                      value={row.fixed_fee}
+                      onChange={(e) => updateRow(item.operation, { fixed_fee: normalizeDecimalInput(e.target.value, { maxDecimals: 8 }) })}
+                      placeholder="0"
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
@@ -179,6 +326,10 @@ function fmt(x: string) { try { const n = Number(x); if (Number.isFinite(n)) ret
 function fmt2(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch {} return x; }
 function fmtPct(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return `${n.toLocaleString()}%`; } catch {} return `${x}%`; }
 function sanitizeNumber(x: string) { return x.replace(/[^0-9.,-]/g, "").replace(",", "."); }
+function formatFixed2(value: string) {
+  const n = Number(sanitizeNumber(value));
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), 100).toFixed(2) : "0.00";
+}
 function normalizeDecimalInput(value: string, opts: { max?: string; maxDecimals?: number; fixedDecimals?: number }) {
   let next = value.replace(/[^0-9.,]/g, "").replace(",", ".");
   const firstDot = next.indexOf(".");
