@@ -8,7 +8,15 @@ import UserDetails from "../components/UserDetails";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { formatAmount2, formatAmount6 } from "@/lib/format";
 import { Transaction, User, TransactionStatus } from "../types";
-import { getUserById, updateUser } from "@/lib/api";
+import { getSettings, getUserById, updateUser } from "@/lib/api";
+
+type MainRatesSettings = {
+  esom_per_usd?: string;
+  esom_som_conversion_fee_pct?: string;
+  btc_trade_fee_pct?: string;
+  eth_trade_fee_pct?: string;
+  usdt_trade_fee_pct?: string;
+};
 
 function startOfTodayIso(): string {
   const d = new Date();
@@ -24,6 +32,8 @@ export default function Home() {
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [rates, setRates] = useState<MainRatesSettings | null>(null);
+  const [ratesError, setRatesError] = useState(false);
   const [cardsPeriod, setCardsPeriod] = useState<{ dateFrom?: string; dateTo?: string }>({
     dateFrom: startOfTodayIso(),
     dateTo: nowIso(),
@@ -38,6 +48,19 @@ export default function Home() {
   const [openUserEdit, setOpenUserEdit] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const settings = await getSettings();
+        if (alive) setRates(settings as MainRatesSettings);
+      } catch {
+        if (alive) setRatesError(true);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
   async function openUserModalById(id: string) {
     try {
       const user = await getUserById(id);
@@ -51,6 +74,7 @@ export default function Home() {
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
       <div className="shrink-0"><Cards dateFrom={cardsPeriod.dateFrom} dateTo={cardsPeriod.dateTo} /></div>
+      <ExchangeRatesStrip settings={rates} error={ratesError} />
       <div className="min-h-0 flex-1 flex flex-col"><Table
         onOpen={(t) => { setSelected(t); setOpen(true); }}
         onPeriodChange={handlePeriodChange}
@@ -116,6 +140,50 @@ export default function Home() {
       </Modal>
     </div>
   );
+}
+
+function ExchangeRatesStrip({ settings, error }: { settings: MainRatesSettings | null; error: boolean }) {
+  const esomPerUsd = Number(settings?.esom_per_usd ?? NaN);
+  const hasRate = Number.isFinite(esomPerUsd) && esomPerUsd > 0;
+  const items = [
+    { label: "USD → САЛАМ", value: hasRate ? `${fmtMoney(esomPerUsd)} САЛАМ` : "—" },
+    { label: "USDT → САЛАМ", value: hasRate ? `${fmtMoney(esomPerUsd)} САЛАМ` : "—" },
+    { label: "СОМ ↔ САЛАМ", value: `1:1${settings?.esom_som_conversion_fee_pct ? `, комиссия ${fmtPercent(settings.esom_som_conversion_fee_pct)}` : ""}` },
+    { label: "Комиссии BTC / ETH / USDT", value: [
+      fmtPercent(settings?.btc_trade_fee_pct),
+      fmtPercent(settings?.eth_trade_fee_pct),
+      fmtPercent(settings?.usdt_trade_fee_pct),
+    ].join(" / ") },
+  ];
+
+  return (
+    <section className="shrink-0 rounded-xl border border-soft bg-[var(--card)] shadow-sm overflow-hidden">
+      <div className="px-4 py-3 border-b border-soft flex items-center justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold">Актуальные курсы обмена</div>
+          <div className="text-xs text-muted">{error ? "Не удалось загрузить настройки" : "Данные из blockchain-config/settings"}</div>
+        </div>
+        <a className="btn h-8 px-3 whitespace-nowrap" href="/rates">Открыть таблицу</a>
+      </div>
+      <div className="grid grid-cols-2 xl:grid-cols-4 divide-x divide-y xl:divide-y-0 divide-[var(--border-soft)]">
+        {items.map((item) => (
+          <div key={item.label} className="px-4 py-3 min-w-0">
+            <div className="text-xs text-muted truncate" title={item.label}>{item.label}</div>
+            <div className="text-sm font-semibold truncate" title={item.value}>{settings ? item.value : "Загрузка..."}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function fmtMoney(value: number) {
+  return value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPercent(value?: string) {
+  const n = Number(value);
+  return Number.isFinite(n) ? `${n.toLocaleString("ru-RU", { maximumFractionDigits: 2 })}%` : "—";
 }
 
 function EditUserInline({ user, onCancel, onSave }: { user: User; onCancel: () => void; onSave: (u: User) => void; }) {
