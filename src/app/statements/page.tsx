@@ -11,12 +11,96 @@ const ASSET_OPTIONS = [
   { label: "BTC", value: "BTC" },
 ];
 
+const MOCK_CUSTOMER_ID = "2566678";
+
+const MOCK_STATEMENT_ITEMS: Transaction[] = [
+  {
+    id: "mock-salam-001",
+    status: "SUCCESS",
+    createdAt: "2026-06-06T09:12:20.000Z",
+    amount: 1250,
+    feeAmount: 0,
+    currency: "SALAM",
+    kind: "CONVERSION",
+    comment: "Конвертация СОМ -> САЛАМ",
+    sender: "Клиент #2566678",
+    recipient: "Кошелек САЛАМ 0xE95d...6527",
+    senderCustomerId: MOCK_CUSTOMER_ID,
+    recipientCustomerId: MOCK_CUSTOMER_ID,
+  },
+  {
+    id: "mock-salam-002",
+    status: "REJECTED",
+    createdAt: "2026-06-05T14:45:10.000Z",
+    amount: 500,
+    feeAmount: 0,
+    currency: "SALAM",
+    kind: "WALLET_TO_WALLET",
+    comment: "Отклонено финконтролем: превышен лимит операций",
+    sender: "Клиент #2566678",
+    recipient: "Клиент #2566681",
+    senderCustomerId: MOCK_CUSTOMER_ID,
+    recipientCustomerId: "2566681",
+  },
+  {
+    id: "mock-eth-001",
+    status: "SUCCESS",
+    createdAt: "2026-06-04T11:30:00.000Z",
+    amount: 0.025,
+    feeAmount: 0.0007,
+    currency: "ETH",
+    kind: "CONVERSION",
+    comment: "Конвертация САЛАМ -> ETH",
+    sender: "Клиент #2566678",
+    recipient: "0xE95d8FD6C2658F8eB10664a9aF40881ef17c6527",
+    senderCustomerId: MOCK_CUSTOMER_ID,
+  },
+  {
+    id: "mock-usdt-001",
+    status: "SUCCESS",
+    createdAt: "2026-06-03T08:05:42.000Z",
+    amount: 75.5,
+    feeAmount: 1,
+    currency: "USDT",
+    kind: "WITHDRAW_CRYPTO",
+    comment: "Вывод USDT TRC20",
+    sender: "Клиент #2566678",
+    recipient: "TC4LpLCSmDycoRuakLJb4cpzfgLJGX8YBS",
+    senderCustomerId: MOCK_CUSTOMER_ID,
+  },
+  {
+    id: "mock-btc-001",
+    status: "FAILED",
+    createdAt: "2026-06-02T16:18:33.000Z",
+    amount: 0.00032,
+    feeAmount: 0.00001,
+    currency: "BTC",
+    kind: "WITHDRAW_CRYPTO",
+    comment: "Недостаточно средств с учетом комиссии",
+    sender: "Клиент #2566678",
+    recipient: "bc1qz9k5sh7q80akh8npjq6wsftch0lyptsr0qehzf",
+    senderCustomerId: MOCK_CUSTOMER_ID,
+  },
+];
+
+function mockItemsForAsset(asset: string) {
+  return MOCK_STATEMENT_ITEMS
+    .filter((item) => item.currency === asset)
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+}
+
 export default function StatementsPage() {
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(MOCK_CUSTOMER_ID);
   const [asset, setAsset] = useState<string>("SALAM");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<Transaction[]>([]);
+  const [items, setItems] = useState<Transaction[]>(() => mockItemsForAsset("SALAM"));
+
+  function loadMock(nextAsset = asset) {
+    setCustomerId(MOCK_CUSTOMER_ID);
+    setError(null);
+    setItems(mockItemsForAsset(nextAsset));
+  }
 
   async function load() {
     const id = customerId.trim();
@@ -70,13 +154,20 @@ export default function StatementsPage() {
           </div>
           <div>
             <div className="text-sm mb-1">Актив</div>
-            <select className="ui-input w-full" value={asset} onChange={(e) => setAsset(e.target.value)}>
+            <select className="ui-input w-full" value={asset} onChange={(e) => {
+              const nextAsset = e.target.value;
+              setAsset(nextAsset);
+              loadMock(nextAsset);
+            }}>
               {ASSET_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 flex flex-wrap gap-2">
             <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
               {loading ? "Загрузка..." : "Показать выписку"}
+            </button>
+            <button className="btn h-10 px-5" onClick={() => loadMock()} disabled={loading}>
+              Показать мок-данные
             </button>
           </div>
         </div>
@@ -127,4 +218,3 @@ export default function StatementsPage() {
     </div>
   );
 }
-
