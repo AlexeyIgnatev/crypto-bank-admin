@@ -118,6 +118,7 @@ function SettingRow({ label, value, onEdit }: { label: string; value: string; on
 function EditModal({ open, onClose, onSave, title, value, suffix, step, max, maxDecimals, fieldKey }: { open: boolean; onClose: () => void; onSave: (v: string) => void; title: string; value: string; suffix?: string; step?: string; max?: string; maxDecimals?: number; fieldKey: keyof Settings | null; }) {
   const [v, setV] = useState<string>(value);
   const [err, setErr] = useState<string | null>(null);
+  const isSomSalamPct = fieldKey === "esom_som_conversion_fee_pct";
 
   // reset input on open / field change
   const opened = open ? fieldKey + "" + title : "";
@@ -146,7 +147,8 @@ function EditModal({ open, onClose, onSave, title, value, suffix, step, max, max
   const onSaveClick = () => {
     const e = validate(v);
     if (e) { setErr(e); return; }
-    onSave(sanitizeNumber(v));
+    const next = sanitizeNumber(v);
+    onSave(isSomSalamPct ? Number(next).toFixed(2) : next);
   };
 
   return (
@@ -155,7 +157,11 @@ function EditModal({ open, onClose, onSave, title, value, suffix, step, max, max
         <label className="block text-sm">
           <span className="text-muted">Значение{suffix ? `, ${suffix}` : ""}</span>
           <div className="flex items-center gap-2 mt-1">
-            <input className={`ui-input w-full ${err ? 'border-red-500' : ''}`} inputMode="decimal" step={step} max={max} value={v} onChange={e => { setV(e.target.value); if (err) setErr(null); }} placeholder="0" />
+            <input className={`ui-input w-full ${err ? 'border-red-500' : ''}`} inputMode="decimal" step={step} max={max} value={v} onChange={e => {
+              const next = normalizeDecimalInput(e.target.value, { max, maxDecimals, fixedDecimals: isSomSalamPct ? 2 : undefined });
+              setV(next);
+              if (err) setErr(null);
+            }} placeholder={isSomSalamPct ? "0.00" : "0"} />
             {suffix && <span className="px-2 text-sm text-muted">{suffix}</span>}
           </div>
         </label>
@@ -173,3 +179,23 @@ function fmt(x: string) { try { const n = Number(x); if (Number.isFinite(n)) ret
 function fmt2(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); } catch {} return x; }
 function fmtPct(x: string) { try { const n = Number(x); if (Number.isFinite(n)) return `${n.toLocaleString()}%`; } catch {} return `${x}%`; }
 function sanitizeNumber(x: string) { return x.replace(/[^0-9.,-]/g, "").replace(",", "."); }
+function normalizeDecimalInput(value: string, opts: { max?: string; maxDecimals?: number; fixedDecimals?: number }) {
+  let next = value.replace(/[^0-9.,]/g, "").replace(",", ".");
+  const firstDot = next.indexOf(".");
+  if (firstDot !== -1) {
+    next = next.slice(0, firstDot + 1) + next.slice(firstDot + 1).replace(/\./g, "");
+  }
+
+  if (typeof opts.maxDecimals === "number" && opts.maxDecimals >= 0) {
+    const [intPart, decimalPart] = next.split(".");
+    if (decimalPart != null) next = `${intPart}.${decimalPart.slice(0, opts.maxDecimals)}`;
+  }
+
+  const max = opts.max != null && opts.max !== "" ? Number(opts.max) : null;
+  const num = Number(next);
+  if (max != null && Number.isFinite(num) && num > max) {
+    return typeof opts.fixedDecimals === "number" ? max.toFixed(opts.fixedDecimals) : String(max);
+  }
+
+  return next;
+}
