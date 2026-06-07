@@ -89,8 +89,8 @@ export default function RatesPage() {
   if (!settings) return <div className="flex-1 grid place-items-center text-muted">Нет данных</div>;
 
   return (
-    <div className="flex-1 min-h-0 flex">
-      <div className="m-auto w-full max-w-5xl">
+    <div className="flex-1 min-h-0 overflow-auto pb-8">
+      <div className="mx-auto w-full max-w-5xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
             <header className="p-4 border-b border-soft flex items-center justify-between">
