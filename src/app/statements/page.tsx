@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getTransactions } from "@/lib/api";
+import { readableRejectionReason } from "@/lib/rejectionReason";
 import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
@@ -102,7 +103,7 @@ export default function StatementsPage() {
             </thead>
             <tbody>
               {items.map((t) => {
-                const rejectionReason = (t.status === "FAILED" || t.status === "REJECTED") ? (t.comment || "-") : "-";
+                const rejectionReason = readableRejectionReason(t);
                 return (
                   <tr key={t.id} className="border-b border-soft">
                     <td className="px-3 py-2 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>

@@ -8,6 +8,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { Transaction, TransactionStatus } from "../types";
 import { formatAmount2, formatAmount6 } from "@/lib/format";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
+import { readableRejectionReason } from "@/lib/rejectionReason";
 
 export type SortKey = "createdAt" | "amount" | "status" | "id";
 export type SortDir = "asc" | "desc";
@@ -211,11 +212,8 @@ export default function Table({
     return "Ошибка";
   }
   function rejectReason(t: Transaction): string {
-    if (t.status !== "REJECTED") return "—";
-    const src = (t.comment || "").trim();
-    if (!src) return "—";
-    const m = src.match(/reason=(.+)$/i);
-    return (m?.[1] || src).trim();
+    const reason = readableRejectionReason(t);
+    return reason === "-" ? "—" : reason;
   }
 
   function currencySummary(rows: Transaction[]): string {
