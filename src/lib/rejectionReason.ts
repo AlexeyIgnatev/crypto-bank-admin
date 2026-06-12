@@ -1,5 +1,15 @@
 import { Transaction } from "@/types";
 
+const TECHNICAL_RULE_REASONS: Array<[RegExp, string]> = [
+  [/ONE_TIME_GE_8M/i, "Превышен лимит разовой операции"],
+  [/FIAT_ANY_GE_1M/i, "Сумма операции превышает лимит финконтроля"],
+  [/FREQUENT_OPS/i, "Слишком много крупных операций за короткий период"],
+  [/WITHDRAW_AFTER_LARGE_INFLOW/i, "Вывод после крупного поступления"],
+  [/SPLITTING/i, "Операция похожа на дробление суммы"],
+  [/THIRD_PARTY_DEPOSITS/i, "Поступления от нескольких третьих лиц"],
+  [/AFTER_INACTIVITY/i, "Операция после долгого периода неактивности"],
+];
+
 export function readableRejectionReason(transaction: Transaction): string {
   if (transaction.status !== "REJECTED" && transaction.status !== "FAILED") return "-";
 
@@ -8,6 +18,10 @@ export function readableRejectionReason(transaction: Transaction): string {
 
   const reason = source.match(/reason=(.+)$/i)?.[1]?.trim() || source;
   const lower = reason.toLowerCase();
+
+  for (const [pattern, label] of TECHNICAL_RULE_REASONS) {
+    if (pattern.test(reason) || pattern.test(source)) return label;
+  }
 
   if (lower.includes("insufficient") || lower.includes("недостаточно")) {
     return "Недостаточно средств";
@@ -34,5 +48,5 @@ export function readableRejectionReason(transaction: Transaction): string {
     return "Операция не поддерживается";
   }
 
-  return reason;
+  return "Операция отклонена";
 }
