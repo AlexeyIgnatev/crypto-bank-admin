@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Modal from "@/components/Modal";
 import { formatAmount6 } from "@/lib/format";
 
-// Р›РѕРєР°Р»СЊРЅС‹Рµ С‚РёРїС‹ РґР»СЏ РєРµР№СЃРѕРІ С„РёРЅРєРѕРЅС‚СЂРѕР»СЏ (РЅРµ РІРјРµС€РёРІР°РµРјСЃСЏ РІ РѕР±С‰РёР№ TransactionStatus)
+// Локальные типы для кейсов финконтроля (не вмешиваемся в общий TransactionStatus)
 type ControlCaseStatus = "OPEN" | "APPROVED" | "REJECTED";
 interface ControlCase {
   id: string;
@@ -17,7 +17,7 @@ interface ControlCase {
 
 function statusBadge(status: ControlCaseStatus) {
   const cls = status === "APPROVED" ? "badge-success" : status === "OPEN" ? "badge-warning" : "badge-danger";
-  const text = status === "APPROVED" ? "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ" : status === "OPEN" ? "РќР° СЂР°СЃСЃРјРѕС‚СЂРµРЅРёРё" : "РћС‚РєР»РѕРЅРµРЅРѕ";
+  const text = status === "APPROVED" ? "Подтверждено" : status === "OPEN" ? "На рассмотрении" : "Отклонено";
   return <span className={`badge ${cls}`}>{text}</span>;
 }
 
@@ -39,7 +39,7 @@ export default function ControlCasesPage() {
       if (action === "approve") await approveAntifraudCase(selected.id);
       else await rejectAntifraudCase(selected.id);
       setSelected(s => s ? { ...s, status: action === "approve" ? "APPROVED" : "REJECTED" } : s);
-      setRefreshToken(t => t + 1); // РѕР±РЅРѕРІРёРј С‚Р°Р±Р»РёС†Сѓ РІ С„РѕРЅРµ
+      setRefreshToken(t => t + 1); // обновим таблицу в фоне
     } finally {
       setConfirm({ open: false, action: null });
     }
@@ -51,23 +51,22 @@ export default function ControlCasesPage() {
         <CasesTable onOpen={openDetails} refreshToken={refreshToken} />
       </div>
 
-      {/* РњРѕРґР°Р»РєР° РґРµС‚Р°Р»РµР№ РєРµР№СЃР° */}
-      <Modal open={open} onClose={closeDetails} title="РРЅС„РѕСЂРјР°С†РёСЏ Рѕ С‚СЂР°РЅР·Р°РєС†РёРё">
+      {/* Модалка деталей кейса */}
+      <Modal open={open} onClose={closeDetails} title="Информация о транзакции">
         {selected && (
           <div className="space-y-3 text-sm text-fg">
             <Row label="ID/tx_hash" value={<span className="font-mono">{selected.id}</span>} />
-            <Row label="РЎС‚Р°С‚СѓСЃ" value={<div className="flex items-center gap-2">{statusBadge(selected.status)}</div>} />
-            <Row label="Р”Р°С‚Р°" value={new Date(selected.createdAt).toLocaleString()} />
+            <Row label="Статус" value={<div className="flex items-center gap-2">{statusBadge(selected.status)}</div>} />
+            <Row label="Дата" value={new Date(selected.createdAt).toLocaleString()} />
 
 
-            {/* Р–С‘Р»С‚С‹Р№ Р±Р»РѕРє СЃ РїСЂРёС‡РёРЅРѕР№ РїСЂРёРѕСЃС‚Р°РЅРѕРІРєРё */}
-            <Row label="РЎСѓРјРјР°" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
-            <Row label="РћС‚РїСЂР°РІРёС‚РµР»СЊ" value={selected.sender} />
-            <Row label="РџРѕР»СѓС‡Р°С‚РµР»СЊ" value={selected.recipient} />
+            <Row label="Сумма" value={`${formatAmount6(selected.amount)} ${selected.currency}`} />
+            <Row label="Отправитель" value={selected.sender} />
+            <Row label="Получатель" value={selected.recipient} />
             {selected.status === "OPEN" && (
               <div className="pt-2 grid grid-cols-2 gap-2">
-                <button className="btn btn-success h-9" onClick={() => setConfirm({ open: true, action: "approve" })}>РџРѕРґС‚РІРµСЂРґРёС‚СЊ</button>
-                <button className="btn btn-danger h-9" onClick={() => setConfirm({ open: true, action: "reject" })}>РћС‚РєР»РѕРЅРёС‚СЊ</button>
+                <button className="btn btn-success h-9" onClick={() => setConfirm({ open: true, action: "approve" })}>Подтвердить</button>
+                <button className="btn btn-danger h-9" onClick={() => setConfirm({ open: true, action: "reject" })}>Отклонить</button>
               </div>
             )}
             {selected.status === "REJECTED" && (
@@ -79,15 +78,15 @@ export default function ControlCasesPage() {
         )}
       </Modal>
 
-      {/* РџРѕРїР°Рї РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ РґРµР№СЃС‚РІРёСЏ */}
-      <Modal open={confirm.open} onClose={() => setConfirm({ open: false, action: null })} title={confirm.action === "approve" ? "РџРѕРґС‚РІРµСЂРґРёС‚СЊ РѕРїРµСЂР°С†РёСЋ?" : confirm.action === "reject" ? "РћС‚РєР»РѕРЅРёС‚СЊ РѕРїРµСЂР°С†РёСЋ?" : ""}>
+      {/* Попап подтверждения действия */}
+      <Modal open={confirm.open} onClose={() => setConfirm({ open: false, action: null })} title={confirm.action === "approve" ? "Подтвердить операцию?" : confirm.action === "reject" ? "Отклонить операцию?" : ""}>
         <div className="space-y-3">
-          <div className="text-sm text-muted">Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РёР·РјРµРЅРёС‚ СЃС‚Р°С‚СѓСЃ С‚СЂР°РЅР·Р°РєС†РёРё Рё РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚РјРµРЅРµРЅРѕ.</div>
+          <div className="text-sm text-muted">Это действие изменит статус транзакции и не может быть отменено.</div>
           <div className="grid grid-cols-2 gap-2">
-            <button className="btn h-9" onClick={() => setConfirm({ open: false, action: null })}>РћС‚РјРµРЅР°</button>
+            <button className="btn h-9" onClick={() => setConfirm({ open: false, action: null })}>Отмена</button>
 
             <button className={`btn h-9 ${confirm.action === "approve" ? "btn-success" : "btn-danger"}`} onClick={() => doChangeStatus(confirm.action as any)}>
-              {confirm.action === "approve" ? "РџРѕРґС‚РІРµСЂРґРёС‚СЊ" : "РћС‚РєР»РѕРЅРёС‚СЊ"}
+              {confirm.action === "approve" ? "Подтвердить" : "Отклонить"}
             </button>
           </div>
         </div>
