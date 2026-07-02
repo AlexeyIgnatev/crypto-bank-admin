@@ -48,7 +48,6 @@ function TopbarRates() {
 
   return (
     <div className="hidden xl:flex items-center gap-2 min-w-0">
-      <RateChip label="USD→САЛАМ" value={error ? "Ошибка" : settings ? rate : "..."} />
       <RateChip label="USDT→САЛАМ" value={error ? "Ошибка" : settings ? rate : "..."} />
       <RateChip label="СОМ↔САЛАМ" value={error ? "Ошибка" : settings ? `1:1, ${somFee}` : "..."} />
     </div>

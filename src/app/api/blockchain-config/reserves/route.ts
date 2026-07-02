@@ -15,7 +15,7 @@ function withCookies(
 }
 
 export async function GET() {
-  const upstream = await upstreamFetch(`/transactions/stats/today`, {
+  const upstream = await upstreamFetch(`/blockchain-config/reserves`, {
     method: "GET",
   });
   const json = await upstream.json().catch(() => null);

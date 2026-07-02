@@ -10,6 +10,7 @@ const allItems = [
   { href: "/users", label: "Пользователи", icon: "👥" },
   { href: "/transactions", label: "Транзакции", icon: "💳" },
   { href: "/statements", label: "Выписка", icon: "📄" },
+  { href: "/reserves", label: "Резервы", icon: "🏦" },
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
@@ -31,9 +32,16 @@ function allowedByRole(role?: string): string[] {
       return ["/control-cases", "/faq", "/support", "/push"];
     case "UDBO":
     case "UBUIO":
-      return ["/transactions", "/statements", "/faq", "/support", "/push"];
+      return [
+        "/transactions",
+        "/statements",
+        "/reserves",
+        "/faq",
+        "/support",
+        "/push",
+      ];
     case "TREASURY":
-      return ["/rates", "/faq", "/support", "/push"];
+      return ["/rates", "/reserves", "/faq", "/support", "/push"];
     default:
       return ["/support", "/push", "/faq"];
   }

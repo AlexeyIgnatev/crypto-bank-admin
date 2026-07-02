@@ -21,13 +21,21 @@ function applyTheme(theme: Theme) {
   root.classList.toggle("dark", theme === "dark");
 }
 
-export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+export default function ThemeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // Initial theme: saved -> system -> light
-    const saved = (typeof window !== "undefined" && localStorage.getItem("theme")) as Theme | null;
-    const system: Theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    const saved = (typeof window !== "undefined" &&
+      localStorage.getItem("theme")) as Theme | null;
+    const system: Theme =
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
     const next = saved ?? system;
     setTheme(next);
     applyTheme(next);
@@ -35,16 +43,25 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    // Animate theme switch
+
     const root = document.documentElement;
     root.classList.add("theme-switching");
     applyTheme(theme);
     localStorage.setItem("theme", theme);
-    const id = window.setTimeout(() => root.classList.remove("theme-switching"), 350);
+    const id = window.setTimeout(
+      () => root.classList.remove("theme-switching"),
+      350,
+    );
     return () => window.clearTimeout(id);
   }, [theme]);
 
-  const value = useMemo(() => ({ theme, toggle: () => setTheme((t) => (t === "light" ? "dark" : "light")) }), [theme]);
+  const value = useMemo(
+    () => ({
+      theme,
+      toggle: () => setTheme((t) => (t === "light" ? "dark" : "light")),
+    }),
+    [theme],
+  );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

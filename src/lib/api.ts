@@ -5,21 +5,15 @@
   SupportTicket,
   SupportTicketStatus,
   TariffCategory,
+  TreasuryReserves,
   Transaction,
   TransactionStatus,
   User,
 } from "@/types";
 
 export type TariffOperation =
-  | "ESOM_TO_BTC"
   | "ESOM_TO_USDT_TRC20"
-  | "ESOM_TO_ETH"
-  | "BTC_TO_ETH"
-  | "BTC_TO_USDT_TRC20"
-  | "USDT_TRC20_TO_ETH"
   | "WALLET_TRANSFER_ESOM"
-  | "WALLET_TRANSFER_BTC"
-  | "WALLET_TRANSFER_ETH"
   | "WALLET_TRANSFER_USDT_TRC20";
 
 export type TariffSetting = {
@@ -32,34 +26,46 @@ export type TariffSetting = {
 
 function mapCurrency(x?: string): string {
   switch (x) {
-    case "SOM": return "COM";
-    case "ESOM": return "SALAM";
-    case "USDT_TRC20": return "USDT";
-    default: return x || "COM";
+    case "SOM":
+      return "COM";
+    case "ESOM":
+      return "SALAM";
+    case "USDT_TRC20":
+      return "USDT";
+    default:
+      return x || "COM";
   }
 }
 
 function mapTxStatus(x?: string): TransactionStatus {
   switch ((x || "").toUpperCase()) {
-    case "SUCCESS": return "SUCCESS";
-    case "FAILED": return "FAILED";
-    case "REJECTED": return "REJECTED";
-    default: return "PENDING";
+    case "SUCCESS":
+      return "SUCCESS";
+    case "FAILED":
+      return "FAILED";
+    case "REJECTED":
+      return "REJECTED";
+    default:
+      return "PENDING";
   }
 }
 
 type BackendStatus = "SUCCESS" | "FAILED" | "PENDING" | "REJECTED";
 
 function mapUiStatusToBackend(x: TransactionStatus): BackendStatus {
-  return (x as BackendStatus);
+  return x as BackendStatus;
 }
 
 function mapDisplayToAssetOld(x: string): string {
   switch (x) {
-    case "COM": return "SOM";
-    case "SALAM": return "ESOM";
-    case "USDT": return "USDT_TRC20";
-    default: return x; // BTC, ETH
+    case "COM":
+      return "SOM";
+    case "SALAM":
+      return "ESOM";
+    case "USDT":
+      return "USDT_TRC20";
+    default:
+      return x;
   }
 }
 
@@ -77,8 +83,13 @@ export async function getTransactions(params: {
   minAmount?: number;
   maxAmount?: number;
   statuses?: TransactionStatus[];
-  currencies?: string[]; // COM, SALAM, BTC, ETH, USDT
-}): Promise<{ items: Transaction[]; total: number; offset: number; limit: number; }> {
+  currencies?: string[];
+}): Promise<{
+  items: Transaction[];
+  total: number;
+  offset: number;
+  limit: number;
+}> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
@@ -90,36 +101,99 @@ export async function getTransactions(params: {
   if (params.receiver) q.set("receiver", params.receiver);
   if (params.dateFrom) q.set("date_from", params.dateFrom);
   if (params.dateTo) q.set("date_to", params.dateTo);
-  if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
-  if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
+  if (typeof params.minAmount === "number")
+    q.set("amount_min", String(params.minAmount));
+  if (typeof params.maxAmount === "number")
+    q.set("amount_max", String(params.maxAmount));
   if (params.statuses && params.statuses.length) {
-    for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
+    for (const s of params.statuses)
+      q.append("status", mapUiStatusToBackend(s));
   }
   if (params.currencies && params.currencies.length) {
-    for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
+    for (const c of params.currencies)
+      q.append("asset", mapDisplayToAssetDisplayHelper(c));
   }
 
-  const res = await fetch(`/api/transactions/list?${q.toString()}`, { cache: "no-store" });
+  const res = await fetch(`/api/transactions/list?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load transactions");
   const data = await res.json();
-  const items: Transaction[] = (data.items || []).map((it: any) => ({
-    id: String(it.tx_hash || it.id),
-    status: mapTxStatus(it.status),
-    createdAt: it.createdAt,
-    amount: Number(it.amount ?? 0),
-    feeAmount: Number(it.fee_amount ?? 0),
-    currency: mapCurrency(it.asset),
-    kind: it.kind,
-    comment: typeof it.comment === "string" ? it.comment : undefined,
-    sender: it.sender_customer ? [it.sender_customer.last_name, it.sender_customer.first_name].filter(Boolean).join(" ") : (it.sender_wallet_address || "—"),
-    recipient: it.receiver_customer ? [it.receiver_customer.last_name, it.receiver_customer.first_name].filter(Boolean).join(" ") : (it.receiver_wallet_address || "—"),
-    senderAbsId: it.sender_abs_id != null ? String(it.sender_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : undefined),
-    recipientAbsId: it.receiver_abs_id != null ? String(it.receiver_abs_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined),
-    clientAbsId: it.client_abs_id != null ? String(it.client_abs_id) : (it.sender_customer_id != null ? String(it.sender_customer_id) : (it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined)),
-    senderCustomerId: it.sender_customer_id != null ? String(it.sender_customer_id) : undefined,
-    recipientCustomerId: it.receiver_customer_id != null ? String(it.receiver_customer_id) : undefined,
-  } as Transaction));
-  return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+  const items: Transaction[] = (data.items || []).map(
+    (it: any) =>
+      ({
+        id: String(it.tx_hash || it.id),
+        status: mapTxStatus(it.status),
+        createdAt: it.createdAt,
+        amount: Number(it.amount ?? 0),
+        feeAmount: Number(it.fee_amount ?? 0),
+        currency: mapCurrency(it.asset),
+        kind: it.kind,
+        comment: typeof it.comment === "string" ? it.comment : undefined,
+        sender: it.sender_customer
+          ? [it.sender_customer.last_name, it.sender_customer.first_name]
+              .filter(Boolean)
+              .join(" ")
+          : it.sender_wallet_address || "—",
+        recipient: it.receiver_customer
+          ? [it.receiver_customer.last_name, it.receiver_customer.first_name]
+              .filter(Boolean)
+              .join(" ")
+          : it.receiver_wallet_address || "—",
+        senderAbsId:
+          it.sender_abs_id != null
+            ? String(it.sender_abs_id)
+            : it.sender_customer_id != null
+              ? String(it.sender_customer_id)
+              : undefined,
+        recipientAbsId:
+          it.receiver_abs_id != null
+            ? String(it.receiver_abs_id)
+            : it.receiver_customer_id != null
+              ? String(it.receiver_customer_id)
+              : undefined,
+        clientAbsId:
+          it.client_abs_id != null
+            ? String(it.client_abs_id)
+            : it.sender_customer_id != null
+              ? String(it.sender_customer_id)
+              : it.receiver_customer_id != null
+                ? String(it.receiver_customer_id)
+                : undefined,
+        senderCustomerId:
+          it.sender_customer_id != null
+            ? String(it.sender_customer_id)
+            : undefined,
+        recipientCustomerId:
+          it.receiver_customer_id != null
+            ? String(it.receiver_customer_id)
+            : undefined,
+        networkFeeAmount:
+          typeof it.network_fee_amount === "number"
+            ? it.network_fee_amount
+            : undefined,
+        networkFeeAsset:
+          typeof it.network_fee_asset === "string"
+            ? it.network_fee_asset
+            : undefined,
+        energyUsed:
+          typeof it.energy_used === "number" ? it.energy_used : undefined,
+        bandwidthUsed:
+          typeof it.bandwidth_used === "number"
+            ? it.bandwidth_used
+            : undefined,
+        bricsBurnedAmount:
+          typeof it.brics_burned_amount === "number"
+            ? it.brics_burned_amount
+            : undefined,
+      }) as Transaction,
+  );
+  return {
+    items,
+    total: data.total ?? items.length,
+    offset: data.offset ?? 0,
+    limit: data.limit ?? items.length,
+  };
 }
 
 export async function getStatsToday(): Promise<{
@@ -131,18 +205,22 @@ export async function getStatsToday(): Promise<{
   dateFrom?: string;
   dateTo?: string;
 }> {
-  const res = await fetch(`/api/transactions/stats/today`, { cache: "no-store" });
+  const res = await fetch(`/api/transactions/stats/today`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load stats");
   const d = await res.json();
   function num(v: any): number {
     if (typeof v === "number") return v;
     if (v && typeof v === "object") {
-      // try common shapes
       if (typeof v.value === "number") return v.value;
-      const vs = Object.values(v).filter(x => typeof x === "number") as number[];
+      const vs = Object.values(v).filter(
+        (x) => typeof x === "number",
+      ) as number[];
       if (vs.length) return vs.reduce((a, b) => a + b, 0);
     }
-    const n = Number(v); return Number.isFinite(n) ? n : 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
   }
   return {
     total: num(d.total_amount_som),
@@ -156,37 +234,61 @@ export async function getStatsToday(): Promise<{
 }
 
 export async function getUsers(params: {
-  offset?: number; limit?: number;
-  search?: string; statuses?: ("ACTIVE"|"BLOCKED"|"FRAUD")[];
-  sortBy?: "customer_id"|"fio"|"phone"|"email"|"status"|"som_balance"|"total_balance"|"createdAt"|"last_login_at";
-  sortDir?: "asc"|"desc";
-}): Promise<{ items: User[]; total: number; offset: number; limit: number; }> {
+  offset?: number;
+  limit?: number;
+  search?: string;
+  statuses?: ("ACTIVE" | "BLOCKED" | "FRAUD")[];
+  sortBy?:
+    | "customer_id"
+    | "fio"
+    | "phone"
+    | "email"
+    | "status"
+    | "som_balance"
+    | "total_balance"
+    | "createdAt"
+    | "last_login_at";
+  sortDir?: "asc" | "desc";
+}): Promise<{ items: User[]; total: number; offset: number; limit: number }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.search) q.set("search", params.search);
 
-
-  if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", s);
+  if (params.statuses && params.statuses.length)
+    for (const s of params.statuses) q.append("status", s);
   if (params.sortBy) q.set("sort_by", params.sortBy);
   if (params.sortDir) q.set("sort_dir", params.sortDir);
-  const res = await fetch(`/api/user-management?${q.toString()}`, { cache: "no-store" });
+  const res = await fetch(`/api/user-management?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load users");
   const data = await res.json();
   const items: User[] = (data.items || []).map((u: any) => ({
     id: String(u.customer_id ?? u.id ?? u.userId ?? ""),
     absClientId: String(u.customer_id ?? u.id ?? u.userId ?? ""),
-    fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
+    fullName: [
+      u.last_name ?? u.lastName,
+      u.first_name ?? u.firstName,
+      u.middle_name ?? u.middleName,
+    ]
+      .filter(Boolean)
+      .join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
-    tariffCategory: (u.tariff_category || u.tariffCategory || "K1") as TariffCategory,
+    status:
+      u.status === "BLOCKED" || u.status === "Заблокирован"
+        ? "Заблокирован"
+        : u.status === "FRAUD"
+          ? "Фин контроль"
+          : "Активен",
+    tariffCategory: (u.tariff_category ||
+      u.tariffCategory ||
+      "K1") as TariffCategory,
     residency: (u.residency || "RESIDENT") as CustomerResidency,
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
-      BTC: Number(u.balances?.BTC ?? 0),
-      ETH: Number(u.balances?.ETH ?? 0),
       USDT: Number(u.balances?.USDT_TRC20 ?? u.balances?.USDT ?? 0),
     },
     createdAt: u.createdAt || new Date().toISOString(),
@@ -194,27 +296,43 @@ export async function getUsers(params: {
     lastLoginIp: u.last_login_ip || undefined,
     lastLoginDevice: u.last_login_device || undefined,
   }));
-  return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+  return {
+    items,
+    total: data.total ?? items.length,
+    offset: data.offset ?? 0,
+    limit: data.limit ?? items.length,
+  };
 }
 
-export async function getUserById(id: string|number): Promise<User> {
+export async function getUserById(id: string | number): Promise<User> {
   const res = await fetch(`/api/user-management/${id}`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load user");
   const u = await res.json();
   const user: User = {
     id: String(u.customer_id ?? u.id ?? u.userId ?? id),
     absClientId: String(u.customer_id ?? u.id ?? u.userId ?? id),
-    fullName: [u.last_name ?? u.lastName, u.first_name ?? u.firstName, u.middle_name ?? u.middleName].filter(Boolean).join(" "),
+    fullName: [
+      u.last_name ?? u.lastName,
+      u.first_name ?? u.firstName,
+      u.middle_name ?? u.middleName,
+    ]
+      .filter(Boolean)
+      .join(" "),
     phone: u.phone || "",
     email: u.email || "",
-    status: (u.status === "BLOCKED" || u.status === "Заблокирован") ? "Заблокирован" : (u.status === "FRAUD" ? "Фин контроль" : "Активен"),
-    tariffCategory: (u.tariff_category || u.tariffCategory || "K1") as TariffCategory,
+    status:
+      u.status === "BLOCKED" || u.status === "Заблокирован"
+        ? "Заблокирован"
+        : u.status === "FRAUD"
+          ? "Фин контроль"
+          : "Активен",
+    tariffCategory: (u.tariff_category ||
+      u.tariffCategory ||
+      "K1") as TariffCategory,
     residency: (u.residency || "RESIDENT") as CustomerResidency,
     balances: {
       COM: Number(u.balances?.SOM ?? u.balances?.COM ?? 0),
       SALAM: Number(u.balances?.ESOM ?? u.balances?.SALAM ?? 0),
-      BTC: Number(u.balances?.BTC ?? 0),
-      ETH: Number(u.balances?.ETH ?? 0),
       USDT: Number(u.balances?.USDT_TRC20 ?? u.balances?.USDT ?? 0),
     },
     createdAt: u.createdAt || new Date().toISOString(),
@@ -225,21 +343,49 @@ export async function getUserById(id: string|number): Promise<User> {
   return user;
 }
 
-export async function createUser(payload: { firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; }) {
+export async function createUser(payload: {
+  firstName: string;
+  lastName: string;
+  middleName?: string;
+  phone: string;
+  email: string;
+  status: "Активен" | "Заблокирован" | "Фин контроль";
+}) {
   const body = {
     first_name: payload.firstName,
     last_name: payload.lastName,
     middle_name: payload.middleName || "",
     phone: payload.phone,
     email: payload.email,
-    status: payload.status === "Заблокирован" ? "BLOCKED" : (payload.status === "Фин контроль" ? "FRAUD" : "ACTIVE"),
+    status:
+      payload.status === "Заблокирован"
+        ? "BLOCKED"
+        : payload.status === "Фин контроль"
+          ? "FRAUD"
+          : "ACTIVE",
   };
-  const res = await fetch(`/api/user-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch(`/api/user-management`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) throw new Error("Failed to create user");
   return res.json();
 }
 
-export async function updateUser(id: string|number, payload: Partial<{ firstName: string; lastName: string; middleName?: string; phone: string; email: string; status: "Активен"|"Заблокирован"|"Фин контроль"; tariffCategory: TariffCategory; residency: CustomerResidency; }>) {
+export async function updateUser(
+  id: string | number,
+  payload: Partial<{
+    firstName: string;
+    lastName: string;
+    middleName?: string;
+    phone: string;
+    email: string;
+    status: "Активен" | "Заблокирован" | "Фин контроль";
+    tariffCategory: TariffCategory;
+    residency: CustomerResidency;
+  }>,
+) {
   const body: any = {
     ...(payload.firstName != null ? { first_name: payload.firstName } : {}),
     ...(payload.lastName != null ? { last_name: payload.lastName } : {}),
@@ -247,20 +393,34 @@ export async function updateUser(id: string|number, payload: Partial<{ firstName
     ...(payload.phone != null ? { phone: payload.phone } : {}),
     ...(payload.email != null ? { email: payload.email } : {}),
     ...(payload.status != null ? { status: payload.status } : {}),
-    ...(payload.tariffCategory != null ? { tariff_category: payload.tariffCategory } : {}),
+    ...(payload.tariffCategory != null
+      ? { tariff_category: payload.tariffCategory }
+      : {}),
     ...(payload.residency != null ? { residency: payload.residency } : {}),
   };
-  if (body.status) body.status = body.status === "Заблокирован" ? "BLOCKED" : (body.status === "Фин контроль" ? "FRAUD" : "ACTIVE");
-  const res = await fetch(`/api/user-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (body.status)
+    body.status =
+      body.status === "Заблокирован"
+        ? "BLOCKED"
+        : body.status === "Фин контроль"
+          ? "FRAUD"
+          : "ACTIVE";
+  const res = await fetch(`/api/user-management/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) {
-    const data = await res.json().catch(() => null) as any;
-    const message = Array.isArray(data?.message) ? data.message.join("; ") : (data?.message || "Failed to update user");
+    const data = (await res.json().catch(() => null)) as any;
+    const message = Array.isArray(data?.message)
+      ? data.message.join("; ")
+      : data?.message || "Failed to update user";
     throw new Error(message);
   }
   return res.json();
 }
 
-export async function deleteUser(id: string|number) {
+export async function deleteUser(id: string | number) {
   const res = await fetch(`/api/user-management/${id}`, { method: "DELETE" });
   if (!res.ok && res.status !== 204) throw new Error("Failed to delete user");
   return true;
@@ -268,13 +428,20 @@ export async function deleteUser(id: string|number) {
 
 function roleLabelFromKey(k?: string): string {
   switch ((k || "").toUpperCase()) {
-    case "SUPER_ADMIN": return "Супер админ";
-    case "SKK": return "СКК";
-    case "UDBO": return "УДБО";
-    case "UBUIO": return "УБУИО";
-    case "TREASURY": return "Казначейство";
-    case "UIT": return "УИТ";
-    default: return k || "Супер админ";
+    case "SUPER_ADMIN":
+      return "Супер админ";
+    case "SKK":
+      return "СКК";
+    case "UDBO":
+      return "УДБО";
+    case "UBUIO":
+      return "УБУИО";
+    case "TREASURY":
+      return "Казначейство";
+    case "UIT":
+      return "УИТ";
+    default:
+      return k || "Супер админ";
   }
 }
 function roleKeyFromLabel(lbl: string): string {
@@ -291,30 +458,34 @@ function roleKeyFromLabel(lbl: string): string {
 export async function getCurrentAdminRole(): Promise<string> {
   const res = await fetch(`/api/admin-management/me`, { cache: "no-store" });
   if (!res.ok) return "SUPER_ADMIN";
-  const data = await res.json().catch(() => ({} as any));
+  const data = await res.json().catch(() => ({}) as any);
   const role = (data && (data.role || data?.data?.role)) || "SUPER_ADMIN";
   return String(role);
 }
 
 export async function getAdmins(params: {
-  offset?: number; limit?: number;
-  firstNameQuery?: string; lastNameQuery?: string; emailQuery?: string;
-  roles?: string[]; // backend role keys e.g. SUPER_ADMIN
-  createdFrom?: string; createdTo?: string; // ISO
+  offset?: number;
+  limit?: number;
+  firstNameQuery?: string;
+  lastNameQuery?: string;
+  emailQuery?: string;
+  roles?: string[];
+  createdFrom?: string;
+  createdTo?: string;
   sortFirstName?: "asc" | "desc";
   sortLastName?: "asc" | "desc";
   sortEmail?: "asc" | "desc";
   sortCreatedAt?: "asc" | "desc";
-}): Promise<{ items: Admin[]; total: number; offset: number; limit: number; }> {
+}): Promise<{ items: Admin[]; total: number; offset: number; limit: number }> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));
   if (params.firstNameQuery) q.set("firstNameQuery", params.firstNameQuery);
 
-
   if (params.lastNameQuery) q.set("lastNameQuery", params.lastNameQuery);
   if (params.emailQuery) q.set("emailQuery", params.emailQuery);
-  if (params.roles && params.roles.length) for (const r of params.roles) q.append("roles", r);
+  if (params.roles && params.roles.length)
+    for (const r of params.roles) q.append("roles", r);
   if (params.createdFrom) q.set("createdFrom", params.createdFrom);
   if (params.createdTo) q.set("createdTo", params.createdTo);
   if (params.sortFirstName) q.set("sortFirstName", params.sortFirstName);
@@ -322,7 +493,9 @@ export async function getAdmins(params: {
   if (params.sortEmail) q.set("sortEmail", params.sortEmail);
   if (params.sortCreatedAt) q.set("sortCreatedAt", params.sortCreatedAt);
 
-  const res = await fetch(`/api/admin-management?${q.toString()}`, { cache: "no-store" });
+  const res = await fetch(`/api/admin-management?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load admins");
   const data = await res.json();
   const itemsSrc: any[] = data.items || data || [];
@@ -334,20 +507,48 @@ export async function getAdmins(params: {
     role: roleLabelFromKey(a.role || "SUPER_ADMIN"),
     createdAt: a.createdAt || new Date().toISOString(),
   }));
-  return { items, total: data.total ?? items.length, offset: data.offset ?? 0, limit: data.limit ?? items.length };
+  return {
+    items,
+    total: data.total ?? items.length,
+    offset: data.offset ?? 0,
+    limit: data.limit ?? items.length,
+  };
 }
 
-export async function createAdmin(payload: { email: string; password: string; firstName: string; lastName: string; role: string; }) {
+export async function createAdmin(payload: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}) {
   const body = { ...payload, role: roleKeyFromLabel(payload.role) };
-  const res = await fetch(`/api/admin-management`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch(`/api/admin-management`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) throw new Error("Failed to create admin");
   return res.json();
 }
 
-export async function updateAdmin(id: string | number, payload: Partial<{ email: string; password: string; firstName: string; lastName: string; role: string; }>) {
+export async function updateAdmin(
+  id: string | number,
+  payload: Partial<{
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+  }>,
+) {
   const body = { ...payload } as any;
   if (body.role) body.role = roleKeyFromLabel(body.role);
-  const res = await fetch(`/api/admin-management/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const res = await fetch(`/api/admin-management/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) throw new Error("Failed to update admin");
   return res.json();
 }
@@ -359,12 +560,13 @@ export async function deleteAdmin(id: string | number) {
 }
 
 export async function getTransactionsStats(params: {
-  dateFrom?: string; dateTo?: string;
+  dateFrom?: string;
+  dateTo?: string;
   statuses?: TransactionStatus[];
   currencies?: string[];
-  operations?: ("bank"|"crypto"|"exchange")[];
-  metric?: "sum"|"count";
-  bucket?: "day"|"week"|"month";
+  operations?: ("bank" | "crypto" | "exchange")[];
+  metric?: "sum" | "count";
+  bucket?: "day" | "week" | "month";
 }): Promise<{
   points: { ts: number; label: string; value: number }[];
   totalSum: number;
@@ -374,16 +576,27 @@ export async function getTransactionsStats(params: {
   mostActiveDayLabel: string;
   averageCheck: number;
 }> {
-  const opMap: Record<string, string> = { bank: "BANK_TO_BANK", crypto: "WALLET_TO_WALLET", exchange: "CONVERSION" };
+  const opMap: Record<string, string> = {
+    bank: "BANK_TO_BANK",
+    crypto: "WALLET_TO_WALLET",
+    exchange: "CONVERSION",
+  };
   const q = new URLSearchParams();
   if (params.dateFrom) q.set("date_from", params.dateFrom);
   if (params.dateTo) q.set("date_to", params.dateTo);
-  if (params.statuses && params.statuses.length) for (const s of params.statuses) q.append("status", mapUiStatusToBackend(s));
-  if (params.currencies && params.currencies.length) for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
-  if (params.operations && params.operations.length) for (const o of params.operations) q.append("kind", opMap[o] || o);
+  if (params.statuses && params.statuses.length)
+    for (const s of params.statuses)
+      q.append("status", mapUiStatusToBackend(s));
+  if (params.currencies && params.currencies.length)
+    for (const c of params.currencies)
+      q.append("asset", mapDisplayToAssetDisplayHelper(c));
+  if (params.operations && params.operations.length)
+    for (const o of params.operations) q.append("kind", opMap[o] || o);
   if (params.metric) q.set("metric", params.metric);
   if (params.bucket) q.set("group_by", params.bucket);
-  const res = await fetch(`/api/transactions/stats?${q.toString()}`, { cache: "no-store" });
+  const res = await fetch(`/api/transactions/stats?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load transactions stats");
   const d = await res.json();
   const series = Array.isArray(d.series) ? d.series : [];
@@ -391,7 +604,9 @@ export async function getTransactionsStats(params: {
   const points = series.map((p: any) => {
     const iso = String(p.date);
     const ts = Date.parse(iso);
-    const label = isNaN(ts) ? String(p.date) : new Date(iso).toISOString().slice(0, 10).split("-").reverse().join(".");
+    const label = isNaN(ts)
+      ? String(p.date)
+      : new Date(iso).toISOString().slice(0, 10).split("-").reverse().join(".");
     return { ts: isNaN(ts) ? 0 : ts, label, value: Number(p.value ?? 0) };
   });
   const mapCurrencyToDisplay = (x?: string) => {
@@ -402,46 +617,92 @@ export async function getTransactionsStats(params: {
   };
   const totalSum = Number(summary.total_sum_som ?? 0);
   const totalCount = Number(summary.total_count ?? 0);
-  const topCurrencyBySumLabel = mapCurrencyToDisplay(summary.top_currency_by_sum);
-  const topCurrencyByCountLabel = mapCurrencyToDisplay(summary.top_currency_by_count);
-  const mostActiveDayLabel = typeof summary.most_active_day === "string" && summary.most_active_day
-    ? summary.most_active_day.slice(0, 10).split("-").reverse().join(".")
-    : "—";
+  const topCurrencyBySumLabel = mapCurrencyToDisplay(
+    summary.top_currency_by_sum,
+  );
+  const topCurrencyByCountLabel = mapCurrencyToDisplay(
+    summary.top_currency_by_count,
+  );
+  const mostActiveDayLabel =
+    typeof summary.most_active_day === "string" && summary.most_active_day
+      ? summary.most_active_day.slice(0, 10).split("-").reverse().join(".")
+      : "—";
   const averageCheck = Number(summary.average_check_som ?? 0);
-  return { points, totalSum, totalCount, topCurrencyBySumLabel, topCurrencyByCountLabel, mostActiveDayLabel, averageCheck };
+  return {
+    points,
+    totalSum,
+    totalCount,
+    topCurrencyBySumLabel,
+    topCurrencyByCountLabel,
+    mostActiveDayLabel,
+    averageCheck,
+  };
 }
 
 export async function getSettings(): Promise<Record<string, string>> {
-  const res = await fetch(`/api/blockchain-config/settings`, { cache: "no-store" });
+  const res = await fetch(`/api/blockchain-config/settings`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load settings");
   return res.json();
 }
 
 export async function putSettings(payload: Record<string, string>) {
-  const res = await fetch(`/api/blockchain-config/settings`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+  const res = await fetch(`/api/blockchain-config/settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
   if (!res.ok) throw new Error("Failed to save settings");
   return res.json();
 }
 
-// Helpers for assets mapping between backend codes and UI labels
+export async function getReserves(): Promise<TreasuryReserves> {
+  const res = await fetch(`/api/blockchain-config/reserves`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load reserves");
+  const data = await res.json();
+  return {
+    treasuryAddress: String(data.treasury_address || ""),
+    usdtBalance: Number(data.usdt_balance ?? 0),
+    trxBalance: Number(data.trx_balance ?? 0),
+    energyAvailable: Number(data.energy_available ?? 0),
+    bandwidthAvailable: Number(data.bandwidth_available ?? 0),
+    energySpentToday: Number(data.energy_spent_today ?? 0),
+    energySpentTotal: Number(data.energy_spent_total ?? 0),
+    bandwidthSpentToday: Number(data.bandwidth_spent_today ?? 0),
+    bandwidthSpentTotal: Number(data.bandwidth_spent_total ?? 0),
+    networkFeeTrxToday: Number(data.network_fee_trx_today ?? 0),
+    networkFeeTrxTotal: Number(data.network_fee_trx_total ?? 0),
+  };
+}
+
 function mapAssetToDisplay(x?: string): string {
   switch (x) {
-    case "SOM": return "COM";
-    case "ESOM": return "SALAM";
-    case "USDT_TRC20": return "USDT";
-    default: return x || "COM";
+    case "SOM":
+      return "COM";
+    case "ESOM":
+      return "SALAM";
+    case "USDT_TRC20":
+      return "USDT";
+    default:
+      return x || "COM";
   }
 }
 function mapDisplayToAssetDisplayHelper(x?: string): string {
   switch (x) {
-    case "COM": return "SOM";
-    case "SALAM": return "ESOM";
-    case "USDT": return "USDT_TRC20";
-    default: return x || "SOM";
+    case "COM":
+      return "SOM";
+    case "SALAM":
+      return "ESOM";
+    case "USDT":
+      return "USDT_TRC20";
+    default:
+      return x || "SOM";
   }
 }
 
-// ===== Antifraud =====
 export type AntiFraudRule = {
   id: number;
   key: string;
@@ -452,45 +713,69 @@ export type AntiFraudRule = {
   percent_threshold?: any;
   updatedAt: string;
 };
-export type AntiFraudRuleUpdate = Partial<{ enabled: boolean; period_days: any; threshold_som: any; min_count: any; percent_threshold: any; }>
+export type AntiFraudRuleUpdate = Partial<{
+  enabled: boolean;
+  period_days: any;
+  threshold_som: any;
+  min_count: any;
+  percent_threshold: any;
+}>;
 
 export async function getAntifraudRules(): Promise<AntiFraudRule[]> {
   const res = await fetch(`/api/antifraud/rules`, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load antifraud rules");
   return res.json();
 }
-export async function updateAntifraudRule(key: string, payload: AntiFraudRuleUpdate): Promise<AntiFraudRule> {
-  const res = await fetch(`/api/antifraud/rules/${encodeURIComponent(key)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+export async function updateAntifraudRule(
+  key: string,
+  payload: AntiFraudRuleUpdate,
+): Promise<AntiFraudRule> {
+  const res = await fetch(`/api/antifraud/rules/${encodeURIComponent(key)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
   if (!res.ok) throw new Error("Failed to update antifraud rule");
   return res.json();
 }
 
-export type AntiFraudCaseStatus = "OPEN"|"APPROVED"|"REJECTED";
+export type AntiFraudCaseStatus = "OPEN" | "APPROVED" | "REJECTED";
 export type AntiFraudCaseItem = {
-  id: string; // case id as string
+  id: string;
   status: AntiFraudCaseStatus;
-  createdAt: string; // case createdAt
-  amount: number; // transaction.amount
-  currency: string; // display currency
+  createdAt: string;
+  amount: number;
+  currency: string;
   sender: string;
   recipient: string;
-  txId?: string; // transaction id
+  txId?: string;
   txHash?: string;
-  ruleKey?: string; // backend rule key
-  reason?: any; // backend-provided reason payload/text
+  ruleKey?: string;
+  reason?: any;
 };
 export async function getAntifraudCases(params: {
-  offset?: number; limit?: number;
-  sortBy?: "createdAt"|"amount"|"status"|"kind";
-  sortDir?: "asc"|"desc";
-  id?: string; txHash?: string; sender?: string; receiver?: string;
-  dateFrom?: string; dateTo?: string;
-  minAmount?: number; maxAmount?: number;
+  offset?: number;
+  limit?: number;
+  sortBy?: "createdAt" | "amount" | "status" | "kind";
+  sortDir?: "asc" | "desc";
+  id?: string;
+  txHash?: string;
+  sender?: string;
+  receiver?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minAmount?: number;
+  maxAmount?: number;
   currencies?: string[];
   operations?: string[];
   caseStatus?: AntiFraudCaseStatus;
   caseStatuses?: AntiFraudCaseStatus[];
-}): Promise<{ items: AntiFraudCaseItem[]; total: number; offset: number; limit: number; }> {
+}): Promise<{
+  items: AntiFraudCaseItem[];
+  total: number;
+  offset: number;
+  limit: number;
+}> {
   const unwrapListResponse = (raw: any) => {
     const root = raw?.data && typeof raw.data === "object" ? raw.data : raw;
     return {
@@ -501,7 +786,11 @@ export async function getAntifraudCases(params: {
     };
   };
 
-  const buildQuery = (singleStatus?: AntiFraudCaseStatus, offsetOverride?: number, limitOverride?: number) => {
+  const buildQuery = (
+    singleStatus?: AntiFraudCaseStatus,
+    offsetOverride?: number,
+    limitOverride?: number,
+  ) => {
     const q = new URLSearchParams();
     const offset = offsetOverride ?? params.offset;
     const limit = limitOverride ?? params.limit;
@@ -515,10 +804,13 @@ export async function getAntifraudCases(params: {
     if (params.receiver) q.set("receiver", params.receiver);
     if (params.dateFrom) q.set("date_from", params.dateFrom);
     if (params.dateTo) q.set("date_to", params.dateTo);
-    if (typeof params.minAmount === "number") q.set("amount_min", String(params.minAmount));
-    if (typeof params.maxAmount === "number") q.set("amount_max", String(params.maxAmount));
+    if (typeof params.minAmount === "number")
+      q.set("amount_min", String(params.minAmount));
+    if (typeof params.maxAmount === "number")
+      q.set("amount_max", String(params.maxAmount));
     if (params.currencies && params.currencies.length) {
-      for (const c of params.currencies) q.append("asset", mapDisplayToAssetDisplayHelper(c));
+      for (const c of params.currencies)
+        q.append("asset", mapDisplayToAssetDisplayHelper(c));
     }
     if (params.operations && params.operations.length) {
       for (const o of params.operations) q.append("kind", o);
@@ -553,8 +845,16 @@ export async function getAntifraudCases(params: {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
     };
-    const senderLabel = tx.sender_customer ? [tx.sender_customer.last_name, tx.sender_customer.first_name].filter(Boolean).join(" ") : (tx.sender_wallet_address || "—");
-    const receiverLabel = tx.receiver_customer ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name].filter(Boolean).join(" ") : (tx.receiver_wallet_address || "—");
+    const senderLabel = tx.sender_customer
+      ? [tx.sender_customer.last_name, tx.sender_customer.first_name]
+          .filter(Boolean)
+          .join(" ")
+      : tx.sender_wallet_address || "—";
+    const receiverLabel = tx.receiver_customer
+      ? [tx.receiver_customer.last_name, tx.receiver_customer.first_name]
+          .filter(Boolean)
+          .join(" ")
+      : tx.receiver_wallet_address || "—";
     const amountValue =
       asNumber(tx.amount) ??
       asNumber(tx.amount_out) ??
@@ -585,15 +885,18 @@ export async function getAntifraudCases(params: {
     };
   };
 
-  const requestedStatuses = params.caseStatuses && params.caseStatuses.length
-    ? Array.from(new Set(params.caseStatuses))
-    : params.caseStatus
-      ? [params.caseStatus]
-      : (["OPEN", "APPROVED", "REJECTED"] as AntiFraudCaseStatus[]);
+  const requestedStatuses =
+    params.caseStatuses && params.caseStatuses.length
+      ? Array.from(new Set(params.caseStatuses))
+      : params.caseStatus
+        ? [params.caseStatus]
+        : (["OPEN", "APPROVED", "REJECTED"] as AntiFraudCaseStatus[]);
 
   if (requestedStatuses.length === 1) {
     const q = buildQuery(requestedStatuses[0]);
-    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, {
+      cache: "no-store",
+    });
     if (!res.ok) throw new Error("Failed to load antifraud cases");
     const parsed = unwrapListResponse(await res.json());
     const items: AntiFraudCaseItem[] = parsed.items.map(mapCase);
@@ -601,20 +904,24 @@ export async function getAntifraudCases(params: {
       items,
       total: parsed.total || items.length,
       offset: Number.isFinite(parsed.offset) ? parsed.offset : 0,
-      limit: Number.isFinite(parsed.limit) && parsed.limit > 0 ? parsed.limit : items.length,
+      limit:
+        Number.isFinite(parsed.limit) && parsed.limit > 0
+          ? parsed.limit
+          : items.length,
     };
   }
 
-  // Backend supports only one case_status at a time; request each status and merge.
   const offset = params.offset ?? 0;
   const limit = params.limit ?? 20;
   const perStatusLimit = offset + limit;
-  // Fetch statuses sequentially to avoid refresh-token races between parallel requests.
+
   const responses: any[] = [];
   const errors: string[] = [];
   for (const status of requestedStatuses) {
     const q = buildQuery(status, 0, perStatusLimit);
-    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, { cache: "no-store" });
+    const res = await fetch(`/api/antifraud/cases?${q.toString()}`, {
+      cache: "no-store",
+    });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
       errors.push(`status=${status}, http=${res.status}, body=${body}`);
@@ -631,7 +938,7 @@ export async function getAntifraudCases(params: {
   let total = 0;
   for (const data of responses) {
     total += Number(data?.total ?? 0);
-    for (const raw of (data?.items || [])) {
+    for (const raw of data?.items || []) {
       const item = mapCase(raw);
       byId.set(item.id, item);
     }
@@ -654,12 +961,16 @@ export async function getAntifraudCases(params: {
 }
 
 export async function getTariffs(): Promise<TariffSetting[]> {
-  const res = await fetch(`/api/blockchain-config/tariffs`, { cache: "no-store" });
+  const res = await fetch(`/api/blockchain-config/tariffs`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load tariffs");
   return res.json();
 }
 
-export async function putTariffs(items: TariffSetting[]): Promise<TariffSetting[]> {
+export async function putTariffs(
+  items: TariffSetting[],
+): Promise<TariffSetting[]> {
   const res = await fetch(`/api/blockchain-config/tariffs`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -669,34 +980,41 @@ export async function putTariffs(items: TariffSetting[]): Promise<TariffSetting[
   return res.json();
 }
 
-export async function approveAntifraudCase(id: string|number) {
-  const res = await fetch(`/api/antifraud/cases/${id}/approve`, { method: "PATCH" });
+export async function approveAntifraudCase(id: string | number) {
+  const res = await fetch(`/api/antifraud/cases/${id}/approve`, {
+    method: "PATCH",
+  });
   if (!res.ok) throw new Error("Failed to approve case");
   return res.json();
 }
-export async function rejectAntifraudCase(id: string|number) {
-  const res = await fetch(`/api/antifraud/cases/${id}/reject`, { method: "PATCH" });
+export async function rejectAntifraudCase(id: string | number) {
+  const res = await fetch(`/api/antifraud/cases/${id}/reject`, {
+    method: "PATCH",
+  });
   if (!res.ok) throw new Error("Failed to reject case");
   return res.json();
 }
-
-
-
-
 
 export async function getSupportTickets(params?: {
   status?: SupportTicketStatus;
   offset?: number;
   limit?: number;
-}): Promise<{ items: SupportTicket[]; total: number; offset: number; limit: number; }> {
+}): Promise<{
+  items: SupportTicket[];
+  total: number;
+  offset: number;
+  limit: number;
+}> {
   const q = new URLSearchParams();
   q.set("status", params?.status || "OPEN");
   if (params?.offset != null) q.set("offset", String(params.offset));
   if (params?.limit != null) q.set("limit", String(params.limit));
 
-  const res = await fetch(`/api/support/tickets?${q.toString()}`, { cache: "no-store" });
+  const res = await fetch(`/api/support/tickets?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load support tickets");
-  const data = await res.json().catch(() => ({} as any));
+  const data = await res.json().catch(() => ({}) as any);
   const rawItems = Array.isArray(data?.items) ? data.items : [];
 
   const items: SupportTicket[] = rawItems.map((item: any) => ({
@@ -705,7 +1023,10 @@ export async function getSupportTickets(params?: {
     status: (item.status || "OPEN") as SupportTicketStatus,
     createdAt: new Date(Number(item.created_at || 0)).toISOString(),
     lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),
-    closedAt: item.closed_at != null ? new Date(Number(item.closed_at)).toISOString() : null,
+    closedAt:
+      item.closed_at != null
+        ? new Date(Number(item.closed_at)).toISOString()
+        : null,
   }));
 
   return {
@@ -716,8 +1037,12 @@ export async function getSupportTickets(params?: {
   };
 }
 
-export async function getSupportTicketMessages(ticketId: number): Promise<SupportMessage[]> {
-  const res = await fetch(`/api/support/tickets/${ticketId}/messages`, { cache: "no-store" });
+export async function getSupportTicketMessages(
+  ticketId: number,
+): Promise<SupportMessage[]> {
+  const res = await fetch(`/api/support/tickets/${ticketId}/messages`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load support ticket messages");
   const data = await res.json().catch(() => []);
   const rawItems = Array.isArray(data) ? data : [];
@@ -731,7 +1056,10 @@ export async function getSupportTicketMessages(ticketId: number): Promise<Suppor
   }));
 }
 
-export async function replySupportTicket(ticketId: number, text: string): Promise<SupportMessage> {
+export async function replySupportTicket(
+  ticketId: number,
+  text: string,
+): Promise<SupportMessage> {
   const res = await fetch(`/api/support/tickets/${ticketId}/messages`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -748,8 +1076,12 @@ export async function replySupportTicket(ticketId: number, text: string): Promis
   };
 }
 
-export async function closeSupportTicket(ticketId: number): Promise<SupportTicket> {
-  const res = await fetch(`/api/support/tickets/${ticketId}/close`, { method: "PATCH" });
+export async function closeSupportTicket(
+  ticketId: number,
+): Promise<SupportTicket> {
+  const res = await fetch(`/api/support/tickets/${ticketId}/close`, {
+    method: "PATCH",
+  });
   if (!res.ok) throw new Error("Failed to close support ticket");
   const item = await res.json();
   return {
@@ -758,7 +1090,10 @@ export async function closeSupportTicket(ticketId: number): Promise<SupportTicke
     status: (item.status || "CLOSED") as SupportTicketStatus,
     createdAt: new Date(Number(item.created_at || 0)).toISOString(),
     lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),
-    closedAt: item.closed_at != null ? new Date(Number(item.closed_at)).toISOString() : null,
+    closedAt:
+      item.closed_at != null
+        ? new Date(Number(item.closed_at)).toISOString()
+        : null,
   };
 }
 
@@ -766,7 +1101,13 @@ export async function sendBroadcastPush(payload: {
   title: string;
   text: string;
   url?: string;
-}): Promise<{ successful: boolean; skipped?: boolean; sent?: number; failed?: number; details?: string[] }> {
+}): Promise<{
+  successful: boolean;
+  skipped?: boolean;
+  sent?: number;
+  failed?: number;
+  details?: string[];
+}> {
   const res = await fetch(`/api/notifications/push/broadcast`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

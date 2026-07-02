@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
-import { upstreamFetch } from "@/lib/http";
+import { upstreamFetch, type UpstreamResponse } from "@/lib/http";
 
-function withCookies(upstream: any, json: any, status: number) {
+function withCookies(
+  upstream: UpstreamResponse,
+  json: unknown,
+  status: number,
+) {
   const res = NextResponse.json(json, { status });
-  if ((upstream as any)?.__newCookies) {
-    // @ts-ignore
-    for (const c of (upstream as any).__newCookies.getAll()) res.cookies.set(c);
+  const cookies = upstream.__newCookies?.getAll();
+  if (cookies) {
+    for (const c of cookies) res.cookies.set(c);
   }
   return res;
 }

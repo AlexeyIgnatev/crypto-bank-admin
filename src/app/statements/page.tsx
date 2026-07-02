@@ -7,9 +7,7 @@ import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
   { label: "САЛАМ", value: "SALAM" },
-  { label: "ETH", value: "ETH" },
   { label: "USDT", value: "USDT" },
-  { label: "BTC", value: "BTC" },
 ];
 
 export default function StatementsPage() {
@@ -96,6 +94,11 @@ export default function StatementsPage() {
                 <th className="text-left px-3 py-2">Статус</th>
                 <th className="text-left px-3 py-2">Актив</th>
                 <th className="text-right px-3 py-2">Сумма</th>
+                <th className="text-right px-3 py-2">Комиссия банка</th>
+                <th className="text-right px-3 py-2">Сетевая комиссия</th>
+                <th className="text-right px-3 py-2">Газ (energy)</th>
+                <th className="text-right px-3 py-2">Двигающая сила</th>
+                <th className="text-right px-3 py-2">Сожжено BRICS</th>
                 <th className="text-left px-3 py-2">Отправитель</th>
                 <th className="text-left px-3 py-2">Получатель</th>
                 <th className="text-left px-3 py-2">Причина отклонения</th>
@@ -111,6 +114,25 @@ export default function StatementsPage() {
                     <td className="px-3 py-2">{t.status}</td>
                     <td className="px-3 py-2">{t.currency}</td>
                     <td className="px-3 py-2 text-right">{t.amount.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right">{Number(t.feeAmount || 0).toLocaleString()}</td>
+                    <td className="px-3 py-2 text-right">
+                      {t.networkFeeAmount != null
+                        ? `${t.networkFeeAmount.toLocaleString()} ${t.networkFeeAsset || ""}`.trim()
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {t.energyUsed != null ? t.energyUsed.toLocaleString() : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {t.bandwidthUsed != null
+                        ? t.bandwidthUsed.toLocaleString()
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {t.bricsBurnedAmount != null
+                        ? t.bricsBurnedAmount.toLocaleString()
+                        : "—"}
+                    </td>
                     <td className="px-3 py-2">{t.sender}</td>
                     <td className="px-3 py-2">{t.recipient}</td>
                     <td className="px-3 py-2">{rejectionReason}</td>
@@ -119,7 +141,7 @@ export default function StatementsPage() {
               })}
               {!loading && items.length === 0 && (
                 <tr>
-                  <td className="px-3 py-8 text-center text-muted" colSpan={8}>Нет данных</td>
+                  <td className="px-3 py-8 text-center text-muted" colSpan={13}>Нет данных</td>
                 </tr>
               )}
             </tbody>

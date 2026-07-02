@@ -1,12 +1,12 @@
 ﻿export type TransactionStatus = "PENDING" | "SUCCESS" | "REJECTED" | "FAILED";
 
 export interface Transaction {
-  id: string; // short hash
+  id: string;
   status: TransactionStatus;
-  createdAt: string; // ISO string
-  amount: number; // in minor units (e.g., cents) or plain number
+  createdAt: string;
+  amount: number;
   feeAmount?: number;
-  currency: string; // e.g., KGS, USD
+  currency: string;
   kind?: string;
   comment?: string;
   sender: string;
@@ -16,29 +16,33 @@ export interface Transaction {
   clientAbsId?: string;
   senderCustomerId?: string;
   recipientCustomerId?: string;
+  networkFeeAmount?: number;
+  networkFeeAsset?: string;
+  energyUsed?: number;
+  bandwidthUsed?: number;
+  bricsBurnedAmount?: number;
 }
 
 export type OperationType = "bank" | "crypto" | "exchange";
 
 export interface Filters {
-  q: string; // tx id or name
-  statuses?: TransactionStatus[]; // multi-select; empty/undefined = all
-  dateFrom?: string; // ISO
-  dateTo?: string;   // ISO
+  q: string;
+  statuses?: TransactionStatus[];
+  dateFrom?: string;
+  dateTo?: string;
   minAmount?: number;
   maxAmount?: number;
-  currencies?: string[]; // e.g., ["USDT","BTC"] etc.
+  currencies?: string[];
   operations?: OperationType[];
 }
 
-// Admins
 export interface Admin {
   id: string;
   firstName: string;
   lastName: string;
-  login: string; // email or username
-  role: string; // e.g., "Супер админ", "СКК", "УДБО", "УБУИО", "Казначейство", "УИТ"
-  createdAt: string; // ISO
+  login: string;
+  role: string;
+  createdAt: string;
 }
 
 export type UserStatus = "Активен" | "Заблокирован" | "Фин контроль";
@@ -57,14 +61,26 @@ export interface User {
   balances: {
     COM: number;
     SALAM: number;
-    BTC: number;
-    ETH: number;
     USDT: number;
   };
-  createdAt: string; // ISO
-  lastLoginAt?: string; // ISO
+  createdAt: string;
+  lastLoginAt?: string;
   lastLoginIp?: string;
   lastLoginDevice?: string;
+}
+
+export interface TreasuryReserves {
+  treasuryAddress: string;
+  usdtBalance: number;
+  trxBalance: number;
+  energyAvailable: number;
+  bandwidthAvailable: number;
+  energySpentToday: number;
+  energySpentTotal: number;
+  bandwidthSpentToday: number;
+  bandwidthSpentTotal: number;
+  networkFeeTrxToday: number;
+  networkFeeTrxTotal: number;
 }
 
 export type SupportTicketStatus = "OPEN" | "CLOSED";
@@ -86,5 +102,3 @@ export interface SupportMessage {
   text: string;
   createdAt: string;
 }
-
-

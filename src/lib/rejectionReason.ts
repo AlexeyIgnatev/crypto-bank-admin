@@ -11,7 +11,8 @@ const TECHNICAL_RULE_REASONS: Array<[RegExp, string]> = [
 ];
 
 export function readableRejectionReason(transaction: Transaction): string {
-  if (transaction.status !== "REJECTED" && transaction.status !== "FAILED") return "-";
+  if (transaction.status !== "REJECTED" && transaction.status !== "FAILED")
+    return "-";
 
   const source = (transaction.comment || "").trim();
   if (!source) return "Операция отклонена";
@@ -29,19 +30,33 @@ export function readableRejectionReason(transaction: Transaction): string {
   if (lower.includes("blocked") || lower.includes("заблок")) {
     return "Клиент заблокирован";
   }
-  if (lower.includes("fraud") || lower.includes("anti-fraud") || lower.includes("финконтрол")) {
+  if (
+    lower.includes("fraud") ||
+    lower.includes("anti-fraud") ||
+    lower.includes("финконтрол")
+  ) {
     return "Операция отклонена финконтролем";
   }
-  if (lower.includes("permission denied") || lower.includes("api key permissions")) {
+  if (
+    lower.includes("permission denied") ||
+    lower.includes("api key permissions")
+  ) {
     return "Нет разрешения на выполнение операции";
   }
-  if (lower.includes("minimum") || lower.includes("min=") || lower.includes("below minimum")) {
+  if (
+    lower.includes("minimum") ||
+    lower.includes("min=") ||
+    lower.includes("below minimum")
+  ) {
     return "Сумма меньше минимально допустимой";
   }
   if (lower.includes("recipient not found")) {
     return "Получатель не найден";
   }
-  if (lower.includes("customer not found") || lower.includes("sender not found")) {
+  if (
+    lower.includes("customer not found") ||
+    lower.includes("sender not found")
+  ) {
     return "Клиент не найден";
   }
   if (lower.includes("unsupported")) {

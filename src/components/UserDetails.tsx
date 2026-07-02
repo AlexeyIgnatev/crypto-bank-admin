@@ -13,7 +13,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default function UserDetails({ user, onClose, onEdit, onDelete }: { user: User; onClose: () => void; onEdit: () => void; onDelete: () => void; }) {
-  const total = user.balances.COM + user.balances.SALAM + user.balances.BTC + user.balances.ETH + user.balances.USDT;
+  const total = user.balances.COM + user.balances.SALAM + user.balances.USDT;
   return (
     <div className="space-y-3 text-sm">
       <Row label="ФИО" value={user.fullName} />
@@ -29,8 +29,6 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>COM</div><div className="text-right">{formatAmount6(user.balances.COM)}</div>
             <div>SALAM</div><div className="text-right">{formatAmount6(user.balances.SALAM)}</div>
-            <div>BTC</div><div className="text-right">{formatAmount6(user.balances.BTC)}</div>
-            <div>ETH</div><div className="text-right">{formatAmount6(user.balances.ETH)}</div>
             <div>USDT</div><div className="text-right">{formatAmount6(user.balances.USDT)}</div>
           </div>
         </div>
@@ -53,3 +51,4 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
     </div>
   );
 }
+

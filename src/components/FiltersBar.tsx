@@ -21,9 +21,7 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
   const assets = [
     { value: "COM", label: "СОМ", icon: "🪙" },
     { value: "SALAM", label: "Салам", icon: "🧧" },
-    { value: "BTC", label: "Биткоин", icon: "₿" },
     { value: "USDT", label: "USDT", icon: "Ⓣ" },
-    { value: "ETH", label: "ETH", icon: "◆" },
   ];
 
   const ops: { value: OperationType; label: string }[] = [
@@ -322,5 +320,6 @@ function AmountButton({ min, max, onChange, active }: { min?: number; max?: numb
     </>
   );
 }
+
 
 

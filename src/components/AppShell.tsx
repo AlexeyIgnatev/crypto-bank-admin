@@ -32,6 +32,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       ? "Транзакции"
       : pathname === "/statements"
       ? "Выписка"
+      : pathname === "/reserves"
+      ? "Резервы"
       : pathname === "/control"
       ? "Фин. контроль"
       : pathname === "/control-cases"
