@@ -1,23 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import "./theme.css";
 import ThemeProvider from "../components/ThemeProvider";
 import AppShell from "../components/AppShell";
 
-const geistSans = Geist({
+const uiSans = Noto_Sans({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const uiMono = Noto_Sans_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Bank Admin",
-  description: "Admin panel",
+  title: "BRICS Bank Admin",
+  description: "Административная панель BRICS Bank",
 };
 
 export default function RootLayout({
@@ -27,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${uiSans.variable} ${uiMono.variable} antialiased`}>
         <ThemeProvider>
           <AppShell>{children}</AppShell>
         </ThemeProvider>
