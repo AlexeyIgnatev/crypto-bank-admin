@@ -70,7 +70,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`h-screen sticky top-0 border-r transition-[width,background,color,border-color] duration-300 ${
+      className={`sticky top-0 flex h-screen flex-col overflow-hidden border-r transition-[width,background,color,border-color] duration-300 ${
         open ? "w-64" : "w-16"
       }`}
       style={{ background: "var(--sidebar-bg)", color: "var(--sidebar-fg)", borderColor: "var(--sidebar-border)" }}
@@ -85,28 +85,30 @@ export default function Sidebar() {
         </button>
         {open && <div className="text-sm opacity-60">&nbsp;</div>}
       </div>
-      <nav className="mt-2 space-y-1">
-        {allItems
-          .filter((it) => allowedHrefs.includes(it.href))
-          .map((it) => {
-            const active = pathname === it.href;
-            return (
-              <Link key={it.href} href={it.href} className="block">
-                <div
-                  className={`mx-2 flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${
-                    open ? "gap-3 justify-start" : "justify-center"
-                  } ${active ? "text-white" : "opacity-90 hover:opacity-100"}`}
-                  style={active ? { background: "var(--primary)" } : {}}
-                  title={it.label}
-                >
-                  <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
-                  {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}
-                </div>
-              </Link>
-            );
-          })}
-      </nav>
-      <div className="absolute bottom-0 left-0 right-0 p-3 border-t" style={{ borderColor: "var(--sidebar-border)" }}>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <nav className="mt-2 space-y-1 pb-3">
+          {allItems
+            .filter((it) => allowedHrefs.includes(it.href))
+            .map((it) => {
+              const active = pathname === it.href;
+              return (
+                <Link key={it.href} href={it.href} className="block">
+                  <div
+                    className={`mx-2 flex items-center rounded px-3 py-2 text-sm font-medium transition-colors ${
+                      open ? "gap-3 justify-start" : "justify-center"
+                    } ${active ? "text-white" : "opacity-90 hover:opacity-100"}`}
+                    style={active ? { background: "var(--primary)" } : {}}
+                    title={it.label}
+                  >
+                    <span className={`text-lg ${open ? "w-5 text-center" : ""}`}>{it.icon}</span>
+                    {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}
+                  </div>
+                </Link>
+              );
+            })}
+        </nav>
+      </div>
+      <div className="border-t p-3" style={{ borderColor: "var(--sidebar-border)" }}>
         <button
           className={`w-full flex items-center gap-3 px-3 py-2 rounded hover-surface text-sm overflow-hidden ${open ? "" : "justify-center"}`}
           title="Выйти"
