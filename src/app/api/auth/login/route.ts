@@ -16,9 +16,10 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as LoginBody;
   const email = body.email;
   const password = body.password;
+
   if (!email || !password) {
     return NextResponse.json(
-      { message: "Email Рё РїР°СЂРѕР»СЊ РѕР±СЏР·Р°С‚РµР»СЊРЅС‹" },
+      { message: "Email и пароль обязательны" },
       { status: 400 },
     );
   }
@@ -28,12 +29,15 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({ email, password }),
     auth: false,
   });
+
   const data = (await upstream
     .json()
     .catch(() => null)) as LoginResponse | null;
+
   if (upstream.ok && data?.accessToken && data?.refreshToken) {
     const res = NextResponse.json({ ok: true });
     const isHttps = new URL(req.url).protocol === "https:";
+
     res.cookies.set("accessToken", data.accessToken, {
       httpOnly: true,
       path: "/",
@@ -46,10 +50,12 @@ export async function POST(req: NextRequest) {
       sameSite: "lax",
       secure: isHttps,
     });
+
     return res;
   }
+
   return NextResponse.json(
-    { message: data?.message || "РћС€РёР±РєР° Р°РІС‚РѕСЂРёР·Р°С†РёРё" },
+    { message: data?.message || "Ошибка авторизации" },
     { status: upstream.status || 401 },
   );
 }
