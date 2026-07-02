@@ -46,7 +46,7 @@ export default function ReservesPage() {
         const reserves = await getReserves();
         if (alive) setData(reserves);
       } catch {
-        if (alive) setError("Не удалось загрузить резервы");
+        if (alive) setError("?? ??????? ????????? ???????");
       } finally {
         if (alive) setLoading(false);
       }
@@ -58,44 +58,45 @@ export default function ReservesPage() {
   }, []);
 
   if (loading) {
-    return <div className="m-auto text-muted">Загрузка...</div>;
+    return <div className="m-auto text-muted">????????...</div>;
   }
 
   if (error || !data) {
-    return <div className="m-auto text-red-500">{error || "Нет данных"}</div>;
+    return <div className="m-auto text-red-500">{error || "??? ??????"}</div>;
   }
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <MetricCard
-          label="Общий кошелек USDT"
+          label="????? ??????? USDT"
           value={`${fmtAmount(data.usdtBalance)} USDT`}
           hint={data.treasuryAddress}
         />
         <MetricCard
-          label="Общий кошелек TRX"
+          label="????? ??????? TRX"
           value={`${fmtAmount(data.trxBalance)} TRX`}
         />
         <MetricCard
-          label="Доступный газ (energy)"
+          label="????????? ??? (energy)"
           value={fmtInteger(data.energyAvailable)}
         />
         <MetricCard
-          label="Двигающая сила (bandwidth)"
+          label="????????? ???? (bandwidth)"
           value={fmtInteger(data.bandwidthAvailable)}
         />
         <MetricCard
-          label="Потрачено газа за сегодня"
+          label="????????? ???? ?? ???????"
           value={`${fmtAmount(data.networkFeeTrxToday)} TRX`}
-          hint={`Energy: ${fmtInteger(data.energySpentToday)}, двигающая сила: ${fmtInteger(data.bandwidthSpentToday)}`}
+          hint={`Energy: ${fmtInteger(data.energySpentToday)}, ????????? ????: ${fmtInteger(data.bandwidthSpentToday)}`}
         />
         <MetricCard
-          label="Потрачено газа за все время"
+          label="????????? ???? ?? ??? ?????"
           value={`${fmtAmount(data.networkFeeTrxTotal)} TRX`}
-          hint={`Energy: ${fmtInteger(data.energySpentTotal)}, двигающая сила: ${fmtInteger(data.bandwidthSpentTotal)}`}
+          hint={`Energy: ${fmtInteger(data.energySpentTotal)}, ????????? ????: ${fmtInteger(data.bandwidthSpentTotal)}`}
         />
       </div>
     </div>
   );
 }
+

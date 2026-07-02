@@ -76,64 +76,64 @@ export default function Home() {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Детали транзакции"
+        title="?????? ??????????"
       >
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="Статус" value={<StatusBadge status={selected.status} />} />
+            <Row label="??????" value={<StatusBadge status={selected.status} />} />
             <Row
-              label="Дата"
+              label="????"
               value={new Date(selected.createdAt).toLocaleString()}
             />
             <Row
-              label="Сумма"
+              label="?????"
               value={`${formatAmount6(selected.amount)} ${selected.currency}`}
             />
             <Row
-              label="Комиссия банка"
+              label="???????? ?????"
               value={formatAmount2(Number(selected.feeAmount || 0))}
             />
             {selected.currency === "USDT" && (
               <>
                 <Row
-                  label="Сетевая комиссия"
+                  label="??????? ????????"
                   value={
                     selected.networkFeeAmount != null
                       ? `${formatAmount6(selected.networkFeeAmount)} ${selected.networkFeeAsset || ""}`.trim()
-                      : "—"
+                      : "?"
                   }
                 />
                 <Row
-                  label="Потрачено газа (energy)"
+                  label="????????? ???? (energy)"
                   value={
                     selected.energyUsed != null
                       ? selected.energyUsed.toLocaleString()
-                      : "—"
+                      : "?"
                   }
                 />
                 <Row
-                  label="Двигающая сила (bandwidth)"
+                  label="????????? ???? (bandwidth)"
                   value={
                     selected.bandwidthUsed != null
                       ? selected.bandwidthUsed.toLocaleString()
-                      : "—"
+                      : "?"
                   }
                 />
               </>
             )}
             {selected.currency === "SALAM" && (
               <Row
-                label="Сожжено BRICS"
+                label="??????? BRICS"
                 value={
                   selected.bricsBurnedAmount != null
                     ? formatAmount6(selected.bricsBurnedAmount)
-                    : "—"
+                    : "?"
                 }
               />
             )}
             <Row
-              label="Отправитель"
+              label="???????????"
               value={
                 <UserLinkValue
                   text={selected.sender}
@@ -143,12 +143,12 @@ export default function Home() {
               }
             />
             <Row
-              label="ID отправителя ABS"
-              value={selected.senderAbsId || selected.senderCustomerId || "—"}
+              label="ID ??????????? ABS"
+              value={selected.senderAbsId || selected.senderCustomerId || "?"}
               mono
             />
             <Row
-              label="Получатель"
+              label="??????????"
               value={
                 <UserLinkValue
                   text={selected.recipient}
@@ -158,19 +158,19 @@ export default function Home() {
               }
             />
             <Row
-              label="ID получателя ABS"
+              label="ID ?????????? ABS"
               value={
-                selected.recipientAbsId || selected.recipientCustomerId || "—"
+                selected.recipientAbsId || selected.recipientCustomerId || "?"
               }
               mono
             />
             <Row
-              label="ID клиента ABS"
+              label="ID ??????? ABS"
               value={
                 selected.clientAbsId ||
                 selected.senderCustomerId ||
                 selected.recipientCustomerId ||
-                "—"
+                "?"
               }
               mono
             />
@@ -181,7 +181,7 @@ export default function Home() {
       <Modal
         open={openUser}
         onClose={() => setOpenUser(false)}
-        title="Пользователь"
+        title="????????????"
       >
         {selectedUser && (
           <UserDetails
@@ -199,7 +199,7 @@ export default function Home() {
       <Modal
         open={openUserEdit}
         onClose={() => setOpenUserEdit(false)}
-        title="Редактирование пользователя"
+        title="?????????????? ????????????"
       >
         {selectedUser && (
           <EditUserInline
@@ -234,8 +234,8 @@ function UserLinkValue({
         <button
           className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
           onClick={() => onOpenUser(String(customerId))}
-          aria-label="Открыть пользователя"
-          title="Открыть пользователя"
+          aria-label="??????? ????????????"
+          title="??????? ????????????"
         >
           <svg
             viewBox="0 0 20 20"
@@ -367,7 +367,7 @@ function EditUserInline({
           />
         </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">Статус</div>
+          <div className="text-sm mb-1">??????</div>
           <select
             className="ui-input"
             value={status}
@@ -379,7 +379,7 @@ function EditUserInline({
           </select>
         </div>
         <div>
-          <div className="text-sm mb-1">Тариф</div>
+          <div className="text-sm mb-1">?????</div>
           <select
             className="ui-input w-full"
             value={tariffCategory}
@@ -397,14 +397,14 @@ function EditUserInline({
           </select>
         </div>
         <div>
-          <div className="text-sm mb-1">Резидентство</div>
+          <div className="text-sm mb-1">????????????</div>
           <select
             className="ui-input w-full"
             value={residency}
             onChange={(e) => setResidency(e.target.value as CustomerResidency)}
           >
-            <option value="RESIDENT">Резидент</option>
-            <option value="NON_RESIDENT">Нерезидент</option>
+            <option value="RESIDENT">????????</option>
+            <option value="NON_RESIDENT">??????????</option>
           </select>
         </div>
       </div>
@@ -416,14 +416,14 @@ function EditUserInline({
           onClick={onCancel}
           disabled={submitting}
         >
-          Отмена
+          ??????
         </button>
         <button
           type="submit"
           className="btn btn-success w-full h-9"
           disabled={submitting}
         >
-          {submitting ? "Сохранение..." : "Сохранить"}
+          {submitting ? "??????????..." : "?????????"}
         </button>
       </div>
     </form>
@@ -439,12 +439,12 @@ function StatusBadge({ status }: { status: TransactionStatus }) {
         : "badge-danger";
   const text =
     status === "SUCCESS"
-      ? "Успешно"
+      ? "???????"
       : status === "PENDING"
-        ? "В обработке"
+        ? "? ?????????"
         : status === "REJECTED"
-          ? "Отклонено"
-          : "Ошибка";
+          ? "?????????"
+          : "??????"
 
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
@@ -465,3 +465,4 @@ export function Row({
     </div>
   );
 }
+

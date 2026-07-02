@@ -69,6 +69,16 @@ function mapDisplayToAssetOld(x: string): string {
   }
 }
 
+function toOptionalNumber(value: unknown): number | undefined {
+  if (value == null) return undefined;
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+}
+
 export async function getTransactions(params: {
   offset?: number;
   limit?: number;
@@ -168,24 +178,14 @@ export async function getTransactions(params: {
           it.receiver_customer_id != null
             ? String(it.receiver_customer_id)
             : undefined,
-        networkFeeAmount:
-          typeof it.network_fee_amount === "number"
-            ? it.network_fee_amount
-            : undefined,
+        networkFeeAmount: toOptionalNumber(it.network_fee_amount),
         networkFeeAsset:
           typeof it.network_fee_asset === "string"
             ? it.network_fee_asset
             : undefined,
-        energyUsed:
-          typeof it.energy_used === "number" ? it.energy_used : undefined,
-        bandwidthUsed:
-          typeof it.bandwidth_used === "number"
-            ? it.bandwidth_used
-            : undefined,
-        bricsBurnedAmount:
-          typeof it.brics_burned_amount === "number"
-            ? it.brics_burned_amount
-            : undefined,
+        energyUsed: toOptionalNumber(it.energy_used),
+        bandwidthUsed: toOptionalNumber(it.bandwidth_used),
+        bricsBurnedAmount: toOptionalNumber(it.brics_burned_amount),
       }) as Transaction,
   );
   return {
