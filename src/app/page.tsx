@@ -80,40 +80,40 @@ export default function Home() {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="?????? ??????????"
+        title="Детали транзакции"
       >
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="??????" value={<StatusBadge status={selected.status} />} />
+            <Row label="Статус" value={<StatusBadge status={selected.status} />} />
             <Row
-              label="????"
+              label="Дата"
               value={new Date(selected.createdAt).toLocaleString()}
             />
             <Row
-              label="?????"
+              label="Сумма"
               value={`${formatAmount6(selected.amount)} ${selected.currency}`}
             />
             <Row
-              label="???????? ?????"
+              label="Комиссия"
               value={formatAmount2(Number(selected.feeAmount || 0))}
             />
             {selected.currency === "USDT" && (
               <>
                 <Row
-                  label="??????? ????????"
+                  label="Сетевая комиссия"
                   value={
                     `${formatAmount6(asNumber(selected.networkFeeAmount))} ${selected.networkFeeAsset || ""}`.trim()
                   }
                 />
                 <Row
-                  label="????????? ???? (energy)"
+                  label="Потрачено газа (energy)"
                   value={
                     asNumber(selected.energyUsed).toLocaleString()
                   }
                 />
                 <Row
-                  label="????????? ???? (bandwidth)"
+                  label="Двигающая сила (bandwidth)"
                   value={
                     asNumber(selected.bandwidthUsed).toLocaleString()
                   }
@@ -122,14 +122,14 @@ export default function Home() {
             )}
             {selected.currency === "SALAM" && (
               <Row
-                label="??????? BRICS"
+                label="Сожжено BRICS"
                 value={
                   formatAmount6(asNumber(selected.bricsBurnedAmount))
                 }
               />
             )}
             <Row
-              label="???????????"
+              label="Отправитель"
               value={
                 <UserLinkValue
                   text={selected.sender}
@@ -139,12 +139,12 @@ export default function Home() {
               }
             />
             <Row
-              label="ID ??????????? ABS"
+              label="ID отправителя ABS"
               value={selected.senderAbsId || selected.senderCustomerId || "?"}
               mono
             />
             <Row
-              label="??????????"
+              label="Получатель"
               value={
                 <UserLinkValue
                   text={selected.recipient}
@@ -154,14 +154,14 @@ export default function Home() {
               }
             />
             <Row
-              label="ID ?????????? ABS"
+              label="ID получателя ABS"
               value={
                 selected.recipientAbsId || selected.recipientCustomerId || "?"
               }
               mono
             />
             <Row
-              label="ID ??????? ABS"
+              label="ID клиента ABS"
               value={
                 selected.clientAbsId ||
                 selected.senderCustomerId ||
@@ -177,7 +177,7 @@ export default function Home() {
       <Modal
         open={openUser}
         onClose={() => setOpenUser(false)}
-        title="????????????"
+        title="Пользователь"
       >
         {selectedUser && (
           <UserDetails
@@ -195,14 +195,14 @@ export default function Home() {
       <Modal
         open={openUserEdit}
         onClose={() => setOpenUserEdit(false)}
-        title="?????????????? ????????????"
+        title="Редактировать пользователя"
       >
         {selectedUser && (
           <EditUserInline
             user={selectedUser}
-            onCancel={() => setOpenUserEdit(false)}
-            onSave={(next) => {
-              setSelectedUser(next);
+          onCancel={() => setOpenUserEdit(false)}
+          onSave={(next) => {
+            setSelectedUser(next);
               setOpenUserEdit(false);
             }}
           />
@@ -230,8 +230,8 @@ function UserLinkValue({
         <button
           className="inline-flex items-center justify-center h-7 w-7 rounded-full ml-auto shrink-0 bg-blue-600 hover:bg-blue-500"
           onClick={() => onOpenUser(String(customerId))}
-          aria-label="??????? ????????????"
-          title="??????? ????????????"
+          aria-label="Открыть профиль"
+          title="Открыть профиль"
         >
           <svg
             viewBox="0 0 20 20"
@@ -363,7 +363,7 @@ function EditUserInline({
           />
         </div>
         <div className="col-span-2">
-          <div className="text-sm mb-1">??????</div>
+          <div className="text-sm mb-1">Статус</div>
           <select
             className="ui-input"
             value={status}
@@ -375,7 +375,7 @@ function EditUserInline({
           </select>
         </div>
         <div>
-          <div className="text-sm mb-1">?????</div>
+          <div className="text-sm mb-1">Тариф</div>
           <select
             className="ui-input w-full"
             value={tariffCategory}
@@ -393,14 +393,14 @@ function EditUserInline({
           </select>
         </div>
         <div>
-          <div className="text-sm mb-1">????????????</div>
+          <div className="text-sm mb-1">Резидентство</div>
           <select
             className="ui-input w-full"
             value={residency}
             onChange={(e) => setResidency(e.target.value as CustomerResidency)}
           >
-            <option value="RESIDENT">????????</option>
-            <option value="NON_RESIDENT">??????????</option>
+            <option value="RESIDENT">Резидент</option>
+            <option value="NON_RESIDENT">Нерезидент</option>
           </select>
         </div>
       </div>
@@ -412,14 +412,14 @@ function EditUserInline({
           onClick={onCancel}
           disabled={submitting}
         >
-          ??????
+          Отмена
         </button>
         <button
           type="submit"
           className="btn btn-success w-full h-9"
           disabled={submitting}
         >
-          {submitting ? "??????????..." : "?????????"}
+          {submitting ? "Сохранение..." : "Сохранить"}
         </button>
       </div>
     </form>
@@ -435,12 +435,12 @@ function StatusBadge({ status }: { status: TransactionStatus }) {
         : "badge-danger";
   const text =
     status === "SUCCESS"
-      ? "???????"
+      ? "Успешно"
       : status === "PENDING"
-        ? "? ?????????"
+        ? "В ожидании"
         : status === "REJECTED"
-          ? "?????????"
-          : "??????"
+          ? "Отклонено"
+          : "Ошибка"
 
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
