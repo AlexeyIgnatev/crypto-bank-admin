@@ -25,6 +25,10 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
+function asNumber(value: number | undefined): number {
+  return Number(value ?? 0);
+}
+
 export default function Home() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Transaction | null>(null);
@@ -99,25 +103,19 @@ export default function Home() {
                 <Row
                   label="??????? ????????"
                   value={
-                    selected.networkFeeAmount != null
-                      ? `${formatAmount6(selected.networkFeeAmount)} ${selected.networkFeeAsset || ""}`.trim()
-                      : "?"
+                    `${formatAmount6(asNumber(selected.networkFeeAmount))} ${selected.networkFeeAsset || ""}`.trim()
                   }
                 />
                 <Row
                   label="????????? ???? (energy)"
                   value={
-                    selected.energyUsed != null
-                      ? selected.energyUsed.toLocaleString()
-                      : "?"
+                    asNumber(selected.energyUsed).toLocaleString()
                   }
                 />
                 <Row
                   label="????????? ???? (bandwidth)"
                   value={
-                    selected.bandwidthUsed != null
-                      ? selected.bandwidthUsed.toLocaleString()
-                      : "?"
+                    asNumber(selected.bandwidthUsed).toLocaleString()
                   }
                 />
               </>
@@ -126,9 +124,7 @@ export default function Home() {
               <Row
                 label="??????? BRICS"
                 value={
-                  selected.bricsBurnedAmount != null
-                    ? formatAmount6(selected.bricsBurnedAmount)
-                    : "?"
+                  formatAmount6(asNumber(selected.bricsBurnedAmount))
                 }
               />
             )}
@@ -465,4 +461,3 @@ export function Row({
     </div>
   );
 }
-

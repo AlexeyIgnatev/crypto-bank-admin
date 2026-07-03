@@ -79,6 +79,11 @@ function toOptionalNumber(value: unknown): number | undefined {
   return undefined;
 }
 
+function toNumberOrZero(value: unknown): number {
+  const parsed = toOptionalNumber(value);
+  return parsed ?? 0;
+}
+
 export async function getTransactions(params: {
   offset?: number;
   limit?: number;
@@ -178,14 +183,14 @@ export async function getTransactions(params: {
           it.receiver_customer_id != null
             ? String(it.receiver_customer_id)
             : undefined,
-        networkFeeAmount: toOptionalNumber(it.network_fee_amount),
+        networkFeeAmount: toNumberOrZero(it.network_fee_amount),
         networkFeeAsset:
           typeof it.network_fee_asset === "string"
             ? it.network_fee_asset
             : undefined,
-        energyUsed: toOptionalNumber(it.energy_used),
-        bandwidthUsed: toOptionalNumber(it.bandwidth_used),
-        bricsBurnedAmount: toOptionalNumber(it.brics_burned_amount),
+        energyUsed: toNumberOrZero(it.energy_used),
+        bandwidthUsed: toNumberOrZero(it.bandwidth_used),
+        bricsBurnedAmount: toNumberOrZero(it.brics_burned_amount),
       }) as Transaction,
   );
   return {

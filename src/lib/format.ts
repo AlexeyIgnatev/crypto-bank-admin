@@ -3,7 +3,7 @@ export function formatAmount6(n: number): string {
   const truncated = (n >= 0 ? Math.trunc(n * 1e6) : Math.ceil(n * 1e6)) / 1e6;
 
   const s = Math.abs(truncated).toFixed(6);
-  const [iPartRaw, fRaw] = s.split(".");
+  const [, fRaw] = s.split(".");
   const f = (fRaw || "").replace(/0+$/, "");
   const sign = truncated < 0 ? -1 : 1;
   const absVal = Math.abs(truncated);

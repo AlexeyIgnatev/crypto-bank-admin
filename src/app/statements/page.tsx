@@ -10,6 +10,10 @@ const ASSET_OPTIONS = [
   { label: "USDT", value: "USDT" },
 ];
 
+function asNumber(value: number | undefined): number {
+  return Number(value ?? 0);
+}
+
 export default function StatementsPage() {
   const [customerId, setCustomerId] = useState("");
   const [asset, setAsset] = useState<string>("SALAM");
@@ -116,22 +120,16 @@ export default function StatementsPage() {
                     <td className="px-3 py-2 text-right">{t.amount.toLocaleString()}</td>
                     <td className="px-3 py-2 text-right">{Number(t.feeAmount || 0).toLocaleString()}</td>
                     <td className="px-3 py-2 text-right">
-                      {t.networkFeeAmount != null
-                        ? `${t.networkFeeAmount.toLocaleString()} ${t.networkFeeAsset || ""}`.trim()
-                        : "—"}
+                      {`${asNumber(t.networkFeeAmount).toLocaleString()} ${t.networkFeeAsset || ""}`.trim()}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {t.energyUsed != null ? t.energyUsed.toLocaleString() : "—"}
+                      {asNumber(t.energyUsed).toLocaleString()}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {t.bandwidthUsed != null
-                        ? t.bandwidthUsed.toLocaleString()
-                        : "—"}
+                      {asNumber(t.bandwidthUsed).toLocaleString()}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {t.bricsBurnedAmount != null
-                        ? t.bricsBurnedAmount.toLocaleString()
-                        : "—"}
+                      {asNumber(t.bricsBurnedAmount).toLocaleString()}
                     </td>
                     <td className="px-3 py-2">{t.sender}</td>
                     <td className="px-3 py-2">{t.recipient}</td>
