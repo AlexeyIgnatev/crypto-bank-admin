@@ -1,8 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getReserves } from "@/lib/api";
 import { TreasuryReserves } from "@/types";
+
+const TEST_RESERVES: TreasuryReserves = {
+  treasuryAddress: "TH6v4FYhVPEE39oYLd7roSfGj2H49pkRUX",
+  usdtBalance: 250000,
+  trxBalance: 125000,
+  energyAvailable: 50000000,
+  bandwidthAvailable: 25000000,
+  energySpentToday: 125000,
+  energySpentTotal: 8500000,
+  bandwidthSpentToday: 64000,
+  bandwidthSpentTotal: 4200000,
+  networkFeeTrxToday: 1750,
+  networkFeeTrxTotal: 98250,
+};
 
 function MetricCard({
   label,
@@ -34,66 +46,40 @@ function fmtInteger(value: number) {
 }
 
 export default function ReservesPage() {
-  const [data, setData] = useState<TreasuryReserves | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      try {
-        const reserves = await getReserves();
-        if (alive) setData(reserves);
-      } catch {
-        if (alive) setError("Не удалось загрузить резервы");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  if (loading) {
-    return <div className="m-auto text-muted">Загрузка...</div>;
-  }
-
-  if (error || !data) {
-    return <div className="m-auto text-red-500">{error || "Нет данных"}</div>;
-  }
+  const reserves = TEST_RESERVES;
 
   return (
     <div className="flex-1 min-h-0 overflow-auto">
+      <div className="mb-4 rounded-lg border border-soft bg-card/50 px-4 py-3 text-sm text-muted">
+        Тестовые значения для проверки админки резервов.
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         <MetricCard
           label="Баланс общего кошелька USDT"
-          value={`${fmtAmount(data.usdtBalance)} USDT`}
-          hint={data.treasuryAddress}
+          value={`${fmtAmount(reserves.usdtBalance)} USDT`}
+          hint={reserves.treasuryAddress}
         />
         <MetricCard
           label="Баланс общего кошелька TRX"
-          value={`${fmtAmount(data.trxBalance)} TRX`}
+          value={`${fmtAmount(reserves.trxBalance)} TRX`}
         />
         <MetricCard
           label="Доступный газ (energy)"
-          value={fmtInteger(data.energyAvailable)}
+          value={fmtInteger(reserves.energyAvailable)}
         />
         <MetricCard
           label="Двигающая сила (bandwidth)"
-          value={fmtInteger(data.bandwidthAvailable)}
+          value={fmtInteger(reserves.bandwidthAvailable)}
         />
         <MetricCard
           label="Потрачено газа за сегодня"
-          value={`${fmtAmount(data.networkFeeTrxToday)} TRX`}
-          hint={`Energy: ${fmtInteger(data.energySpentToday)}, bandwidth: ${fmtInteger(data.bandwidthSpentToday)}`}
+          value={`${fmtAmount(reserves.networkFeeTrxToday)} TRX`}
+          hint={`Energy: ${fmtInteger(reserves.energySpentToday)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentToday)}`}
         />
         <MetricCard
           label="Потрачено газа за все время"
-          value={`${fmtAmount(data.networkFeeTrxTotal)} TRX`}
-          hint={`Energy: ${fmtInteger(data.energySpentTotal)}, bandwidth: ${fmtInteger(data.bandwidthSpentTotal)}`}
+          value={`${fmtAmount(reserves.networkFeeTrxTotal)} TRX`}
+          hint={`Energy: ${fmtInteger(reserves.energySpentTotal)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentTotal)}`}
         />
       </div>
     </div>
