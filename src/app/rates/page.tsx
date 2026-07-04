@@ -479,22 +479,6 @@ export default function RatesPage() {
             </div>
           </Card>
 
-          <Card
-            title="Короткая сводка"
-            subtitle="Что сейчас активно в выбранной сетке"
-            className="xl:order-2"
-          >
-            <div className="space-y-3">
-              <SummaryRow label="Курс USD к СОМ" value={`${formatMoney(coreRate)} СОМ`} />
-              {currentTariffs.map((item, index) => (
-                <SummaryRow
-                  key={item.operation}
-                  label={TARIFF_ROW_ORDER[index]?.label || item.operation}
-                  value={`${formatPercent(item.percent_fee)} + ${formatMoney(item.fixed_fee)}`}
-                />
-              ))}
-            </div>
-          </Card>
         </div>
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -551,21 +535,6 @@ export default function RatesPage() {
           </Card>
         </div>
       </div>
-    </div>
-  );
-}
-
-function SummaryRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
-      <div className="text-sm text-muted">{label}</div>
-      <div className="text-sm font-semibold text-right">{value}</div>
     </div>
   );
 }
