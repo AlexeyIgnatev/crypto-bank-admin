@@ -677,6 +677,7 @@ export async function getReserves(): Promise<TreasuryReserves> {
     salamBalance: Number(data.salam_balance ?? 0),
     salamSpentToday: Number(data.salam_spent_today ?? 0),
     salamSpentTotal: Number(data.salam_spent_total ?? 0),
+    bricsBalance: Number(data.brics_balance ?? 0),
     trxBalance: Number(data.trx_balance ?? 0),
     energyAvailable: Number(data.energy_available ?? 0),
     bandwidthAvailable: Number(data.bandwidth_available ?? 0),

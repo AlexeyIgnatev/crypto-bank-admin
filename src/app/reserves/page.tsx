@@ -10,6 +10,7 @@ const EMPTY_RESERVES: TreasuryReserves = {
   salamBalance: 0,
   salamSpentToday: 0,
   salamSpentTotal: 0,
+  bricsBalance: 0,
   trxBalance: 0,
   energyAvailable: 0,
   bandwidthAvailable: 0,
@@ -21,6 +22,19 @@ const EMPTY_RESERVES: TreasuryReserves = {
   networkFeeTrxTotal: 0,
   bricsBurnedToday: 0,
   bricsBurnedTotal: 0,
+};
+
+const TEST_USDT_RESERVES = {
+  usdtBalance: 250000,
+  trxBalance: 125000,
+  energyAvailable: 50000000,
+  bandwidthAvailable: 25000000,
+  energySpentToday: 125000,
+  energySpentTotal: 8500000,
+  bandwidthSpentToday: 64000,
+  bandwidthSpentTotal: 4200000,
+  networkFeeTrxToday: 1750,
+  networkFeeTrxTotal: 98250,
 };
 
 function MetricCard({
@@ -80,6 +94,7 @@ export default function ReservesPage() {
   }
 
   const reserves = data;
+  const usdtDemo = { ...reserves, ...TEST_USDT_RESERVES };
 
   return (
     <div className="flex-1 min-h-0 overflow-auto pb-8">
@@ -92,37 +107,37 @@ export default function ReservesPage() {
           <div className="mb-4">
             <div className="text-lg font-semibold">Данные по USDT TRC20</div>
             <div className="mt-1 text-sm text-muted">
-              Баланс общего кошелька и расходы по TRON-ресурсам.
+              Тестовые значения для проверки панели.
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Баланс общего кошелька USDT TRC20"
-              value={`${fmtAmount(reserves.usdtBalance)} USDT TRC20`}
-              hint={reserves.treasuryAddress}
+              value={`${fmtAmount(usdtDemo.usdtBalance)} USDT TRC20`}
+              hint={usdtDemo.treasuryAddress}
             />
             <MetricCard
               label="Баланс общего кошелька TRX"
-              value={`${fmtAmount(reserves.trxBalance)} TRX`}
+              value={`${fmtAmount(usdtDemo.trxBalance)} TRX`}
             />
             <MetricCard
               label="Доступный газ (energy)"
-              value={fmtInteger(reserves.energyAvailable)}
+              value={fmtInteger(usdtDemo.energyAvailable)}
             />
             <MetricCard
               label="Двигающая сила (bandwidth)"
-              value={fmtInteger(reserves.bandwidthAvailable)}
+              value={fmtInteger(usdtDemo.bandwidthAvailable)}
             />
             <MetricCard
               label="Потрачено газа за сегодня"
-              value={`${fmtAmount(reserves.networkFeeTrxToday)} TRX`}
-              hint={`Energy: ${fmtInteger(reserves.energySpentToday)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentToday)}`}
+              value={`${fmtAmount(usdtDemo.networkFeeTrxToday)} TRX`}
+              hint={`Energy: ${fmtInteger(usdtDemo.energySpentToday)}, bandwidth: ${fmtInteger(usdtDemo.bandwidthSpentToday)}`}
             />
             <MetricCard
               label="Потрачено газа за все время"
-              value={`${fmtAmount(reserves.networkFeeTrxTotal)} TRX`}
-              hint={`Energy: ${fmtInteger(reserves.energySpentTotal)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentTotal)}`}
+              value={`${fmtAmount(usdtDemo.networkFeeTrxTotal)} TRX`}
+              hint={`Energy: ${fmtInteger(usdtDemo.energySpentTotal)}, bandwidth: ${fmtInteger(usdtDemo.bandwidthSpentTotal)}`}
             />
           </div>
         </section>
@@ -152,14 +167,11 @@ export default function ReservesPage() {
         </section>
 
         <section className="mt-4 rounded-2xl border border-soft bg-card/50 p-5">
-          <div className="mb-4">
-            <div className="text-lg font-semibold">Данные по BRICS</div>
-            <div className="mt-1 text-sm text-muted">
-              Сжигание BRICS, связанное с операциями и комиссиями.
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <MetricCard
+              label="Количество BRICS"
+              value={`${fmtAmount(reserves.bricsBalance)} BRICS`}
+            />
             <MetricCard
               label="Сожжено BRICS за сегодня"
               value={`${fmtAmount(reserves.bricsBurnedToday)} BRICS`}

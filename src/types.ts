@@ -75,6 +75,7 @@ export interface TreasuryReserves {
   salamBalance: number;
   salamSpentToday: number;
   salamSpentTotal: number;
+  bricsBalance: number;
   trxBalance: number;
   energyAvailable: number;
   bandwidthAvailable: number;
