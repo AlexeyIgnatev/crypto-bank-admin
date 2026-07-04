@@ -12,12 +12,12 @@ import {
 import { CustomerResidency, TariffCategory } from "@/types";
 
 const TARIFF_ROW_ORDER: { operation: TariffOperation; label: string }[] = [
-  { operation: "SOM_TO_ESOM", label: "СОМ → САЛАМ" },
-  { operation: "ESOM_TO_SOM", label: "САЛАМ → СОМ" },
-  { operation: "WALLET_TRANSFER_ESOM", label: "САЛАМ → САЛАМ" },
-  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ → USDT" },
-  { operation: "USDT_TRC20_TO_ESOM", label: "USDT → САЛАМ" },
-  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT → USDT" },
+  { operation: "SOM_TO_ESOM", label: "Конвертация СОМ в САЛАМ" },
+  { operation: "ESOM_TO_SOM", label: "Конвертация САЛАМ в СОМ" },
+  { operation: "WALLET_TRANSFER_ESOM", label: "Перевод САЛАМ между пользователями" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "Конвертация САЛАМ в USDT" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "Конвертация USDT в САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "Перевод USDT между пользователями" },
 ];
 
 const PERCENT_SETTING_FIELDS = [
