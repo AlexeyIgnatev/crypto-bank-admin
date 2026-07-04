@@ -380,11 +380,6 @@ export default function RatesPage() {
           <div className="rounded-full border border-soft bg-card/80 px-4 py-2 text-sm text-muted">
             Настройка тарифов и комиссий для текущей витрины
           </div>
-          {error ? (
-            <div className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-600">
-              {error}
-            </div>
-          ) : null}
           {success ? (
             <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-600">
               {success}
