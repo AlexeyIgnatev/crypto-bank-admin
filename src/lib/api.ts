@@ -661,7 +661,14 @@ export async function putSettings(payload: Record<string, string>) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to save settings");
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      body
+        ? `Failed to save settings: ${body}`
+        : `Failed to save settings (HTTP ${res.status})`,
+    );
+  }
   return res.json();
 }
 
@@ -990,7 +997,14 @@ export async function putTariffs(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ items }),
   });
-  if (!res.ok) throw new Error("Failed to save tariffs");
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      body
+        ? `Failed to save tariffs: ${body}`
+        : `Failed to save tariffs (HTTP ${res.status})`,
+    );
+  }
   return res.json();
 }
 
