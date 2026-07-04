@@ -146,13 +146,13 @@ export default function ReservesPage() {
           <div className="mb-4">
             <div className="text-lg font-semibold">Данные по САЛАМ</div>
             <div className="mt-1 text-sm text-muted">
-              Сумма по всем кошелькам этого актива.
+              Баланс счета 21199.
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Сумма по всем кошелькам SALAM"
+              label="Баланс счета 21199"
               value={`${fmtAmount(reserves.salamBalance)} SALAM`}
             />
             <MetricCard
