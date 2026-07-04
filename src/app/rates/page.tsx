@@ -390,7 +390,6 @@ export default function RatesPage() {
         <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.6fr_1fr]">
           <Card
             title="Тарифная сетка клиентов"
-            subtitle="Левая компактная сетка для основной тарифной конфигурации"
             className="xl:order-1"
           >
             <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">

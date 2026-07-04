@@ -145,14 +145,12 @@ export default function ReservesPage() {
         <section className="mt-4 rounded-2xl border border-soft bg-card/50 p-5">
           <div className="mb-4">
             <div className="text-lg font-semibold">Данные по САЛАМ</div>
-            <div className="mt-1 text-sm text-muted">
-              Баланс счета 21199.
-            </div>
+            <div className="mt-1 text-sm text-muted">Основной баланс treasury.</div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Баланс счета 21199"
+              label="Основной баланс SALAM"
               value={`${fmtAmount(reserves.salamBalance)} SALAM`}
             />
             <MetricCard
