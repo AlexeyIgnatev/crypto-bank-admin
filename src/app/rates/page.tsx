@@ -1,71 +1,218 @@
-﻿"use client";
-import { useMemo, useState, useEffect } from "react";
-import Modal from "@/components/Modal";
-import { CustomerResidency, TariffCategory } from "@/types";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import {
+  getSettings,
   getTariffs,
+  putSettings,
   putTariffs,
   TariffOperation,
   TariffSetting,
 } from "@/lib/api";
+import { CustomerResidency, TariffCategory } from "@/types";
 
-type Settings = {
-  esom_per_usd: string;
-  esom_som_conversion_fee_pct: string;
-  esom_som_conversion_fee_min: string;
-  usdt_trade_fee_pct: string;
-  usdt_withdraw_fee_fixed: string;
-  min_withdraw_usdt_trc20: string;
+const TARIFF_ROW_ORDER: { operation: TariffOperation; label: string }[] = [
+  { operation: "SOM_TO_ESOM", label: "СОМ → САЛАМ" },
+  { operation: "ESOM_TO_SOM", label: "САЛАМ → СОМ" },
+  { operation: "WALLET_TRANSFER_ESOM", label: "САЛАМ → САЛАМ" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ → USDT" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "USDT → САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT → USDT" },
+];
+
+const PERCENT_SETTING_FIELDS = [
+  {
+    key: "esom_som_conversion_fee_pct",
+    label: "Комиссия обмена СОМ → САЛАМ, %",
+  },
+  {
+    key: "usdt_trade_fee_pct",
+    label: "Комиссия торговли USDT, %",
+  },
+] as const;
+
+const LIMIT_SETTING_FIELDS = [
+  {
+    key: "esom_som_conversion_fee_min",
+    label: "Минимум комиссии обмена СОМ → САЛАМ",
+  },
+  {
+    key: "usdt_withdraw_fee_fixed",
+    label: "Фикс. комиссия вывода USDT",
+  },
+  {
+    key: "min_withdraw_usdt_trc20",
+    label: "Минимум вывода USDT",
+  },
+] as const;
+
+type SettingsState = Record<string, string>;
+
+const EMPTY_SETTINGS: SettingsState = {
+  esom_per_usd: "0",
+  esom_som_conversion_fee_pct: "0",
+  esom_som_conversion_fee_min: "0",
+  usdt_trade_fee_pct: "0",
+  usdt_withdraw_fee_fixed: "0",
+  min_withdraw_usdt_trc20: "0",
 };
 
-import { getSettings, putSettings } from "@/lib/api";
+const EMPTY_TARIFFS: TariffSetting[] = [];
 
-const TARIFF_CATEGORIES: TariffCategory[] = [
-  "K1",
-  "K2",
-  "K3",
-  "K4",
-  "K5",
-  "K6",
-];
-const TARIFF_RESIDENCIES: { value: CustomerResidency; label: string }[] = [
-  { value: "RESIDENT", label: "Резидент" },
-  { value: "NON_RESIDENT", label: "Нерезидент" },
-];
-const TARIFF_OPERATIONS: { operation: TariffOperation; label: string }[] = [
-  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ → USDT" },
-  {
-    operation: "WALLET_TRANSFER_ESOM",
-    label: "Перевод САЛАМ между пользователями",
-  },
-  {
-    operation: "WALLET_TRANSFER_USDT_TRC20",
-    label: "Перевод USDT между пользователями",
-  },
-];
+function makeTariffKey(
+  category: TariffCategory,
+  residency: CustomerResidency,
+  operation: TariffOperation,
+) {
+  return `${category}:${residency}:${operation}`;
+}
+
+function normalizeDecimalInput(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "0";
+  return trimmed.replace(",", ".");
+}
+
+function formatMoney(value: string | number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "—";
+  return parsed.toLocaleString("ru-RU", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatPercent(value: string | number) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return "—";
+  return `${parsed.toLocaleString("ru-RU", { maximumFractionDigits: 2 })}%`;
+}
+
+function Card({
+  title,
+  subtitle,
+  children,
+  className = "",
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={`card rounded-2xl border border-soft shadow-sm overflow-hidden ${className}`}
+    >
+      <header className="border-b border-soft px-5 py-4">
+        <div className="text-lg font-semibold">{title}</div>
+        {subtitle ? <div className="mt-1 text-sm text-muted">{subtitle}</div> : null}
+      </header>
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+function FieldRow({
+  label,
+  value,
+  onChange,
+  suffix,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  suffix?: string;
+  placeholder?: string;
+}) {
+  return (
+    <label className="grid grid-cols-1 gap-2 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 md:grid-cols-[1.3fr_0.7fr] md:items-center">
+      <div className="min-w-0">
+        <div className="text-sm font-medium">{label}</div>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          className="ui-input w-full"
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          inputMode="decimal"
+        />
+        {suffix ? <span className="text-sm text-muted shrink-0">{suffix}</span> : null}
+      </div>
+    </label>
+  );
+}
+
+function TariffRowField({
+  label,
+  percent,
+  fixed,
+  onPercentChange,
+  onFixedChange,
+}: {
+  label: string;
+  percent: string;
+  fixed: string;
+  onPercentChange: (value: string) => void;
+  onFixedChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-1 gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 xl:grid-cols-[1.5fr_0.6fr_0.8fr] xl:items-center">
+      <div className="min-w-0">
+        <div className="text-sm font-semibold">{label}</div>
+      </div>
+      <label className="grid gap-1">
+        <span className="text-xs text-muted">Процент</span>
+        <input
+          className="ui-input"
+          value={percent}
+          onChange={(e) => onPercentChange(e.target.value)}
+          inputMode="decimal"
+          placeholder="0"
+        />
+      </label>
+      <label className="grid gap-1">
+        <span className="text-xs text-muted">Фикс сумма комиссии</span>
+        <input
+          className="ui-input"
+          value={fixed}
+          onChange={(e) => onFixedChange(e.target.value)}
+          inputMode="decimal"
+          placeholder="0"
+        />
+      </label>
+    </div>
+  );
+}
 
 export default function RatesPage() {
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [tariffs, setTariffs] = useState<TariffSetting[]>([]);
-  const [activeCategory, setActiveCategory] = useState<TariffCategory>("K1");
-  const [activeResidency, setActiveResidency] =
-    useState<CustomerResidency>("RESIDENT");
-  const [savingTariffs, setSavingTariffs] = useState(false);
+  const [settings, setSettings] = useState<SettingsState>(EMPTY_SETTINGS);
+  const [tariffs, setTariffs] = useState<TariffSetting[]>(EMPTY_TARIFFS);
+  const [category, setCategory] = useState<TariffCategory>("K1");
+  const [residency, setResidency] = useState<CustomerResidency>("RESIDENT");
   const [loading, setLoading] = useState(true);
+  const [savingCore, setSavingCore] = useState(false);
+  const [savingPercent, setSavingPercent] = useState(false);
+  const [savingLimits, setSavingLimits] = useState(false);
+  const [savingTariffs, setSavingTariffs] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const s = await getSettings();
-        const tariffRows = await getTariffs();
-        if (alive) {
-          setSettings(s as unknown as Settings);
-          setTariffs(tariffRows);
-        }
-      } catch {
-        setError("Не удалось загрузить настройки");
+        const [settingsData, tariffsData] = await Promise.all([
+          getSettings(),
+          getTariffs(),
+        ]);
+        if (!alive) return;
+        setSettings((prev) => ({ ...prev, ...settingsData }));
+        setTariffs(tariffsData);
+      } catch (err: any) {
+        if (!alive) return;
+        setError(err?.message || "Не удалось загрузить проценты");
       } finally {
         if (alive) setLoading(false);
       }
@@ -75,546 +222,350 @@ export default function RatesPage() {
     };
   }, []);
 
-  const [modal, setModal] = useState<{
-    open: boolean;
-    key: keyof Settings | null;
-    title: string;
-    suffix?: string;
-    step?: string;
-    max?: string;
-    maxDecimals?: number;
-  }>({ open: false, key: null, title: "" });
-  const value = useMemo(
-    () => (modal.key && settings ? settings[modal.key] : ""),
-    [modal.key, settings],
-  );
+  const currentTariffs = useMemo(() => {
+    const map = new Map(
+      tariffs
+        .filter((item) => item.category === category && item.residency === residency)
+        .map((item) => [item.operation, item] as const),
+    );
 
-  const openEdit = (
-    key: keyof Settings,
-    title: string,
-    opts?: {
-      suffix?: string;
-      step?: string;
-      max?: string;
-      maxDecimals?: number;
-    },
-  ) =>
-    setModal({
-      open: true,
-      key,
-      title,
-      suffix: opts?.suffix,
-      step: opts?.step,
-      max: opts?.max,
-      maxDecimals: opts?.maxDecimals,
+    return TARIFF_ROW_ORDER.map((row) => {
+      const item = map.get(row.operation);
+      return (
+        item || {
+          category,
+          residency,
+          operation: row.operation,
+          percent_fee: "0",
+          fixed_fee: "0",
+        }
+      );
     });
-  const closeEdit = () => setModal({ open: false, key: null, title: "" });
-  const saveValue = async (next: string) => {
-    if (!modal.key || !settings) return;
-    const updated = {
-      ...settings,
-      [modal.key]: sanitizeNumber(next),
-    } as Settings;
-    setSettings(updated);
-    closeEdit();
-    try {
-      await putSettings(updated as any);
-    } catch {}
-  };
+  }, [category, residency, tariffs]);
 
-  if (loading)
-    return (
-      <div className="flex-1 grid place-items-center text-muted">
-        Загрузка...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex-1 grid place-items-center text-red-500">{error}</div>
-    );
-  if (!settings)
-    return (
-      <div className="flex-1 grid place-items-center text-muted">
-        Нет данных
-      </div>
-    );
+  const coreRate = settings.esom_per_usd ?? "0";
+
+  function updateSetting(key: string, value: string) {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function updateTariff(operation: TariffOperation, patch: Partial<TariffSetting>) {
+    setTariffs((prev) => {
+      const idx = prev.findIndex(
+        (item) =>
+          item.category === category &&
+          item.residency === residency &&
+          item.operation === operation,
+      );
+
+      if (idx === -1) {
+        return [
+          ...prev,
+          {
+            category,
+            residency,
+            operation,
+            percent_fee: patch.percent_fee ?? "0",
+            fixed_fee: patch.fixed_fee ?? "0",
+          },
+        ];
+      }
+
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...patch };
+      return next;
+    });
+  }
+
+  async function saveCoreAndTariffs() {
+    setError(null);
+    setSuccess(null);
+    setSavingCore(true);
+    setSavingTariffs(true);
+    try {
+      const nextRate = normalizeDecimalInput(coreRate);
+      const tariffsPayload = currentTariffs.map((item) => ({
+        category: item.category,
+        residency: item.residency,
+        operation: item.operation,
+        percent_fee: normalizeDecimalInput(item.percent_fee),
+        fixed_fee: normalizeDecimalInput(item.fixed_fee),
+      }));
+
+      const [savedSettings, savedTariffs] = await Promise.all([
+        putSettings({ esom_per_usd: nextRate }),
+        putTariffs(tariffsPayload),
+      ]);
+
+      setSettings((prev) => ({ ...prev, ...savedSettings, esom_per_usd: nextRate }));
+      setTariffs((prev) => {
+        const merged = new Map(
+          prev.map((item) => [
+            makeTariffKey(item.category, item.residency, item.operation),
+            item,
+          ]),
+        );
+        for (const item of savedTariffs) {
+          merged.set(
+            makeTariffKey(item.category, item.residency, item.operation),
+            item,
+          );
+        }
+        return Array.from(merged.values());
+      });
+      setSuccess("Тарифная сетка сохранена");
+    } catch (err: any) {
+      setError(err?.message || "Не удалось сохранить тарифную сетку");
+    } finally {
+      setSavingCore(false);
+      setSavingTariffs(false);
+    }
+  }
+
+  async function savePercentFees() {
+    setError(null);
+    setSuccess(null);
+    setSavingPercent(true);
+    try {
+      const payload = {
+        esom_som_conversion_fee_pct: normalizeDecimalInput(
+          settings.esom_som_conversion_fee_pct ?? "0",
+        ),
+        usdt_trade_fee_pct: normalizeDecimalInput(settings.usdt_trade_fee_pct ?? "0"),
+      };
+      const saved = await putSettings(payload);
+      setSettings((prev) => ({ ...prev, ...saved, ...payload }));
+      setSuccess("Блок процентов сохранён");
+    } catch (err: any) {
+      setError(err?.message || "Не удалось сохранить блок процентов");
+    } finally {
+      setSavingPercent(false);
+    }
+  }
+
+  async function saveLimits() {
+    setError(null);
+    setSuccess(null);
+    setSavingLimits(true);
+    try {
+      const payload = {
+        esom_som_conversion_fee_min: normalizeDecimalInput(
+          settings.esom_som_conversion_fee_min ?? "0",
+        ),
+        usdt_withdraw_fee_fixed: normalizeDecimalInput(
+          settings.usdt_withdraw_fee_fixed ?? "0",
+        ),
+        min_withdraw_usdt_trc20: normalizeDecimalInput(
+          settings.min_withdraw_usdt_trc20 ?? "0",
+        ),
+      };
+      const saved = await putSettings(payload);
+      setSettings((prev) => ({ ...prev, ...saved, ...payload }));
+      setSuccess("Блок минимальных комиссий сохранён");
+    } catch (err: any) {
+      setError(err?.message || "Не удалось сохранить блок минимальных комиссий");
+    } finally {
+      setSavingLimits(false);
+    }
+  }
+
+  if (loading) {
+    return <div className="m-auto text-muted">Загрузка...</div>;
+  }
 
   return (
     <div className="flex-1 min-h-0 overflow-auto pb-8">
-      <div className="mx-auto w-full max-w-5xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
-            <header className="p-4 border-b border-soft flex items-center justify-between">
-              <div className="text-lg font-semibold">
-                Комиссии (в процентах)
-              </div>
-            </header>
-            <div className="p-4 space-y-3">
-              <SettingRow
-                label="Курс САЛАМ за 1 USD"
-                value={`${fmt2(settings.esom_per_usd)} САЛАМ`}
-                onEdit={() =>
-                  openEdit("esom_per_usd", "Курс САЛАМ за 1 USD", {
-                    step: "0.01",
-                  })
-                }
-              />
-              <SettingRow
-                label="Конвертация СОМ ↔ САЛАМ"
-                value={`${fmtPct(settings.esom_som_conversion_fee_pct)}`}
-                onEdit={() =>
-                  openEdit(
-                    "esom_som_conversion_fee_pct",
-                    "Комиссия за конвертацию СОМ ↔ САЛАМ (%)",
-                    { suffix: "%", step: "0.01", max: "100", maxDecimals: 2 },
-                  )
-                }
-              />
-              <SettingRow
-                label="Мин. комиссия конвертации СОМ ↔ САЛАМ"
-                value={`${fmt(settings.esom_som_conversion_fee_min)} СОМ/САЛАМ`}
-                onEdit={() =>
-                  openEdit(
-                    "esom_som_conversion_fee_min",
-                    "Минимальная комиссия конвертации СОМ ↔ САЛАМ",
-                    { step: "0.01" },
-                  )
-                }
-              />
-              <div className="pt-2 text-sm font-medium text-muted">
-                Торговля
-              </div>
-              <SettingRow
-                label="USDT торговая комиссия"
-                value={`${fmtPct(settings.usdt_trade_fee_pct)}`}
-                onEdit={() =>
-                  openEdit("usdt_trade_fee_pct", "USDT торговая комиссия (%)", {
-                    suffix: "%",
-                    step: "0.01",
-                  })
-                }
-              />
+      <div className="w-full max-w-[1500px] px-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="rounded-full border border-soft bg-card/80 px-4 py-2 text-sm text-muted">
+            Настройка тарифов и комиссий для текущей витрины
+          </div>
+          {error ? (
+            <div className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-600">
+              {error}
             </div>
-          </section>
-
-          <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
-            <header className="p-4 border-b border-soft flex items-center justify-between">
-              <div className="text-lg font-semibold">
-                Комиссии и минимумы вывода
-              </div>
-            </header>
-            <div className="p-4 space-y-3">
-              <div className="pt-0 text-sm font-medium text-muted">USDT (TRC20)</div>
-              <SettingRow
-                label="Фикс комиссия вывода USDT"
-                value={`${fmt(settings.usdt_withdraw_fee_fixed)} USDT`}
-                onEdit={() =>
-                  openEdit(
-                    "usdt_withdraw_fee_fixed",
-                    "Фикс комиссия вывода USDT (TRC20)",
-                    { step: "0.01" },
-                  )
-                }
-              />
-              <SettingRow
-                label="Мин. сумма вывода USDT"
-                value={`${fmt(settings.min_withdraw_usdt_trc20)} USDT`}
-                onEdit={() =>
-                  openEdit(
-                    "min_withdraw_usdt_trc20",
-                    "Мин. сумма вывода USDT (TRC20)",
-                    { step: "0.01" },
-                  )
-                }
-              />
+          ) : null}
+          {success ? (
+            <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-600">
+              {success}
             </div>
-          </section>
+          ) : null}
         </div>
-        <TariffsPanel
-          tariffs={tariffs}
-          activeCategory={activeCategory}
-          activeResidency={activeResidency}
-          saving={savingTariffs}
-          onCategory={setActiveCategory}
-          onResidency={setActiveResidency}
-          onChange={(next) => setTariffs(next)}
-          onSave={async () => {
-            setSavingTariffs(true);
-            try {
-              const saved = await putTariffs(tariffs);
-              setTariffs(saved);
-            } finally {
-              setSavingTariffs(false);
-            }
-          }}
-        />
-      </div>
 
-      <EditModal
-        open={modal.open}
-        title={modal.title}
-        value={value}
-        suffix={modal.suffix}
-        step={modal.step}
-        max={modal.max}
-        maxDecimals={modal.maxDecimals}
-        onClose={closeEdit}
-        onSave={saveValue}
-        fieldKey={modal.key}
-      />
+        <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.6fr_1fr]">
+          <Card
+            title="Тарифная сетка клиентов"
+            subtitle="Левая компактная сетка для основной тарифной конфигурации"
+            className="xl:order-1"
+          >
+            <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Категория</span>
+                <select
+                  className="ui-input"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as TariffCategory)}
+                >
+                  {(["K1", "K2", "K3", "K4", "K5", "K6"] as TariffCategory[]).map(
+                    (item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Резидентство</span>
+                <select
+                  className="ui-input"
+                  value={residency}
+                  onChange={(e) =>
+                    setResidency(e.target.value as CustomerResidency)
+                  }
+                >
+                  <option value="RESIDENT">Резидент</option>
+                  <option value="NON_RESIDENT">Нерезидент</option>
+                </select>
+              </label>
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Курс USD к СОМ</span>
+                <input
+                  className="ui-input"
+                  value={coreRate}
+                  onChange={(e) =>
+                    updateSetting("esom_per_usd", e.target.value)
+                  }
+                  inputMode="decimal"
+                  placeholder="0"
+                />
+              </label>
+            </div>
+
+            <div className="mb-3 rounded-xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
+              Для шапки и сводки главной страницы берётся контекст{" "}
+              <span className="font-semibold text-fg">K1 / Резидент</span>.
+            </div>
+
+            <div className="space-y-3">
+              {currentTariffs.map((item, index) => (
+                <TariffRowField
+                  key={item.operation}
+                  label={TARIFF_ROW_ORDER[index]?.label || item.operation}
+                  percent={item.percent_fee}
+                  fixed={item.fixed_fee}
+                  onPercentChange={(value) =>
+                    updateTariff(item.operation, { percent_fee: value })
+                  }
+                  onFixedChange={(value) =>
+                    updateTariff(item.operation, { fixed_fee: value })
+                  }
+                />
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="text-sm text-muted">
+                Колонка <span className="font-medium text-fg">Фикс сумма комиссии</span>{" "}
+                отображает фиксированную часть тарифа.
+              </div>
+              <button
+                className="btn btn-primary h-10 px-4"
+                onClick={saveCoreAndTariffs}
+                disabled={savingCore || savingTariffs}
+              >
+                {savingCore || savingTariffs ? "Сохранение..." : "Сохранить тарифы"}
+              </button>
+            </div>
+          </Card>
+
+          <Card
+            title="Короткая сводка"
+            subtitle="Что сейчас активно в выбранной сетке"
+            className="xl:order-2"
+          >
+            <div className="space-y-3">
+              <SummaryRow label="Курс USD к СОМ" value={`${formatMoney(coreRate)} СОМ`} />
+              {currentTariffs.map((item, index) => (
+                <SummaryRow
+                  key={item.operation}
+                  label={TARIFF_ROW_ORDER[index]?.label || item.operation}
+                  value={`${formatPercent(item.percent_fee)} + ${formatMoney(item.fixed_fee)}`}
+                />
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <Card
+            title="Комиссии (в процентах)"
+            subtitle="Нижний блок с процентными настройками"
+          >
+            <div className="space-y-3">
+              {PERCENT_SETTING_FIELDS.map((field) => (
+                <FieldRow
+                  key={field.key}
+                  label={field.label}
+                  value={settings[field.key] ?? "0"}
+                  onChange={(value) => updateSetting(field.key, value)}
+                  suffix="%"
+                />
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="btn btn-primary h-10 px-4"
+                onClick={savePercentFees}
+                disabled={savingPercent}
+              >
+                {savingPercent ? "Сохранение..." : "Сохранить блок"}
+              </button>
+            </div>
+          </Card>
+
+          <Card
+            title="Комиссии и минимумы вывода"
+            subtitle="Нижний блок для фиксированных комиссий и лимитов"
+          >
+            <div className="space-y-3">
+              {LIMIT_SETTING_FIELDS.map((field) => (
+                <FieldRow
+                  key={field.key}
+                  label={field.label}
+                  value={settings[field.key] ?? "0"}
+                  onChange={(value) => updateSetting(field.key, value)}
+                  suffix={field.key.includes("min_withdraw") ? "USDT" : ""}
+                />
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                className="btn btn-primary h-10 px-4"
+                onClick={saveLimits}
+                disabled={savingLimits}
+              >
+                {savingLimits ? "Сохранение..." : "Сохранить блок"}
+              </button>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
 
-function TariffsPanel({
-  tariffs,
-  activeCategory,
-  activeResidency,
-  saving,
-  onCategory,
-  onResidency,
-  onChange,
-  onSave,
-}: {
-  tariffs: TariffSetting[];
-  activeCategory: TariffCategory;
-  activeResidency: CustomerResidency;
-  saving: boolean;
-  onCategory: (value: TariffCategory) => void;
-  onResidency: (value: CustomerResidency) => void;
-  onChange: (value: TariffSetting[]) => void;
-  onSave: () => Promise<void>;
-}) {
-  const rowFor = (operation: TariffOperation): TariffSetting =>
-    tariffs.find(
-      (item) =>
-        item.category === activeCategory &&
-        item.residency === activeResidency &&
-        item.operation === operation,
-    ) || {
-      category: activeCategory,
-      residency: activeResidency,
-      operation,
-      percent_fee: "0",
-      fixed_fee: "0",
-    };
-
-  const updateRow = (
-    operation: TariffOperation,
-    patch: Partial<Pick<TariffSetting, "percent_fee" | "fixed_fee">>,
-  ) => {
-    const exists = tariffs.some(
-      (item) =>
-        item.category === activeCategory &&
-        item.residency === activeResidency &&
-        item.operation === operation,
-    );
-    const next = exists
-      ? tariffs.map((item) =>
-          item.category === activeCategory &&
-          item.residency === activeResidency &&
-          item.operation === operation
-            ? { ...item, ...patch }
-            : item,
-        )
-      : [...tariffs, { ...rowFor(operation), ...patch }];
-    onChange(next);
-  };
-
-  return (
-    <section className="mt-4 card rounded-xl border border-soft shadow-sm overflow-hidden">
-      <header className="p-4 border-b border-soft flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <div className="text-lg font-semibold">Тарифная сетка клиентов</div>
-            <div className="text-sm text-muted">
-              Комиссия в процентах и фиксированная сумма по категории и
-              резидентству
-            </div>
-          </div>
-          <button
-            className="btn btn-success h-9 px-4"
-            onClick={onSave}
-            disabled={saving}
-          >
-            {saving ? "Сохранение..." : "Сохранить тарифы"}
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {TARIFF_CATEGORIES.map((category) => (
-            <button
-              key={category}
-              className={`btn h-8 ${activeCategory === category ? "btn-primary" : ""}`}
-              onClick={() => onCategory(category)}
-            >
-              ТАРИФ {category}
-            </button>
-          ))}
-          <div className="w-px bg-[var(--border-soft)] mx-1" />
-          {TARIFF_RESIDENCIES.map((item) => (
-            <button
-              key={item.value}
-              className={`btn h-8 ${activeResidency === item.value ? "btn-info" : ""}`}
-              onClick={() => onResidency(item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </header>
-      <div className="overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-[var(--card)]">
-            <tr className="border-b border-soft">
-              <th className="text-left px-4 py-3">Тип транзакции</th>
-              <th className="text-left px-4 py-3 w-44">Комиссия, %</th>
-              <th className="text-left px-4 py-3 w-44">Фикс. сумма</th>
-            </tr>
-          </thead>
-          <tbody>
-            {TARIFF_OPERATIONS.map((item) => {
-              const row = rowFor(item.operation);
-              return (
-                <tr key={item.operation} className="border-b border-soft">
-                  <td className="px-4 py-3">{item.label}</td>
-                  <td className="px-4 py-3">
-                    <input
-                      className="ui-input w-full"
-                      inputMode="decimal"
-                      value={row.percent_fee}
-                      onChange={(e) =>
-                        updateRow(item.operation, {
-                          percent_fee: normalizeDecimalInput(e.target.value, {
-                            max: "100",
-                            maxDecimals: 2,
-                          }),
-                        })
-                      }
-                      onBlur={(e) =>
-                        updateRow(item.operation, {
-                          percent_fee: formatFixed2(e.target.value),
-                        })
-                      }
-                      placeholder="0.00"
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      className="ui-input w-full"
-                      inputMode="decimal"
-                      value={row.fixed_fee}
-                      onChange={(e) =>
-                        updateRow(item.operation, {
-                          fixed_fee: normalizeDecimalInput(e.target.value, {
-                            maxDecimals: 8,
-                          }),
-                        })
-                      }
-                      placeholder="0"
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-}
-
-function SettingRow({
+function SummaryRow({
   label,
   value,
-  onEdit,
 }: {
   label: string;
   value: string;
-  onEdit: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-soft bg-[var(--card)]">
-      <div className="min-w-0">
-        <div className="text-sm font-medium">{label}</div>
-        <div className="text-muted text-sm truncate" title={value}>
-          {value}
-        </div>
-      </div>
-      <button className="btn btn-edit whitespace-nowrap" onClick={onEdit}>
-        ✎ Изменить
-      </button>
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
+      <div className="text-sm text-muted">{label}</div>
+      <div className="text-sm font-semibold text-right">{value}</div>
     </div>
   );
-}
-
-function EditModal({
-  open,
-  onClose,
-  onSave,
-  title,
-  value,
-  suffix,
-  step,
-  max,
-  maxDecimals,
-  fieldKey,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onSave: (v: string) => void;
-  title: string;
-  value: string;
-  suffix?: string;
-  step?: string;
-  max?: string;
-  maxDecimals?: number;
-  fieldKey: keyof Settings | null;
-}) {
-  const [v, setV] = useState<string>(value);
-  const [err, setErr] = useState<string | null>(null);
-  const isSomSalamPct = fieldKey === "esom_som_conversion_fee_pct";
-
-  const opened = open ? fieldKey + "" + title : "";
-  useMemo(() => {
-    if (open) {
-      setV(value);
-      setErr(null);
-    }
-  }, [opened, value, open]);
-
-  const validate = (val: string) => {
-    const s = sanitizeNumber(val);
-    if (!s) return "Введите значение";
-    const num = Number(s);
-    if (!Number.isFinite(num)) return "Некорректное число";
-    if (typeof maxDecimals === "number" && maxDecimals >= 0) {
-      const parts = s.split(".");
-      const decimals = parts.length > 1 ? (parts[1] || "").length : 0;
-      if (decimals > maxDecimals)
-        return `Допустимо не более ${maxDecimals} знаков после запятой`;
-    }
-    if (max != null && max !== "" && num > Number(max))
-      return `Значение не должно быть больше ${max}`;
-
-    if (title.toLowerCase().includes("комиссия") && title.includes("%")) {
-      if (num < 0) return "Процент не может быть отрицательным";
-    }
-
-    if (!title.includes("%") && num < 0)
-      return "Значение не может быть отрицательным";
-    return null;
-  };
-
-  const onSaveClick = () => {
-    const e = validate(v);
-    if (e) {
-      setErr(e);
-      return;
-    }
-    const next = sanitizeNumber(v);
-    onSave(isSomSalamPct ? Number(next).toFixed(2) : next);
-  };
-
-  return (
-    <Modal open={open} onClose={onClose} title={title}>
-      <div className="space-y-3">
-        <label className="block text-sm">
-          <span className="text-muted">
-            Значение{suffix ? `, ${suffix}` : ""}
-          </span>
-          <div className="flex items-center gap-2 mt-1">
-            <input
-              className={`ui-input w-full ${err ? "border-red-500" : ""}`}
-              inputMode="decimal"
-              step={step}
-              max={max}
-              value={v}
-              onChange={(e) => {
-                const next = normalizeDecimalInput(e.target.value, {
-                  max,
-                  maxDecimals,
-                  fixedDecimals: isSomSalamPct ? 2 : undefined,
-                });
-                setV(next);
-                if (err) setErr(null);
-              }}
-              placeholder={isSomSalamPct ? "0.00" : "0"}
-            />
-            {suffix && (
-              <span className="px-2 text-sm text-muted">{suffix}</span>
-            )}
-          </div>
-        </label>
-        {err && <div className="text-sm text-red-500">{err}</div>}
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <button className="btn h-9" onClick={onClose}>
-            Отмена
-          </button>
-          <button className="btn btn-primary h-9" onClick={onSaveClick}>
-            Сохранить
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-function fmt(x: string) {
-  try {
-    const n = Number(x);
-    if (Number.isFinite(n)) return n.toLocaleString();
-  } catch {}
-  return x;
-}
-function fmt2(x: string) {
-  try {
-    const n = Number(x);
-    if (Number.isFinite(n))
-      return n.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-  } catch {}
-  return x;
-}
-function fmtPct(x: string) {
-  try {
-    const n = Number(x);
-    if (Number.isFinite(n)) return `${n.toLocaleString()}%`;
-  } catch {}
-  return `${x}%`;
-}
-function sanitizeNumber(x: string) {
-  return x.replace(/[^0-9.,-]/g, "").replace(",", ".");
-}
-function formatFixed2(value: string) {
-  const n = Number(sanitizeNumber(value));
-  return Number.isFinite(n) ? Math.min(Math.max(n, 0), 100).toFixed(2) : "0.00";
-}
-function normalizeDecimalInput(
-  value: string,
-  opts: { max?: string; maxDecimals?: number; fixedDecimals?: number },
-) {
-  let next = value.replace(/[^0-9.,]/g, "").replace(",", ".");
-  const firstDot = next.indexOf(".");
-  if (firstDot !== -1) {
-    next =
-      next.slice(0, firstDot + 1) + next.slice(firstDot + 1).replace(/\./g, "");
-  }
-
-  if (typeof opts.maxDecimals === "number" && opts.maxDecimals >= 0) {
-    const [intPart, decimalPart] = next.split(".");
-    if (decimalPart != null)
-      next = `${intPart}.${decimalPart.slice(0, opts.maxDecimals)}`;
-  }
-
-  const max = opts.max != null && opts.max !== "" ? Number(opts.max) : null;
-  const num = Number(next);
-  if (max != null && Number.isFinite(num) && num > max) {
-    return typeof opts.fixedDecimals === "number"
-      ? max.toFixed(opts.fixedDecimals)
-      : String(max);
-  }
-
-  return next;
 }

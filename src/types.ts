@@ -72,6 +72,7 @@ export interface User {
 export interface TreasuryReserves {
   treasuryAddress: string;
   usdtBalance: number;
+  salamBalance: number;
   trxBalance: number;
   energyAvailable: number;
   bandwidthAvailable: number;

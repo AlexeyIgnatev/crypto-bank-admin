@@ -12,7 +12,10 @@
 } from "@/types";
 
 export type TariffOperation =
+  | "SOM_TO_ESOM"
+  | "ESOM_TO_SOM"
   | "ESOM_TO_USDT_TRC20"
+  | "USDT_TRC20_TO_ESOM"
   | "WALLET_TRANSFER_ESOM"
   | "WALLET_TRANSFER_USDT_TRC20";
 
@@ -671,6 +674,7 @@ export async function getReserves(): Promise<TreasuryReserves> {
   return {
     treasuryAddress: String(data.treasury_address || ""),
     usdtBalance: Number(data.usdt_balance ?? 0),
+    salamBalance: Number(data.salam_balance ?? 0),
     trxBalance: Number(data.trx_balance ?? 0),
     energyAvailable: Number(data.energy_available ?? 0),
     bandwidthAvailable: Number(data.bandwidth_available ?? 0),

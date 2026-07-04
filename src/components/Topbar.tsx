@@ -1,7 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
-import { getSettings } from "@/lib/api";
+
+import { useEffect, useMemo, useState } from "react";
+import { getSettings, getTariffs, TariffOperation, TariffSetting } from "@/lib/api";
 import { useTheme } from "./ThemeProvider";
+
+const TOPBAR_OPERATION_ORDER: { operation: TariffOperation; label: string }[] = [
+  { operation: "SOM_TO_ESOM", label: "СОМ→САЛАМ" },
+  { operation: "ESOM_TO_SOM", label: "САЛАМ→СОМ" },
+  { operation: "WALLET_TRANSFER_ESOM", label: "САЛАМ→САЛАМ" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ→USDT" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "USDT→САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT→USDT" },
+];
 
 export default function Topbar({ title }: { title?: string }) {
   const { theme, toggle } = useTheme();
@@ -16,7 +26,7 @@ export default function Topbar({ title }: { title?: string }) {
         borderColor: "var(--sidebar-border)",
       }}
     >
-      <div className="h-14 flex items-center justify-between px-4">
+      <div className="h-14 flex items-center justify-between px-4 gap-4">
         <div className="flex items-center gap-4 min-w-0">
           <div className="flex items-center gap-3 shrink-0">
             <div className="text-xl font-semibold">Банк</div>
@@ -33,16 +43,23 @@ export default function Topbar({ title }: { title?: string }) {
 
 function TopbarRates() {
   const [settings, setSettings] = useState<Record<string, string> | null>(null);
-  const [error, setError] = useState(false);
+  const [tariffs, setTariffs] = useState<TariffSetting[] | null>(null);
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      try {
-        const data = await getSettings();
-        if (alive) setSettings(data);
-      } catch {
-        if (alive) setError(true);
+      const [settingsResult, tariffsResult] = await Promise.allSettled([
+        getSettings(),
+        getTariffs(),
+      ]);
+
+      if (!alive) return;
+
+      if (settingsResult.status === "fulfilled") {
+        setSettings(settingsResult.value);
+      }
+      if (tariffsResult.status === "fulfilled") {
+        setTariffs(tariffsResult.value);
       }
     })();
     return () => {
@@ -50,31 +67,65 @@ function TopbarRates() {
     };
   }, []);
 
-  const esomPerUsd = Number(settings?.esom_per_usd ?? NaN);
-  const rate =
-    Number.isFinite(esomPerUsd) && esomPerUsd > 0 ? fmtMoney(esomPerUsd) : "—";
-  const somFee = settings?.esom_som_conversion_fee_pct
-    ? fmtPercent(settings.esom_som_conversion_fee_pct)
-    : "—";
+  const currentCategory = "K1";
+  const currentResidency = "RESIDENT";
+
+  const tariffByOperation = useMemo(() => {
+    const rows =
+      tariffs?.filter(
+        (item) =>
+          item.category === currentCategory &&
+          item.residency === currentResidency,
+      ) ?? [];
+    return new Map(rows.map((row) => [row.operation, row]));
+  }, [currentCategory, currentResidency, tariffs]);
+
+  const rate = Number(settings?.esom_per_usd ?? NaN);
+  const rateValue =
+    Number.isFinite(rate) && rate > 0 ? `${fmtMoney(rate)} СОМ` : "—";
 
   return (
-    <div className="hidden xl:flex items-center gap-2 min-w-0">
-      <RateChip
-        label="USDT→САЛАМ"
-        value={error ? "Ошибка" : settings ? rate : "..."}
-      />
-      <RateChip
-        label="СОМ↔САЛАМ"
-        value={error ? "Ошибка" : settings ? `1:1, ${somFee}` : "..."}
-      />
+    <div className="hidden xl:flex items-center gap-2 min-w-0 flex-1 overflow-x-auto pr-2">
+      <RateChip label="USD→СОМ" value={rateValue} accent />
+      {TOPBAR_OPERATION_ORDER.map((item) => {
+        const row = tariffByOperation.get(item.operation);
+        return (
+          <RateChip
+            key={item.operation}
+            label={item.label}
+            value={formatTariffValue(row)}
+          />
+        );
+      })}
     </div>
   );
 }
 
-function RateChip({ label, value }: { label: string; value: string }) {
+function formatTariffValue(row?: TariffSetting) {
+  if (!row) return "—";
+  const percent = fmtPercent(row.percent_fee);
+  const fixed = Number(row.fixed_fee ?? 0);
+  if (!Number.isFinite(fixed) || fixed <= 0) return percent;
+  return `${percent} + ${fmtMoney(fixed)}`;
+}
+
+function RateChip({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
   return (
-    <div className="h-8 px-3 rounded-md border border-soft bg-[var(--bg-soft)] flex items-center gap-2 text-xs whitespace-nowrap">
-      <span className="text-muted">{label}</span>
+    <div
+      className={`h-8 px-3 rounded-md border flex items-center gap-2 text-xs whitespace-nowrap shrink-0 ${
+        accent ? "bg-[var(--primary)] text-white" : "bg-[var(--bg-soft)]"
+      }`}
+      style={{ borderColor: "var(--border-soft)" }}
+    >
+      <span className={accent ? "opacity-90" : "text-muted"}>{label}</span>
       <span className="font-semibold">{value}</span>
     </div>
   );
