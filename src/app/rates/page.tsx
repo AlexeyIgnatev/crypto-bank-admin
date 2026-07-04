@@ -459,11 +459,7 @@ export default function RatesPage() {
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-sm text-muted">
-                Колонка <span className="font-medium text-fg">Фикс сумма комиссии</span>{" "}
-                отображает фиксированную часть тарифа.
-              </div>
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <button
                 className="btn btn-primary h-10 px-4"
                 onClick={saveCoreAndTariffs}
@@ -533,3 +529,4 @@ export default function RatesPage() {
     </div>
   );
 }
+
