@@ -73,6 +73,8 @@ export interface TreasuryReserves {
   treasuryAddress: string;
   usdtBalance: number;
   salamBalance: number;
+  salamSpentToday: number;
+  salamSpentTotal: number;
   trxBalance: number;
   energyAvailable: number;
   bandwidthAvailable: number;
@@ -82,6 +84,8 @@ export interface TreasuryReserves {
   bandwidthSpentTotal: number;
   networkFeeTrxToday: number;
   networkFeeTrxTotal: number;
+  bricsBurnedToday: number;
+  bricsBurnedTotal: number;
 }
 
 export type SupportTicketStatus = "OPEN" | "CLOSED";

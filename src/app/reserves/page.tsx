@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { getReserves } from "@/lib/api";
@@ -8,6 +8,8 @@ const EMPTY_RESERVES: TreasuryReserves = {
   treasuryAddress: "",
   usdtBalance: 0,
   salamBalance: 0,
+  salamSpentToday: 0,
+  salamSpentTotal: 0,
   trxBalance: 0,
   energyAvailable: 0,
   bandwidthAvailable: 0,
@@ -17,6 +19,8 @@ const EMPTY_RESERVES: TreasuryReserves = {
   bandwidthSpentTotal: 0,
   networkFeeTrxToday: 0,
   networkFeeTrxTotal: 0,
+  bricsBurnedToday: 0,
+  bricsBurnedTotal: 0,
 };
 
 function MetricCard({
@@ -127,14 +131,42 @@ export default function ReservesPage() {
           <div className="mb-4">
             <div className="text-lg font-semibold">Данные по САЛАМ</div>
             <div className="mt-1 text-sm text-muted">
-              Баланс общего кошелька SALAM.
+              Сумма по всем кошелькам этого актива.
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Баланс общего кошелька САЛАМ"
+              label="Сумма по всем кошелькам SALAM"
               value={`${fmtAmount(reserves.salamBalance)} SALAM`}
+            />
+            <MetricCard
+              label="Потрачено SALAM за сегодня"
+              value={`${fmtAmount(reserves.salamSpentToday)} SALAM`}
+            />
+            <MetricCard
+              label="Потрачено SALAM за все время"
+              value={`${fmtAmount(reserves.salamSpentTotal)} SALAM`}
+            />
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-soft bg-card/50 p-5">
+          <div className="mb-4">
+            <div className="text-lg font-semibold">Данные по BRICS</div>
+            <div className="mt-1 text-sm text-muted">
+              Сжигание BRICS, связанное с операциями и комиссиями.
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <MetricCard
+              label="Сожжено BRICS за сегодня"
+              value={`${fmtAmount(reserves.bricsBurnedToday)} BRICS`}
+            />
+            <MetricCard
+              label="Сожжено BRICS за все время"
+              value={`${fmtAmount(reserves.bricsBurnedTotal)} BRICS`}
             />
           </div>
         </section>

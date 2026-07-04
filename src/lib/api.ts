@@ -675,6 +675,8 @@ export async function getReserves(): Promise<TreasuryReserves> {
     treasuryAddress: String(data.treasury_address || ""),
     usdtBalance: Number(data.usdt_balance ?? 0),
     salamBalance: Number(data.salam_balance ?? 0),
+    salamSpentToday: Number(data.salam_spent_today ?? 0),
+    salamSpentTotal: Number(data.salam_spent_total ?? 0),
     trxBalance: Number(data.trx_balance ?? 0),
     energyAvailable: Number(data.energy_available ?? 0),
     bandwidthAvailable: Number(data.bandwidth_available ?? 0),
@@ -684,6 +686,8 @@ export async function getReserves(): Promise<TreasuryReserves> {
     bandwidthSpentTotal: Number(data.bandwidth_spent_total ?? 0),
     networkFeeTrxToday: Number(data.network_fee_trx_today ?? 0),
     networkFeeTrxTotal: Number(data.network_fee_trx_total ?? 0),
+    bricsBurnedToday: Number(data.brics_burned_today ?? 0),
+    bricsBurnedTotal: Number(data.brics_burned_total ?? 0),
   };
 }
 
