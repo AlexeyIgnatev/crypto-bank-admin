@@ -442,11 +442,6 @@ export default function RatesPage() {
               </label>
             </div>
 
-            <div className="mb-3 rounded-xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
-              Для шапки и сводки главной страницы берётся контекст{" "}
-              <span className="font-semibold text-fg">K1 / Резидент</span>.
-            </div>
-
             <div className="space-y-3">
               {currentTariffs.map((item, index) => (
                 <TariffRowField
