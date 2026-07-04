@@ -84,42 +84,60 @@ export default function ReservesPage() {
           Живые резервы treasury и расход TRON-ресурсов.
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <MetricCard
-            label="Баланс общего кошелька USDT"
-            value={`${fmtAmount(reserves.usdtBalance)} USDT`}
-            hint={reserves.treasuryAddress}
-          />
-          <MetricCard
-            label="Баланс общего кошелька SALAM"
-            value={`${fmtAmount(reserves.salamBalance)} SALAM`}
-          />
-        </div>
+        <section className="rounded-2xl border border-soft bg-card/50 p-5">
+          <div className="mb-4">
+            <div className="text-lg font-semibold">Данные по USDT TRC20</div>
+            <div className="mt-1 text-sm text-muted">
+              Баланс общего кошелька и расходы по TRON-ресурсам.
+            </div>
+          </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <MetricCard
-            label="Баланс общего кошелька TRX"
-            value={`${fmtAmount(reserves.trxBalance)} TRX`}
-          />
-          <MetricCard
-            label="Доступный газ (energy)"
-            value={fmtInteger(reserves.energyAvailable)}
-          />
-          <MetricCard
-            label="Двигающая сила (bandwidth)"
-            value={fmtInteger(reserves.bandwidthAvailable)}
-          />
-          <MetricCard
-            label="Потрачено газа за сегодня"
-            value={`${fmtAmount(reserves.networkFeeTrxToday)} TRX`}
-            hint={`Energy: ${fmtInteger(reserves.energySpentToday)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentToday)}`}
-          />
-          <MetricCard
-            label="Потрачено газа за все время"
-            value={`${fmtAmount(reserves.networkFeeTrxTotal)} TRX`}
-            hint={`Energy: ${fmtInteger(reserves.energySpentTotal)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentTotal)}`}
-          />
-        </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <MetricCard
+              label="Баланс общего кошелька USDT TRC20"
+              value={`${fmtAmount(reserves.usdtBalance)} USDT TRC20`}
+              hint={reserves.treasuryAddress}
+            />
+            <MetricCard
+              label="Баланс общего кошелька TRX"
+              value={`${fmtAmount(reserves.trxBalance)} TRX`}
+            />
+            <MetricCard
+              label="Доступный газ (energy)"
+              value={fmtInteger(reserves.energyAvailable)}
+            />
+            <MetricCard
+              label="Двигающая сила (bandwidth)"
+              value={fmtInteger(reserves.bandwidthAvailable)}
+            />
+            <MetricCard
+              label="Потрачено газа за сегодня"
+              value={`${fmtAmount(reserves.networkFeeTrxToday)} TRX`}
+              hint={`Energy: ${fmtInteger(reserves.energySpentToday)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentToday)}`}
+            />
+            <MetricCard
+              label="Потрачено газа за все время"
+              value={`${fmtAmount(reserves.networkFeeTrxTotal)} TRX`}
+              hint={`Energy: ${fmtInteger(reserves.energySpentTotal)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentTotal)}`}
+            />
+          </div>
+        </section>
+
+        <section className="mt-4 rounded-2xl border border-soft bg-card/50 p-5">
+          <div className="mb-4">
+            <div className="text-lg font-semibold">Данные по САЛАМ</div>
+            <div className="mt-1 text-sm text-muted">
+              Баланс общего кошелька SALAM.
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <MetricCard
+              label="Баланс общего кошелька САЛАМ"
+              value={`${fmtAmount(reserves.salamBalance)} SALAM`}
+            />
+          </div>
+        </section>
       </div>
     </div>
   );
