@@ -13,7 +13,6 @@ const allItems = [
   { href: "/reserves", label: "Резервы", icon: "🏦" },
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
-  { href: "/tron-wallet", label: "TRON Wallet", icon: "🪙" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
   { href: "/logs", label: "Логи", icon: "🧾" },
   { href: "/faq", label: "FAQ", icon: "❓" },
@@ -28,22 +27,21 @@ function allowedByRole(role?: string): string[] {
     case "UID":
       return allItems.map((i) => i.href);
     case "UIT":
-      return ["/admins", "/tron-wallet", "/faq", "/support", "/push"];
+      return ["/admins", "/faq", "/support", "/push"];
     case "SKK":
-      return ["/control-cases", "/tron-wallet", "/faq", "/support", "/push"];
+      return ["/control-cases", "/faq", "/support", "/push"];
     case "UDBO":
     case "UBUIO":
       return [
         "/transactions",
         "/statements",
         "/reserves",
-        "/tron-wallet",
         "/faq",
         "/support",
         "/push",
       ];
     case "TREASURY":
-      return ["/rates", "/reserves", "/tron-wallet", "/faq", "/support", "/push"];
+      return ["/rates", "/reserves", "/faq", "/support", "/push"];
     default:
       return ["/support", "/push", "/faq"];
   }

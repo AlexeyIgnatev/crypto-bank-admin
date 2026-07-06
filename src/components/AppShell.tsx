@@ -7,6 +7,7 @@ import Topbar from "./Topbar";
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login";
+  const isStandalonePage = pathname === "/tron-wallet";
 
   if (isAuthPage) {
     return (
@@ -19,6 +20,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  if (isStandalonePage) {
+    return <>{children}</>;
   }
 
   const title =
