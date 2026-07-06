@@ -140,11 +140,11 @@ export default function ReservesPage() {
               value={`${fmtAmount(reserves.salamBalance)} SALAM`}
             />
             <MetricCard
-              label="Потрачено SALAM за сегодня"
+              label="????? ?????????? SALAM ?? ???????"
               value={`${fmtAmount(reserves.salamSpentToday)} SALAM`}
             />
             <MetricCard
-              label="Потрачено SALAM за все время"
+              label="????? ?????????? SALAM ?? ??? ?????"
               value={`${fmtAmount(reserves.salamSpentTotal)} SALAM`}
             />
           </div>
