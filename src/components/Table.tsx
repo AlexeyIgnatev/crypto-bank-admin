@@ -125,7 +125,11 @@ export default function Table({
   const [recipientQ, setRecipientQ] = useState("");
   const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
-  const availableCurrencies = ["COM", "SALAM", "USDT"];
+  const availableCurrencies = [
+    { value: "COM", label: "COM" },
+    { value: "SALAM", label: "SALAM" },
+    { value: "USDT", label: "USDT TRC20" },
+  ];
 
   const idDD = useDropdown();
   const statusDD = useDropdown();
@@ -911,10 +915,10 @@ export default function Table({
             <div className="header-dd p-2">
               <div className="text-sm mb-2 font-medium">Валюты</div>
               {availableCurrencies.map((c) => {
-                const checked = currencySet.has(c);
+                const checked = currencySet.has(c.value);
                 return (
                   <label
-                    key={c}
+                    key={c.value}
                     className="flex items-center gap-2 py-1 cursor-pointer select-none"
                   >
                     <input
@@ -923,11 +927,11 @@ export default function Table({
                       checked={checked}
                       onChange={() => {
                         const n = new Set(currencySet);
-                        checked ? n.delete(c) : n.add(c);
+                        checked ? n.delete(c.value) : n.add(c.value);
                         setCurrencySet(n);
                       }}
                     />
-                    <span className="text-sm">{c}</span>
+                    <span className="text-sm">{c.label}</span>
                   </label>
                 );
               })}

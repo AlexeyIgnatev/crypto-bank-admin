@@ -15,9 +15,9 @@ const TARIFF_ROW_ORDER: { operation: TariffOperation; label: string }[] = [
   { operation: "SOM_TO_ESOM", label: "Конвертация СОМ в САЛАМ" },
   { operation: "ESOM_TO_SOM", label: "Конвертация САЛАМ в СОМ" },
   { operation: "WALLET_TRANSFER_ESOM", label: "Перевод САЛАМ между пользователями" },
-  { operation: "ESOM_TO_USDT_TRC20", label: "Конвертация САЛАМ в USDT" },
-  { operation: "USDT_TRC20_TO_ESOM", label: "Конвертация USDT в САЛАМ" },
-  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "Перевод USDT между пользователями" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "Конвертация САЛАМ в USDT TRC20" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "Конвертация USDT TRC20 в САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "Перевод USDT TRC20 между пользователями" },
 ];
 
 const PERCENT_SETTING_FIELDS = [
@@ -27,7 +27,7 @@ const PERCENT_SETTING_FIELDS = [
   },
   {
     key: "usdt_trade_fee_pct",
-    label: "Комиссия торговли USDT, %",
+    label: "Комиссия торговли USDT TRC20, %",
   },
 ] as const;
 
@@ -38,11 +38,11 @@ const LIMIT_SETTING_FIELDS = [
   },
   {
     key: "usdt_withdraw_fee_fixed",
-    label: "Фикс. комиссия вывода USDT",
+    label: "Фикс. комиссия вывода USDT TRC20",
   },
   {
     key: "min_withdraw_usdt_trc20",
-    label: "Минимум вывода USDT",
+    label: "Минимум вывода USDT TRC20",
   },
 ] as const;
 
@@ -504,7 +504,7 @@ export default function RatesPage() {
                   label={field.label}
                   value={settings[field.key] ?? "0"}
                   onChange={(value) => updateSetting(field.key, value)}
-                  suffix={field.key.includes("min_withdraw") ? "USDT" : ""}
+                  suffix={field.key.includes("min_withdraw") ? "USDT TRC20" : ""}
                 />
               ))}
             </div>

@@ -8,9 +8,9 @@ const TOPBAR_OPERATION_ORDER: { operation: TariffOperation; label: string }[] = 
   { operation: "SOM_TO_ESOM", label: "СОМ→САЛАМ" },
   { operation: "ESOM_TO_SOM", label: "САЛАМ→СОМ" },
   { operation: "WALLET_TRANSFER_ESOM", label: "САЛАМ→САЛАМ" },
-  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ→USDT" },
-  { operation: "USDT_TRC20_TO_ESOM", label: "USDT→САЛАМ" },
-  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT→USDT" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ→USDT TRC20" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "USDT TRC20→САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT TRC20→USDT TRC20" },
 ];
 
 export default function Topbar({ title }: { title?: string }) {

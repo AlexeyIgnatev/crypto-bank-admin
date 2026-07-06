@@ -160,7 +160,7 @@ export default function UsersPage() {
           },
           { header: "COM", getValue: (row) => row.balances.COM },
           { header: "SALAM", getValue: (row) => row.balances.SALAM },
-          { header: "USDT", getValue: (row) => row.balances.USDT },
+          { header: "USDT TRC20", getValue: (row) => row.balances.USDT },
         ],
         rows,
       });

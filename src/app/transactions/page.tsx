@@ -20,7 +20,7 @@ import {
 const currencyOptions = [
   { key: "COM", label: "СОМ" },
   { key: "SALAM", label: "САЛАМ" },
-  { key: "USDT", label: "USDT" },
+  { key: "USDT", label: "USDT TRC20" },
 ] as const;
 
 const operationOptions: { key: OperationType; label: string }[] = [
@@ -268,7 +268,7 @@ export default function TransactionsAnalytics() {
                 [
                   { key: "COM", label: "СОМ", icon: "som" },
                   { key: "SALAM", label: "САЛАМ", icon: "som" },
-                  { key: "USDT", label: "USDT", icon: "usdt" },
+                  { key: "USDT", label: "USDT TRC20", icon: "usdt" },
                 ] as {
                   key: string;
                   label: string;

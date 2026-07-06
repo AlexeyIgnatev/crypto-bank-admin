@@ -29,7 +29,7 @@ export default function UserDetails({ user, onClose, onEdit, onDelete }: { user:
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>COM</div><div className="text-right">{formatAmount6(user.balances.COM)}</div>
             <div>SALAM</div><div className="text-right">{formatAmount6(user.balances.SALAM)}</div>
-            <div>USDT</div><div className="text-right">{formatAmount6(user.balances.USDT)}</div>
+            <div>USDT TRC20</div><div className="text-right">{formatAmount6(user.balances.USDT)}</div>
           </div>
         </div>
         <div className="space-y-2">

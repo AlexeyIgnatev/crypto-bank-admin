@@ -7,7 +7,7 @@ import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
   { label: "САЛАМ", value: "SALAM" },
-  { label: "USDT", value: "USDT" },
+  { label: "USDT TRC20", value: "USDT" },
 ];
 
 function asNumber(value: number | undefined): number {

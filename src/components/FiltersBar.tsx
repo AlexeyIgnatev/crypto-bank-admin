@@ -21,7 +21,7 @@ export default function FiltersBar({ value, onChange }: { value: FiltersType; on
   const assets = [
     { value: "COM", label: "СОМ", icon: "🪙" },
     { value: "SALAM", label: "Салам", icon: "🧧" },
-    { value: "USDT", label: "USDT", icon: "Ⓣ" },
+    { value: "USDT", label: "USDT TRC20", icon: "Ⓣ" },
   ];
 
   const ops: { value: OperationType; label: string }[] = [

@@ -103,7 +103,11 @@ export default function CasesTable({
   const [senderQ, setSenderQ] = useState("");
   const [recipientQ, setRecipientQ] = useState("");
 
-  const availableCurrencies = ["COM", "SALAM", "USDT"];
+  const availableCurrencies = [
+    { value: "COM", label: "COM" },
+    { value: "SALAM", label: "SALAM" },
+    { value: "USDT", label: "USDT TRC20" },
+  ];
 
   const idDD = useDropdown();
   const statusDD = useDropdown();
@@ -542,20 +546,20 @@ export default function CasesTable({
         <DropdownPanel state={currencyDD} title="Валюта">
           <div className="space-y-1">
             {availableCurrencies.map((c) => (
-              <label key={c} className="flex items-center gap-2 text-sm">
+              <label key={c.value} className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
-                  checked={currencySet.has(c)}
+                  checked={currencySet.has(c.value)}
                   onChange={(e) =>
                     setCurrencySet((prev) => {
                       const n = new Set(prev);
-                      if (e.target.checked) n.add(c);
-                      else n.delete(c);
+                      if (e.target.checked) n.add(c.value);
+                      else n.delete(c.value);
                       return n;
                     })
                   }
                 />
-                <span>{c}</span>
+                <span>{c.label}</span>
               </label>
             ))}
           </div>

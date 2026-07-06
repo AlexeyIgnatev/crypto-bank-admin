@@ -34,7 +34,7 @@ function mapCurrency(x?: string): string {
     case "ESOM":
       return "SALAM";
     case "USDT_TRC20":
-      return "USDT";
+      return "USDT TRC20";
     default:
       return x || "COM";
   }
@@ -66,6 +66,7 @@ function mapDisplayToAssetOld(x: string): string {
     case "SALAM":
       return "ESOM";
     case "USDT":
+    case "USDT TRC20":
       return "USDT_TRC20";
     default:
       return x;
@@ -706,7 +707,7 @@ function mapAssetToDisplay(x?: string): string {
     case "ESOM":
       return "SALAM";
     case "USDT_TRC20":
-      return "USDT";
+      return "USDT TRC20";
     default:
       return x || "COM";
   }
@@ -718,6 +719,7 @@ function mapDisplayToAssetDisplayHelper(x?: string): string {
     case "SALAM":
       return "ESOM";
     case "USDT":
+    case "USDT TRC20":
       return "USDT_TRC20";
     default:
       return x || "SOM";
