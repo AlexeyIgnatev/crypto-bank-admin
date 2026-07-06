@@ -1,12 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "tron-wallet-private-key";
 const CUSTOMER_ID_KEY = "tron-wallet-customer-id";
 
-function formatTrx(value: number) {
-  return `${value.toFixed(6)} TRX`;
+function formatUsdt(value: number) {
+  return `${value.toFixed(6)} USDT TRC20`;
 }
 
 export default function TronWalletPage() {
@@ -14,15 +14,19 @@ export default function TronWalletPage() {
   const [privateKey, setPrivateKey] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [rpcUrl, setRpcUrl] = useState("http://192.168.255.121:8090");
-  const [balanceTrx, setBalanceTrx] = useState(0);
+  const [balanceUsdt, setBalanceUsdt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Подготавливаю тестовый кошелёк...");
   const initOnce = useRef(false);
 
-  async function refreshBalance(nextAddress = address) {
-    if (!nextAddress) return;
+  async function refreshBalance(nextAddress = address, nextCustomerId = customerId) {
+    if (!nextAddress && !nextCustomerId) return;
 
-    const res = await fetch(`/api/tron-wallet/balance?address=${encodeURIComponent(nextAddress)}`, {
+    const params = new URLSearchParams();
+    if (nextAddress) params.set("address", nextAddress);
+    if (nextCustomerId) params.set("customerId", nextCustomerId);
+
+    const res = await fetch(`/api/tron-wallet/balance?${params.toString()}`, {
       cache: "no-store",
     });
     const data = await res.json().catch(() => ({}));
@@ -31,7 +35,12 @@ export default function TronWalletPage() {
       throw new Error(data?.error || "Не удалось получить баланс");
     }
 
-    setBalanceTrx(Number(data.balanceTrx || 0));
+    if (typeof data.balanceUsdt === "number") {
+      setBalanceUsdt(Number(data.balanceUsdt || 0));
+      return;
+    }
+
+    setBalanceUsdt(Number(data.balanceTrx || 0));
   }
 
   useEffect(() => {
@@ -58,17 +67,16 @@ export default function TronWalletPage() {
         }
 
         localStorage.setItem(STORAGE_KEY, pk);
-        if (nextCustomerId) {
-          localStorage.setItem(CUSTOMER_ID_KEY, nextCustomerId);
-        }
+        if (nextCustomerId) localStorage.setItem(CUSTOMER_ID_KEY, nextCustomerId);
+
         setPrivateKey(pk);
         setAddress(addr);
         setCustomerId(nextCustomerId);
         if (initData?.rpcUrl) setRpcUrl(String(initData.rpcUrl));
         setMessage(savedPk ? "Загружен сохранённый тестовый кошелёк" : "Создан новый тестовый кошелёк");
 
-        if (addr) {
-          await refreshBalance(addr);
+        if (addr || nextCustomerId) {
+          await refreshBalance(addr, nextCustomerId);
         }
       } catch (error) {
         setMessage(`Ошибка инициализации: ${String(error)}`);
@@ -96,7 +104,7 @@ export default function TronWalletPage() {
             <div className="min-w-[240px] rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-right">
               <div className="text-xs uppercase tracking-[0.18em] text-cyan-200/80">Баланс сверху</div>
               <div className="mt-1 text-2xl font-semibold text-cyan-50">
-                {loading ? "Loading..." : formatTrx(balanceTrx)}
+                {loading ? "Loading..." : formatUsdt(balanceUsdt)}
               </div>
             </div>
           </div>
@@ -108,43 +116,23 @@ export default function TronWalletPage() {
             <div className="mt-4 space-y-4">
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Address</div>
-                <input
-                  value={address}
-                  readOnly
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
-                />
+                <input value={address} readOnly className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none" />
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Private key</div>
-                <textarea
-                  value={privateKey}
-                  readOnly
-                  className="mt-2 min-h-28 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
-                />
+                <textarea value={privateKey} readOnly className="mt-2 min-h-28 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none" />
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Customer ID</div>
-                <input
-                  value={customerId}
-                  readOnly
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
-                />
+                <input value={customerId} readOnly className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none" />
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">RPC</div>
-                <input
-                  value={rpcUrl}
-                  readOnly
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
-                />
+                <input value={rpcUrl} readOnly className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none" />
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Balance</div>
-                <input
-                  value={loading ? "Loading..." : formatTrx(balanceTrx)}
-                  readOnly
-                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
-                />
+                <input value={loading ? "Loading..." : formatUsdt(balanceUsdt)} readOnly className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none" />
               </div>
             </div>
           </section>
@@ -155,36 +143,28 @@ export default function TronWalletPage() {
               {message}
             </div>
             <div className="mt-4 flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
-                onClick={async () => {
-                  try {
-                    setLoading(true);
-                    await refreshBalance();
-                    setMessage("Баланс обновлён");
-                  } catch (error) {
-                    setMessage(`Ошибка обновления: ${String(error)}`);
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-              >
+              <button type="button" className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950" onClick={async () => {
+                try {
+                  setLoading(true);
+                  await refreshBalance();
+                  setMessage("Баланс обновлён");
+                } catch (error) {
+                  setMessage(`Ошибка обновления: ${String(error)}`);
+                } finally {
+                  setLoading(false);
+                }
+              }}>
                 Refresh balance
               </button>
-              <button
-                type="button"
-                className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold"
-                onClick={() => {
-                  localStorage.removeItem(STORAGE_KEY);
-                  localStorage.removeItem(CUSTOMER_ID_KEY);
-                  setPrivateKey("");
-                  setAddress("");
-                  setCustomerId("");
-                  setBalanceTrx(0);
-                  setMessage("Локальный кошелёк очищен");
-                }}
-              >
+              <button type="button" className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold" onClick={() => {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(CUSTOMER_ID_KEY);
+                setPrivateKey("");
+                setAddress("");
+                setCustomerId("");
+                setBalanceUsdt(0);
+                setMessage("Локальный кошелёк очищен");
+              }}>
                 Reset local wallet
               </button>
             </div>
