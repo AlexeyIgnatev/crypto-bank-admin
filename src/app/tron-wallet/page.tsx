@@ -12,21 +12,24 @@ export default function TronWalletPage() {
   const [address, setAddress] = useState("");
   const [privateKey, setPrivateKey] = useState("");
   const [rpcUrl, setRpcUrl] = useState("http://192.168.255.121:8090");
-  const [balance, setBalance] = useState("0.000000 TRX");
+  const [balanceTrx, setBalanceTrx] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("Подготавливаю тестовый кошелек...");
+  const [message, setMessage] = useState("Подготавливаю тестовый кошелёк...");
   const initOnce = useRef(false);
 
   async function refreshBalance(nextAddress = address) {
     if (!nextAddress) return;
+
     const res = await fetch(`/api/tron-wallet/balance?address=${encodeURIComponent(nextAddress)}`, {
       cache: "no-store",
     });
     const data = await res.json().catch(() => ({}));
+
     if (!res.ok) {
       throw new Error(data?.error || "Не удалось получить баланс");
     }
-    setBalance(formatTrx(Number(data.balanceTrx || 0)));
+
+    setBalanceTrx(Number(data.balanceTrx || 0));
   }
 
   useEffect(() => {
@@ -45,14 +48,15 @@ export default function TronWalletPage() {
         const addr = String(initData?.address || "");
 
         if (!pk) {
-          throw new Error("Не удалось создать тестовый кошелек");
+          throw new Error("Не удалось создать тестовый кошелёк");
         }
 
         localStorage.setItem(STORAGE_KEY, pk);
         setPrivateKey(pk);
         setAddress(addr);
         if (initData?.rpcUrl) setRpcUrl(String(initData.rpcUrl));
-        setMessage(savedPk ? "Загружен сохраненный тестовый кошелек" : "Создан новый тестовый кошелек");
+        setMessage(savedPk ? "Загружен сохранённый тестовый кошелёк" : "Создан новый тестовый кошелёк");
+
         if (addr) {
           await refreshBalance(addr);
         }
@@ -65,16 +69,27 @@ export default function TronWalletPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#06111f] text-slate-100">
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur">
-          <div className="inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
-            Tron wallet
+    <main className="min-h-screen overflow-y-auto bg-[#06111f] text-slate-100">
+      <div className="mx-auto max-w-5xl px-6 py-6 pb-14 md:py-10">
+        <section className="sticky top-4 z-20 rounded-3xl border border-white/10 bg-slate-950/90 p-5 shadow-2xl backdrop-blur">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                Tron wallet
+              </div>
+              <h1 className="mt-3 text-3xl font-semibold">Тестовый TRON-кошелёк</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                Кошелёк создаётся автоматически и хранится локально в браузере. Страница открывается только по прямой ссылке.
+              </p>
+            </div>
+
+            <div className="min-w-[240px] rounded-2xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-3 text-right">
+              <div className="text-xs uppercase tracking-[0.18em] text-cyan-200/80">Баланс сверху</div>
+              <div className="mt-1 text-2xl font-semibold text-cyan-50">
+                {loading ? "Loading..." : formatTrx(balanceTrx)}
+              </div>
+            </div>
           </div>
-          <h1 className="mt-4 text-3xl font-semibold">Тестовый TRON-кошелек</h1>
-          <p className="mt-3 max-w-2xl text-sm text-slate-300">
-            Кошелек создается автоматически и хранится локально в браузере. Страница открывается только по прямой ссылке.
-          </p>
         </section>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -108,7 +123,7 @@ export default function TronWalletPage() {
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Balance</div>
                 <input
-                  value={loading ? "Loading..." : balance}
+                  value={loading ? "Loading..." : formatTrx(balanceTrx)}
                   readOnly
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
                 />
@@ -129,7 +144,7 @@ export default function TronWalletPage() {
                   try {
                     setLoading(true);
                     await refreshBalance();
-                    setMessage("Баланс обновлен");
+                    setMessage("Баланс обновлён");
                   } catch (error) {
                     setMessage(`Ошибка обновления: ${String(error)}`);
                   } finally {
@@ -146,15 +161,15 @@ export default function TronWalletPage() {
                   localStorage.removeItem(STORAGE_KEY);
                   setPrivateKey("");
                   setAddress("");
-                  setBalance("0.000000 TRX");
-                  setMessage("Локальный кошелек очищен");
+                  setBalanceTrx(0);
+                  setMessage("Локальный кошелёк очищен");
                 }}
               >
                 Reset local wallet
               </button>
             </div>
             <div className="mt-4 text-xs text-slate-500">
-              Если нужен новый кошелек, очисти локальный и просто открой страницу снова.
+              Если нужен новый кошелёк, очисти локальный и просто открой страницу снова.
             </div>
           </section>
         </div>
