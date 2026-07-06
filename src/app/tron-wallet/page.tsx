@@ -86,8 +86,22 @@ export default function TronWalletPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyHeight = document.body.style.height;
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
+    document.body.style.height = "auto";
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.height = prevBodyHeight;
+    };
+  }, []);
+
   return (
-    <main className="min-h-screen overflow-y-auto bg-[#06111f] text-slate-100">
+    <main className="min-h-[100svh] overflow-y-auto bg-[#06111f] text-slate-100">
       <div className="mx-auto max-w-5xl px-6 py-6 pb-14 md:py-10">
         <section className="sticky top-4 z-20 rounded-3xl border border-white/10 bg-slate-950/90 p-5 shadow-2xl backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-4">
