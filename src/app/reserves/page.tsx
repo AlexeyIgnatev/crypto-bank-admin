@@ -24,19 +24,6 @@ const EMPTY_RESERVES: TreasuryReserves = {
   bricsBurnedTotal: 0,
 };
 
-const TEST_USDT_RESERVES = {
-  usdtBalance: 250000,
-  trxBalance: 125000,
-  energyAvailable: 50000000,
-  bandwidthAvailable: 25000000,
-  energySpentToday: 125000,
-  energySpentTotal: 8500000,
-  bandwidthSpentToday: 64000,
-  bandwidthSpentTotal: 4200000,
-  networkFeeTrxToday: 1750,
-  networkFeeTrxTotal: 98250,
-};
-
 function MetricCard({
   label,
   value,
@@ -94,7 +81,6 @@ export default function ReservesPage() {
   }
 
   const reserves = data;
-  const usdtDemo = { ...reserves, ...TEST_USDT_RESERVES };
 
   return (
     <div className="flex-1 min-h-0 overflow-auto pb-8">
@@ -107,37 +93,41 @@ export default function ReservesPage() {
           <div className="mb-4">
             <div className="text-lg font-semibold">Данные по USDT TRC20</div>
             <div className="mt-1 text-sm text-muted">
-              Тестовые значения для проверки панели.
+              Живые значения treasury-кошелька из backend.
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
+              label="Treasury кошелёк"
+              value={reserves.treasuryAddress || "—"}
+            />
+            <MetricCard
               label="Баланс общего кошелька USDT TRC20"
-              value={`${fmtAmount(usdtDemo.usdtBalance)} USDT TRC20`}
-              hint={usdtDemo.treasuryAddress}
+              value={`${fmtAmount(reserves.usdtBalance)} USDT TRC20`}
+              hint="Баланс token-контракта treasury"
             />
             <MetricCard
               label="Баланс общего кошелька TRX"
-              value={`${fmtAmount(usdtDemo.trxBalance)} TRX`}
+              value={`${fmtAmount(reserves.trxBalance)} TRX`}
             />
             <MetricCard
               label="Доступный газ (energy)"
-              value={fmtInteger(usdtDemo.energyAvailable)}
+              value={fmtInteger(reserves.energyAvailable)}
             />
             <MetricCard
               label="Двигающая сила (bandwidth)"
-              value={fmtInteger(usdtDemo.bandwidthAvailable)}
+              value={fmtInteger(reserves.bandwidthAvailable)}
             />
             <MetricCard
               label="Потрачено газа за сегодня"
-              value={`${fmtAmount(usdtDemo.networkFeeTrxToday)} TRX`}
-              hint={`Energy: ${fmtInteger(usdtDemo.energySpentToday)}, bandwidth: ${fmtInteger(usdtDemo.bandwidthSpentToday)}`}
+              value={`${fmtAmount(reserves.networkFeeTrxToday)} TRX`}
+              hint={`Energy: ${fmtInteger(reserves.energySpentToday)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentToday)}`}
             />
             <MetricCard
               label="Потрачено газа за все время"
-              value={`${fmtAmount(usdtDemo.networkFeeTrxTotal)} TRX`}
-              hint={`Energy: ${fmtInteger(usdtDemo.energySpentTotal)}, bandwidth: ${fmtInteger(usdtDemo.bandwidthSpentTotal)}`}
+              value={`${fmtAmount(reserves.networkFeeTrxTotal)} TRX`}
+              hint={`Energy: ${fmtInteger(reserves.energySpentTotal)}, bandwidth: ${fmtInteger(reserves.bandwidthSpentTotal)}`}
             />
           </div>
         </section>
