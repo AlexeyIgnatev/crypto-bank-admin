@@ -148,7 +148,7 @@ function TariffRowField({
         <div className="text-sm font-semibold">{label}</div>
       </div>
       <label className="grid gap-1">
-        <span className="text-xs text-muted">РџСЂРѕС†РµРЅС‚</span>
+        <span className="text-xs text-muted">Процент</span>
         <input
           className="ui-input"
           value={percent}
@@ -158,7 +158,7 @@ function TariffRowField({
         />
       </label>
       <label className="grid gap-1">
-        <span className="text-xs text-muted">Р¤РёРєСЃ СЃСѓРјРјР° РєРѕРјРёСЃСЃРёРё</span>
+        <span className="text-xs text-muted">Фикс сумма комиссии</span>
         <input
           className="ui-input"
           value={fixed}
@@ -197,7 +197,7 @@ export default function RatesPage() {
         setTariffs(tariffsData);
       } catch (err: any) {
         if (!alive) return;
-        setError(err?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РїСЂРѕС†РµРЅС‚С‹");
+      setError(err?.message || "Не удалось загрузить проценты");
       } finally {
         if (alive) setLoading(false);
       }
@@ -298,9 +298,9 @@ export default function RatesPage() {
         }
         return Array.from(merged.values());
       });
-      setSuccess("РўР°СЂРёС„РЅР°СЏ СЃРµС‚РєР° СЃРѕС…СЂР°РЅРµРЅР°");
+      setSuccess("Тарифная сетка сохранена");
     } catch (err: any) {
-      setError(err?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С‚Р°СЂРёС„РЅСѓСЋ СЃРµС‚РєСѓ");
+      setError(err?.message || "Не удалось сохранить тарифную сетку");
     } finally {
       setSavingCore(false);
       setSavingTariffs(false);
@@ -320,9 +320,9 @@ export default function RatesPage() {
       };
       const saved = await putSettings(payload);
       setSettings((prev) => ({ ...prev, ...saved, ...payload }));
-      setSuccess("Р‘Р»РѕРє РїСЂРѕС†РµРЅС‚РѕРІ СЃРѕС…СЂР°РЅС‘РЅ");
+      setSuccess("Блок процентов сохранён");
     } catch (err: any) {
-      setError(err?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ Р±Р»РѕРє РїСЂРѕС†РµРЅС‚РѕРІ");
+      setError(err?.message || "Не удалось сохранить блок процентов");
     } finally {
       setSavingPercent(false);
     }
