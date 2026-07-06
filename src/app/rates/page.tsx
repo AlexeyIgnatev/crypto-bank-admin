@@ -453,31 +453,6 @@ export default function RatesPage() {
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <Card
-            title="РљРѕРјРёСЃСЃРёРё (РІ РїСЂРѕС†РµРЅС‚Р°С…)"
-          >
-            <div className="space-y-3">
-              {/* removed */}
-                <FieldRow
-                  key={field.key}
-                  label={field.label}
-                  value={settings[field.key] ?? "0"}
-                  onChange={(value) => updateSetting(field.key, value)}
-                  suffix="%"
-                />
-              ))}
-            </div>
-            <div className="mt-4 flex justify-end">
-              <button
-                className="btn btn-primary h-10 px-4"
-                onClick={savePercentFees}
-                disabled={savingPercent}
-              >
-                {savingPercent ? "РЎРѕС…СЂР°РЅРµРЅРёРµ..." : "РЎРѕС…СЂР°РЅРёС‚СЊ Р±Р»РѕРє"}
-              </button>
-            </div>
-          </Card>
-
-          <Card
             title="РљРѕРјРёСЃСЃРёРё Рё РјРёРЅРёРјСѓРјС‹ РІС‹РІРѕРґР°"
           >
             <div className="space-y-3">
