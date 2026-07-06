@@ -30,6 +30,7 @@ declare global {
 }
 
 const STORAGE_KEY = "tron-wallet-private-key";
+const TEST_WALLETS_KEY = "tron-wallet-test-accounts";
 
 function formatTrx(sun: number) {
   return `${(sun / 1_000_000).toFixed(6)} TRX (${sun} sun)`;
@@ -51,6 +52,7 @@ export default function TronWalletPage() {
   const [tokenContract, setTokenContract] = useState("");
   const [tokenRecipient, setTokenRecipient] = useState("");
   const [tokenAmount, setTokenAmount] = useState("10");
+  const [testWallets, setTestWallets] = useState<Array<{ name: string; pk: string; address: string }>>([]);
   const [log, setLog] = useState<string[]>([]);
 
   const wallet = (() => {
@@ -72,6 +74,14 @@ export default function TronWalletPage() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       setPrivateKey(saved);
+    }
+    const savedTestWallets = localStorage.getItem(TEST_WALLETS_KEY);
+    if (savedTestWallets) {
+      try {
+        setTestWallets(JSON.parse(savedTestWallets));
+      } catch {
+        localStorage.removeItem(TEST_WALLETS_KEY);
+      }
     }
   }, []);
 
@@ -129,6 +139,29 @@ export default function TronWalletPage() {
     const tx = await token.transfer(tokenRecipient, tokenAmount).send({ feeLimit: 1_000_000_000 });
     setLog((prev) => [`token tx: ${JSON.stringify(tx)}`, ...prev].slice(0, 30));
     await refreshBalance();
+  }
+
+  async function generateTwoTestWallets() {
+    const TronWeb = window.TronWeb;
+    if (!TronWeb) throw new Error("TronWeb not loaded");
+    const wallets = [
+      { name: "Sender / user wallet", pk: randomPk() },
+      { name: "Receiver / common wallet", pk: randomPk() },
+    ].map((item) => ({
+      ...item,
+      address: TronWeb.address.fromPrivateKey(item.pk),
+    }));
+    setTestWallets(wallets);
+    localStorage.setItem(TEST_WALLETS_KEY, JSON.stringify(wallets));
+    setLog((prev) => [
+      `test wallets generated: ${wallets[0].address} / ${wallets[1].address}`,
+      ...prev,
+    ].slice(0, 30));
+  }
+
+  function selectTestWallet(pk: string) {
+    setPrivateKey(pk);
+    localStorage.setItem(STORAGE_KEY, pk);
   }
 
   return (
@@ -211,6 +244,39 @@ export default function TronWalletPage() {
               >
                 Clear
               </button>
+              <button
+                type="button"
+                onClick={() => generateTwoTestWallets().catch((e) => setLog((prev) => [`generate test wallets error: ${e.message}`, ...prev].slice(0, 30)))}
+                className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-100"
+              >
+                Generate 2 test wallets
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-lg font-semibold">Тестовые кошельки</h2>
+            <p className="mt-2 text-sm text-slate-300">
+              Сгенерируй пару адресов, затем выбери нужный и нажми <span className="font-semibold">Connect / refresh</span>.
+            </p>
+            <div className="mt-4 space-y-3">
+              {testWallets.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-white/10 bg-slate-950/40 p-4 text-sm text-slate-400">
+                  Пока кошельков нет. Нажми Generate 2 test wallets.
+                </div>
+              ) : (
+                testWallets.map((wallet) => (
+                  <button
+                    key={wallet.address}
+                    type="button"
+                    onClick={() => selectTestWallet(wallet.pk)}
+                    className="block w-full rounded-2xl border border-white/10 bg-slate-950/40 p-4 text-left transition hover:bg-slate-900"
+                  >
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">{wallet.name}</div>
+                    <div className="mt-2 font-mono text-sm break-all">{wallet.address}</div>
+                  </button>
+                ))
+              )}
             </div>
           </section>
 
