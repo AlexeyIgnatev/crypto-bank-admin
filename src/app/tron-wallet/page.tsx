@@ -15,6 +15,9 @@ export default function TronWalletPage() {
   const [customerId, setCustomerId] = useState("");
   const [rpcUrl, setRpcUrl] = useState("http://192.168.255.121:8090");
   const [balanceUsdt, setBalanceUsdt] = useState(0);
+  const [transferAddress, setTransferAddress] = useState("");
+  const [transferAmount, setTransferAmount] = useState("");
+  const [transferStatus, setTransferStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("Подготавливаю тестовый кошелёк...");
   const initOnce = useRef(false);
@@ -152,12 +155,72 @@ export default function TronWalletPage() {
           </section>
 
           <section className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-lg font-semibold">Статус</h2>
-            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950 px-4 py-4 text-sm text-slate-300">
-              {message}
+            <h2 className="text-lg font-semibold">Перевод</h2>
+            <div className="mt-4 space-y-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Кошелёк получателя</div>
+                <input
+                  value={transferAddress}
+                  onChange={(e) => setTransferAddress(e.target.value)}
+                  placeholder="TR..."
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
+                />
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Сумма</div>
+                <input
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  placeholder="10"
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
+                />
+              </div>
+              <button
+                type="button"
+                className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!customerId || !transferAddress || !transferAmount}
+                onClick={async () => {
+                  try {
+                    setTransferStatus("Отправляю...");
+                    const res = await fetch("/api/tron-wallet/transfer", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        customer_id: Number(customerId),
+                        address: transferAddress.trim(),
+                        amount: Number(transferAmount),
+                      }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                      throw new Error(data?.message || data?.error || "Перевод не удался");
+                    }
+                    setTransferStatus(`Готово. transaction_id=${data?.transaction_id ?? "OK"}`);
+                    await refreshBalance();
+                  } catch (error) {
+                    setTransferStatus(`Ошибка: ${String(error)}`);
+                  }
+                }}
+              >
+                Send USDT TRC20
+              </button>
+              <div className="rounded-2xl border border-white/10 bg-slate-950 px-4 py-4 text-sm text-slate-300">
+                {transferStatus || "Можно отправлять на другой внутренний или внешний TRON-адрес."}
+              </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <button type="button" className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950" onClick={async () => {
+          </section>
+        </div>
+
+        <section className="mt-6 rounded-3xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-lg font-semibold">Статус</h2>
+          <div className="mt-4 rounded-2xl border border-white/10 bg-slate-950 px-4 py-4 text-sm text-slate-300">
+            {message}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950"
+              onClick={async () => {
                 try {
                   setLoading(true);
                   await refreshBalance();
@@ -167,26 +230,33 @@ export default function TronWalletPage() {
                 } finally {
                   setLoading(false);
                 }
-              }}>
-                Refresh balance
-              </button>
-              <button type="button" className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold" onClick={() => {
+              }}
+            >
+              Refresh balance
+            </button>
+            <button
+              type="button"
+              className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold"
+              onClick={() => {
                 localStorage.removeItem(STORAGE_KEY);
                 localStorage.removeItem(CUSTOMER_ID_KEY);
                 setPrivateKey("");
                 setAddress("");
                 setCustomerId("");
                 setBalanceUsdt(0);
+                setTransferAddress("");
+                setTransferAmount("");
+                setTransferStatus("");
                 setMessage("Локальный кошелёк очищен");
-              }}>
-                Reset local wallet
-              </button>
-            </div>
-            <div className="mt-4 text-xs text-slate-500">
-              Если нужен новый кошелёк, очисти локальный и просто открой страницу снова.
-            </div>
-          </section>
-        </div>
+              }}
+            >
+              Reset local wallet
+            </button>
+          </div>
+          <div className="mt-4 text-xs text-slate-500">
+            Если нужен новый кошелёк, очисти локальный и просто открой страницу снова.
+          </div>
+        </section>
       </div>
     </main>
   );
