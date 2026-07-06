@@ -12,22 +12,22 @@ import {
 import { CustomerResidency, TariffCategory } from "@/types";
 
 const TARIFF_ROW_ORDER: { operation: TariffOperation; label: string }[] = [
-  { operation: "SOM_TO_ESOM", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РЎРћРњ РІ РЎРђР›РђРњ" },
-  { operation: "ESOM_TO_SOM", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РЎРђР›РђРњ РІ РЎРћРњ" },
-  { operation: "WALLET_TRANSFER_ESOM", label: "РџРµСЂРµРІРѕРґ РЎРђР›РђРњ РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё" },
-  { operation: "ESOM_TO_USDT_TRC20", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РЎРђР›РђРњ РІ USDT TRC20" },
-  { operation: "USDT_TRC20_TO_ESOM", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ USDT TRC20 РІ РЎРђР›РђРњ" },
-  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "РџРµСЂРµРІРѕРґ USDT TRC20 РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё" },
+  { operation: "SOM_TO_ESOM", label: "Конвертация СОМ в САЛАМ" },
+  { operation: "ESOM_TO_SOM", label: "Конвертация САЛАМ в СОМ" },
+  { operation: "WALLET_TRANSFER_ESOM", label: "Перевод САЛАМ между пользователями" },
+  { operation: "ESOM_TO_USDT_TRC20", label: "Конвертация САЛАМ в USDT TRC20" },
+  { operation: "USDT_TRC20_TO_ESOM", label: "Конвертация USDT TRC20 в САЛАМ" },
+  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "Перевод USDT TRC20 между пользователями" },
 ];
 
 const LIMIT_SETTING_FIELDS = [
   {
     key: "usdt_withdraw_fee_fixed",
-    label: "Р¤РёРєСЃ. РєРѕРјРёСЃСЃРёСЏ РІС‹РІРѕРґР° USDT TRC20",
+    label: "Фикс. комиссия вывода USDT TRC20",
   },
   {
     key: "min_withdraw_usdt_trc20",
-    label: "РњРёРЅРёРјСѓРј РІС‹РІРѕРґР° USDT TRC20",
+    label: "Минимум вывода USDT TRC20",
   },
 ] as const;
 
@@ -60,7 +60,7 @@ function normalizeDecimalInput(value: string) {
 
 function formatMoney(value: string | number) {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return "вЂ”";
+  if (!Number.isFinite(parsed)) return "—";
   return parsed.toLocaleString("ru-RU", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -69,7 +69,7 @@ function formatMoney(value: string | number) {
 
 function formatPercent(value: string | number) {
   const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return "вЂ”";
+  if (!Number.isFinite(parsed)) return "—";
   return `${parsed.toLocaleString("ru-RU", { maximumFractionDigits: 2 })}%`;
 }
 
@@ -346,16 +346,16 @@ export default function RatesPage() {
       };
       const saved = await putSettings(payload);
       setSettings((prev) => ({ ...prev, ...saved, ...payload }));
-      setSuccess("Р‘Р»РѕРє РјРёРЅРёРјР°Р»СЊРЅС‹С… РєРѕРјРёСЃСЃРёР№ СЃРѕС…СЂР°РЅС‘РЅ");
+      setSuccess("Блок минимальных комиссий сохранён");
     } catch (err: any) {
-      setError(err?.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ Р±Р»РѕРє РјРёРЅРёРјР°Р»СЊРЅС‹С… РєРѕРјРёСЃСЃРёР№");
+      setError(err?.message || "Не удалось сохранить блок минимальных комиссий");
     } finally {
       setSavingLimits(false);
     }
   }
 
   if (loading) {
-    return <div className="m-auto text-muted">Р—Р°РіСЂСѓР·РєР°...</div>;
+    return <div className="m-auto text-muted">Загрузка...</div>;
   }
 
   return (
@@ -363,7 +363,7 @@ export default function RatesPage() {
       <div className="w-full max-w-[1500px] px-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="rounded-full border border-soft bg-card/80 px-4 py-2 text-sm text-muted">
-            РќР°СЃС‚СЂРѕР№РєР° С‚Р°СЂРёС„РѕРІ Рё РєРѕРјРёСЃСЃРёР№ РґР»СЏ С‚РµРєСѓС‰РµР№ РІРёС‚СЂРёРЅС‹
+            Настройка тарифов и комиссий для текущей витрины
           </div>
           {success ? (
             <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-600">
@@ -374,12 +374,12 @@ export default function RatesPage() {
 
         <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.6fr_1fr]">
           <Card
-            title="РўР°СЂРёС„РЅР°СЏ СЃРµС‚РєР° РєР»РёРµРЅС‚РѕРІ"
+            title="Тарифная сетка клиентов"
             className="xl:order-1"
           >
             <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
               <label className="grid gap-1">
-                <span className="text-xs text-muted">РљР°С‚РµРіРѕСЂРёСЏ</span>
+                <span className="text-xs text-muted">Категория</span>
                 <select
                   className="ui-input"
                   value={category}
@@ -395,7 +395,7 @@ export default function RatesPage() {
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted">Р РµР·РёРґРµРЅС‚СЃС‚РІРѕ</span>
+                <span className="text-xs text-muted">Резидентство</span>
                 <select
                   className="ui-input"
                   value={residency}
@@ -403,12 +403,12 @@ export default function RatesPage() {
                     setResidency(e.target.value as CustomerResidency)
                   }
                 >
-                  <option value="RESIDENT">Р РµР·РёРґРµРЅС‚</option>
-                  <option value="NON_RESIDENT">РќРµСЂРµР·РёРґРµРЅС‚</option>
+                  <option value="RESIDENT">Резидент</option>
+                  <option value="NON_RESIDENT">Нерезидент</option>
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted">РљСѓСЂСЃ USD Рє РЎРћРњ</span>
+                <span className="text-xs text-muted">Курс USD к СОМ</span>
                 <input
                   className="ui-input"
                   value={coreRate}
@@ -444,7 +444,7 @@ export default function RatesPage() {
                 onClick={saveCoreAndTariffs}
                 disabled={savingCore || savingTariffs}
               >
-                {savingCore || savingTariffs ? "РЎРѕС…СЂР°РЅРµРЅРёРµ..." : "РЎРѕС…СЂР°РЅРёС‚СЊ С‚Р°СЂРёС„С‹"}
+                {savingCore || savingTariffs ? "Сохранение..." : "Сохранить тарифы"}
               </button>
             </div>
           </Card>
@@ -453,7 +453,7 @@ export default function RatesPage() {
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <Card
-            title="РљРѕРјРёСЃСЃРёРё Рё РјРёРЅРёРјСѓРјС‹ РІС‹РІРѕРґР°"
+            title="Комиссии и минимумы вывода"
           >
             <div className="space-y-3">
               {LIMIT_SETTING_FIELDS.map((field) => (
@@ -472,7 +472,7 @@ export default function RatesPage() {
                 onClick={saveLimits}
                 disabled={savingLimits}
               >
-                {savingLimits ? "РЎРѕС…СЂР°РЅРµРЅРёРµ..." : "РЎРѕС…СЂР°РЅРёС‚СЊ Р±Р»РѕРє"}
+                {savingLimits ? "Сохранение..." : "Сохранить блок"}
               </button>
             </div>
           </Card>

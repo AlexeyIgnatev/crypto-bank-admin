@@ -98,7 +98,7 @@ export default function Home() {
               label="Комиссия"
               value={formatAmount2(Number(selected.feeAmount || 0))}
             />
-            {selected.currency === "USDT" && (
+            {selected.currency.includes("USDT") && (
               <>
                 <Row
                   label="Сетевая комиссия"
