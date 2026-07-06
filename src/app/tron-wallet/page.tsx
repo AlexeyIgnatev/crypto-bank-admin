@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "tron-wallet-private-key";
+const CUSTOMER_ID_KEY = "tron-wallet-customer-id";
 
 function formatTrx(value: number) {
   return `${value.toFixed(6)} TRX`;
@@ -11,6 +12,7 @@ function formatTrx(value: number) {
 export default function TronWalletPage() {
   const [address, setAddress] = useState("");
   const [privateKey, setPrivateKey] = useState("");
+  const [customerId, setCustomerId] = useState("");
   const [rpcUrl, setRpcUrl] = useState("http://192.168.255.121:8090");
   const [balanceTrx, setBalanceTrx] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -39,21 +41,29 @@ export default function TronWalletPage() {
     (async () => {
       try {
         const savedPk = localStorage.getItem(STORAGE_KEY);
+        const savedCustomerId = localStorage.getItem(CUSTOMER_ID_KEY);
         const initUrl = savedPk
-          ? `/api/tron-wallet/init?privateKey=${encodeURIComponent(savedPk)}`
+          ? `/api/tron-wallet/init?privateKey=${encodeURIComponent(savedPk)}${
+              savedCustomerId ? `&customerId=${encodeURIComponent(savedCustomerId)}` : ""
+            }`
           : "/api/tron-wallet/init";
         const initRes = await fetch(initUrl, { cache: "no-store" });
         const initData = await initRes.json().catch(() => ({}));
         const pk = String(initData?.privateKey || savedPk || "");
         const addr = String(initData?.address || "");
+        const nextCustomerId = String(initData?.customerId || savedCustomerId || "");
 
         if (!pk) {
           throw new Error("Не удалось создать тестовый кошелёк");
         }
 
         localStorage.setItem(STORAGE_KEY, pk);
+        if (nextCustomerId) {
+          localStorage.setItem(CUSTOMER_ID_KEY, nextCustomerId);
+        }
         setPrivateKey(pk);
         setAddress(addr);
+        setCustomerId(nextCustomerId);
         if (initData?.rpcUrl) setRpcUrl(String(initData.rpcUrl));
         setMessage(savedPk ? "Загружен сохранённый тестовый кошелёк" : "Создан новый тестовый кошелёк");
 
@@ -113,6 +123,14 @@ export default function TronWalletPage() {
                 />
               </div>
               <div>
+                <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Customer ID</div>
+                <input
+                  value={customerId}
+                  readOnly
+                  className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 font-mono text-sm outline-none"
+                />
+              </div>
+              <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-slate-400">RPC</div>
                 <input
                   value={rpcUrl}
@@ -159,8 +177,10 @@ export default function TronWalletPage() {
                 className="rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold"
                 onClick={() => {
                   localStorage.removeItem(STORAGE_KEY);
+                  localStorage.removeItem(CUSTOMER_ID_KEY);
                   setPrivateKey("");
                   setAddress("");
+                  setCustomerId("");
                   setBalanceTrx(0);
                   setMessage("Локальный кошелёк очищен");
                 }}
