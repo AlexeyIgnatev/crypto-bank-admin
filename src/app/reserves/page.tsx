@@ -99,10 +99,6 @@ export default function ReservesPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Treasury кошелёк"
-              value={reserves.treasuryAddress || "—"}
-            />
-            <MetricCard
               label="Баланс общего кошелька USDT TRC20"
               value={`${fmtAmount(reserves.usdtBalance)} USDT TRC20`}
               hint="Баланс token-контракта treasury"
