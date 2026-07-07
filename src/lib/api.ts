@@ -158,7 +158,7 @@ export async function getTransactions(params: {
           ? [it.receiver_customer.last_name, it.receiver_customer.first_name]
               .filter(Boolean)
               .join(" ")
-          : it.receiver_wallet_address || "—",
+          : it.external_address || it.receiver_wallet_address || "—",
         senderAbsId:
           it.sender_abs_id != null
             ? String(it.sender_abs_id)
@@ -187,6 +187,12 @@ export async function getTransactions(params: {
           it.receiver_customer_id != null
             ? String(it.receiver_customer_id)
             : undefined,
+        externalAddress:
+          typeof it.external_address === "string"
+            ? it.external_address
+            : typeof it.externalAddress === "string"
+              ? it.externalAddress
+              : undefined,
         networkFeeAmount: toNumberOrZero(it.network_fee_amount),
         networkFeeAsset:
           typeof it.network_fee_asset === "string"

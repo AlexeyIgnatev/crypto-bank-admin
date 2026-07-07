@@ -156,7 +156,9 @@ export default function Home() {
             <Row
               label="ID получателя ABS"
               value={
-                selected.recipientAbsId || selected.recipientCustomerId || "?"
+                selected.recipientAbsId ||
+                selected.recipientCustomerId ||
+                "—"
               }
               mono
             />

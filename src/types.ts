@@ -16,6 +16,7 @@ export interface Transaction {
   clientAbsId?: string;
   senderCustomerId?: string;
   recipientCustomerId?: string;
+  externalAddress?: string;
   networkFeeAmount?: number;
   networkFeeAsset?: string;
   energyUsed?: number;
