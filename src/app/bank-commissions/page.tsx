@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   getAdminSettings,
   getBankCommissionBalances,
@@ -10,7 +10,6 @@ import {
   AdminSettings,
   BankCommissionBalanceSlot,
   BankCommissionBalances,
-  BankCommissionGroupBalances,
 } from "@/types";
 
 type PartnerForm = {
@@ -19,6 +18,14 @@ type PartnerForm = {
   som_account: string;
   salam_wallet: string;
   usdt_wallet: string;
+};
+
+const EMPTY_PARTNER: PartnerForm = {
+  id: "partner-1",
+  title: "Партнер 1",
+  som_account: "",
+  salam_wallet: "",
+  usdt_wallet: "",
 };
 
 const EMPTY_SETTINGS: AdminSettings = {
@@ -54,6 +61,17 @@ const EMPTY_BALANCES: BankCommissionBalances = {
   partners: [],
 };
 
+type ResourceFieldKey =
+  | "central_bank_som_account"
+  | "central_bank_salam_wallet"
+  | "central_bank_usdt_wallet"
+  | "bank_som_account"
+  | "bank_salam_wallet"
+  | "bank_usdt_wallet"
+  | "partner_som_account"
+  | "partner_salam_wallet"
+  | "partner_usdt_wallet";
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
@@ -67,57 +85,40 @@ function formatBalance(value: number | null, asset: string) {
   })} ${asset}`;
 }
 
-function parsePartners(raw: string): PartnerForm[] {
-  if (!raw.trim()) return [];
+function parsePartner(raw: string): PartnerForm {
+  if (!raw.trim()) return EMPTY_PARTNER;
   try {
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter((item) => item && typeof item === "object")
-      .map((item, index) => ({
-        id:
-          typeof item.id === "string" && item.id.trim()
-            ? item.id.trim()
-            : `partner-${index + 1}`,
-        title:
-          typeof item.title === "string" && item.title.trim()
-            ? item.title.trim()
-            : `Партнер ${index + 1}`,
-        som_account:
-          typeof item.som_account === "string" ? item.som_account : "",
-        salam_wallet:
-          typeof item.salam_wallet === "string" ? item.salam_wallet : "",
-        usdt_wallet:
-          typeof item.usdt_wallet === "string" ? item.usdt_wallet : "",
-      }));
+    const item = Array.isArray(parsed) ? parsed[0] : parsed;
+    if (!item || typeof item !== "object") return EMPTY_PARTNER;
+    return {
+      id:
+        typeof item.id === "string" && item.id.trim()
+          ? item.id.trim()
+          : EMPTY_PARTNER.id,
+      title:
+        typeof item.title === "string" && item.title.trim()
+          ? item.title.trim()
+          : EMPTY_PARTNER.title,
+      som_account: typeof item.som_account === "string" ? item.som_account : "",
+      salam_wallet: typeof item.salam_wallet === "string" ? item.salam_wallet : "",
+      usdt_wallet: typeof item.usdt_wallet === "string" ? item.usdt_wallet : "",
+    };
   } catch {
-    return [];
+    return EMPTY_PARTNER;
   }
 }
 
-function serializePartners(partners: PartnerForm[]) {
-  return JSON.stringify(
-    partners.map((partner) => ({
+function serializePartner(partner: PartnerForm) {
+  return JSON.stringify([
+    {
       id: partner.id,
       title: partner.title.trim(),
       som_account: partner.som_account.trim(),
       salam_wallet: partner.salam_wallet.trim(),
       usdt_wallet: partner.usdt_wallet.trim(),
-    })),
-  );
-}
-
-function InfoHint({ text }: { text: string }) {
-  return (
-    <span className="group relative inline-flex">
-      <span className="flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-soft bg-[var(--bg-soft)] text-xs font-semibold text-muted">
-        ?
-      </span>
-      <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-xs leading-5 text-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
-        {text}
-      </span>
-    </span>
-  );
+    },
+  ]);
 }
 
 function SectionCard({
@@ -130,7 +131,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="card rounded-2xl border border-soft shadow-sm overflow-hidden">
+    <section className="card overflow-hidden rounded-2xl border border-soft shadow-sm">
       <header className="border-b border-soft px-5 py-4">
         <div className="text-lg font-semibold">{title}</div>
         {subtitle ? <div className="mt-1 text-sm text-muted">{subtitle}</div> : null}
@@ -174,7 +175,7 @@ function BalanceCard({
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-semibold">{title}</div>
-          <div className="mt-1 text-xs text-muted break-all">
+          <div className="mt-1 break-all text-xs text-muted">
             {slot?.reference || "Реквизит сохранен"}
           </div>
         </div>
@@ -218,17 +219,6 @@ function InlineField({
   );
 }
 
-type ResourceFieldKey =
-  | "central_bank_som_account"
-  | "central_bank_salam_wallet"
-  | "central_bank_usdt_wallet"
-  | "bank_som_account"
-  | "bank_salam_wallet"
-  | "bank_usdt_wallet"
-  | `partner:${string}:som_account`
-  | `partner:${string}:salam_wallet`
-  | `partner:${string}:usdt_wallet`;
-
 function GroupGrid({
   title,
   subtitle,
@@ -248,7 +238,7 @@ function GroupGrid({
 export default function BankCommissionsPage() {
   const [settings, setSettings] = useState<AdminSettings>(EMPTY_SETTINGS);
   const [balances, setBalances] = useState<BankCommissionBalances>(EMPTY_BALANCES);
-  const [partners, setPartners] = useState<PartnerForm[]>([]);
+  const [partner, setPartner] = useState<PartnerForm>(EMPTY_PARTNER);
   const [editingFields, setEditingFields] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -268,7 +258,7 @@ export default function BankCommissionsPage() {
         if (!alive) return;
         setSettings(settingsData);
         setBalances(balanceData);
-        setPartners(parsePartners(settingsData.bank_commission_partners_json || "[]"));
+        setPartner(parsePartner(settingsData.bank_commission_partners_json || "[]"));
       } catch (err: unknown) {
         if (!alive) return;
         setError(getErrorMessage(err, "Не удалось загрузить раздел комиссий банка"));
@@ -282,10 +272,7 @@ export default function BankCommissionsPage() {
     };
   }, []);
 
-  const partnerBalancesById = useMemo(
-    () => new Map(balances.partners.map((partner) => [partner.id, partner])),
-    [balances.partners],
-  );
+  const partnerBalance = balances.partners[0] || null;
 
   function updateSetting<K extends keyof AdminSettings>(key: K, value: AdminSettings[K]) {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -299,36 +286,8 @@ export default function BankCommissionsPage() {
     return editingFields[key] === true;
   }
 
-  function updatePartner(id: string, patch: Partial<PartnerForm>) {
-    setPartners((prev) =>
-      prev.map((partner) =>
-        partner.id === id ? { ...partner, ...patch } : partner,
-      ),
-    );
-  }
-
-  function addPartner() {
-    setPartners((prev) => [
-      ...prev,
-      {
-        id: `partner-${Date.now()}-${prev.length + 1}`,
-        title: `Партнер ${prev.length + 1}`,
-        som_account: "",
-        salam_wallet: "",
-        usdt_wallet: "",
-      },
-    ]);
-  }
-
-  function removePartner(id: string) {
-    setPartners((prev) => prev.filter((partner) => partner.id !== id));
-    setEditingFields((prev) => {
-      const next = { ...prev };
-      delete next[`partner:${id}:som_account`];
-      delete next[`partner:${id}:salam_wallet`];
-      delete next[`partner:${id}:usdt_wallet`];
-      return next;
-    });
+  function updatePartner(patch: Partial<PartnerForm>) {
+    setPartner((prev) => ({ ...prev, ...patch }));
   }
 
   async function refreshBalances() {
@@ -357,14 +316,14 @@ export default function BankCommissionsPage() {
         bank_som_account: settings.bank_som_account.trim(),
         bank_salam_wallet: settings.bank_salam_wallet.trim(),
         bank_usdt_wallet: settings.bank_usdt_wallet.trim(),
-        bank_commission_partners_json: serializePartners(partners),
+        bank_commission_partners_json: serializePartner(partner),
       };
 
       const saved = await putAdminSettings(payload);
       const balanceData = await getBankCommissionBalances();
       setSettings((prev) => ({ ...prev, ...saved }));
       setBalances(balanceData);
-      setPartners(parsePartners(saved.bank_commission_partners_json || "[]"));
+      setPartner(parsePartner(saved.bank_commission_partners_json || "[]"));
       setEditingFields({});
       setSuccess("Настройки комиссий банка сохранены");
     } catch (err: unknown) {
@@ -390,13 +349,7 @@ export default function BankCommissionsPage() {
     placeholder: string;
   }) {
     if (value.trim() && !isEditing(fieldKey)) {
-      return (
-        <BalanceCard
-          title={label}
-          slot={slot}
-          onEdit={() => enableEditing(fieldKey)}
-        />
-      );
+      return <BalanceCard title={label} slot={slot} onEdit={() => enableEditing(fieldKey)} />;
     }
 
     return (
@@ -450,15 +403,15 @@ export default function BankCommissionsPage() {
           fields={
             <>
               {renderManagedField({
-                label: "Спецсчет СОМ ЦБ",
+                label: "Спецсчёт SOM ЦБ",
                 value: settings.central_bank_som_account,
                 slot: balances.central_bank.som_account,
                 fieldKey: "central_bank_som_account",
                 onChange: (value) => updateSetting("central_bank_som_account", value),
-                placeholder: "Введите номер спецсчета",
+                placeholder: "Введите номер спецсчёта",
               })}
               {renderManagedField({
-                label: "Кошелек SALAM",
+                label: "Кошелёк SALAM",
                 value: settings.central_bank_salam_wallet,
                 slot: balances.central_bank.salam_wallet,
                 fieldKey: "central_bank_salam_wallet",
@@ -466,7 +419,7 @@ export default function BankCommissionsPage() {
                 placeholder: "Введите адрес кошелька SALAM",
               })}
               {renderManagedField({
-                label: "Кошелек USDT",
+                label: "Кошелёк USDT",
                 value: settings.central_bank_usdt_wallet,
                 slot: balances.central_bank.usdt_wallet,
                 fieldKey: "central_bank_usdt_wallet",
@@ -483,15 +436,15 @@ export default function BankCommissionsPage() {
           fields={
             <>
               {renderManagedField({
-                label: "Спецсчет СОМ банка",
+                label: "Спецсчёт SOM банка",
                 value: settings.bank_som_account,
                 slot: balances.bank.som_account,
                 fieldKey: "bank_som_account",
                 onChange: (value) => updateSetting("bank_som_account", value),
-                placeholder: "Введите номер спецсчета",
+                placeholder: "Введите номер спецсчёта",
               })}
               {renderManagedField({
-                label: "Кошелек SALAM",
+                label: "Кошелёк SALAM",
                 value: settings.bank_salam_wallet,
                 slot: balances.bank.salam_wallet,
                 fieldKey: "bank_salam_wallet",
@@ -499,7 +452,7 @@ export default function BankCommissionsPage() {
                 placeholder: "Введите адрес кошелька SALAM",
               })}
               {renderManagedField({
-                label: "Кошелек USDT",
+                label: "Кошелёк USDT",
                 value: settings.bank_usdt_wallet,
                 slot: balances.bank.usdt_wallet,
                 fieldKey: "bank_usdt_wallet",
@@ -511,93 +464,35 @@ export default function BankCommissionsPage() {
         />
 
         <SectionCard
-          title="Партнеры"
-          subtitle="Для каждого партнера можно сохранить отдельные реквизиты и потом видеть их балансы."
+          title="Партнёры"
+          subtitle="Здесь хранится один набор реквизитов партнёра: спецсчёт SOM, кошелёк SALAM и кошелёк USDT TRC20."
         >
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-muted">
-              <InfoHint text="Добавьте партнера, заполните его реквизиты и после сохранения вместо полей появятся балансы." />
-              <span>Список партнерских реквизитов</span>
-            </div>
-            <button className="btn btn-primary h-10 px-4" type="button" onClick={addPartner}>
-              Добавить партнера
-            </button>
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {renderManagedField({
+              label: "Спецсчёт SOM партнёра",
+              value: partner.som_account,
+              slot: partnerBalance?.som_account || null,
+              fieldKey: "partner_som_account",
+              onChange: (value) => updatePartner({ som_account: value }),
+              placeholder: "Введите номер спецсчёта",
+            })}
+            {renderManagedField({
+              label: "Кошелёк SALAM",
+              value: partner.salam_wallet,
+              slot: partnerBalance?.salam_wallet || null,
+              fieldKey: "partner_salam_wallet",
+              onChange: (value) => updatePartner({ salam_wallet: value }),
+              placeholder: "Введите адрес кошелька SALAM",
+            })}
+            {renderManagedField({
+              label: "Кошелёк USDT TRC20",
+              value: partner.usdt_wallet,
+              slot: partnerBalance?.usdt_wallet || null,
+              fieldKey: "partner_usdt_wallet",
+              onChange: (value) => updatePartner({ usdt_wallet: value }),
+              placeholder: "Введите адрес USDT TRC20 кошелька",
+            })}
           </div>
-
-          {partners.length ? (
-            <div className="space-y-4">
-              {partners.map((partner, index) => {
-                const slotGroup: BankCommissionGroupBalances =
-                  partnerBalancesById.get(partner.id) || {
-                    som_account: null,
-                    salam_wallet: null,
-                    usdt_wallet: null,
-                  };
-
-                return (
-                  <section
-                    key={partner.id}
-                    className="rounded-2xl border border-soft bg-[var(--card)] p-4"
-                  >
-                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                      <div className="grid gap-1">
-                        <span className="text-xs text-muted">Название партнера</span>
-                        <input
-                          className="ui-input min-w-[260px]"
-                          value={partner.title}
-                          onChange={(e) =>
-                            updatePartner(partner.id, { title: e.target.value })
-                          }
-                          placeholder={`Партнер ${index + 1}`}
-                        />
-                      </div>
-                      <button
-                        className="btn h-10 px-4 text-red-600"
-                        type="button"
-                        onClick={() => removePartner(partner.id)}
-                      >
-                        Удалить
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-                      {renderManagedField({
-                        label: "Спецсчет СОМ партнера",
-                        value: partner.som_account,
-                        slot: slotGroup.som_account,
-                        fieldKey: `partner:${partner.id}:som_account`,
-                        onChange: (value) =>
-                          updatePartner(partner.id, { som_account: value }),
-                        placeholder: "Введите номер спецсчета",
-                      })}
-                      {renderManagedField({
-                        label: "Кошелек SALAM",
-                        value: partner.salam_wallet,
-                        slot: slotGroup.salam_wallet,
-                        fieldKey: `partner:${partner.id}:salam_wallet`,
-                        onChange: (value) =>
-                          updatePartner(partner.id, { salam_wallet: value }),
-                        placeholder: "Введите адрес кошелька SALAM",
-                      })}
-                      {renderManagedField({
-                        label: "Кошелек USDT",
-                        value: partner.usdt_wallet,
-                        slot: slotGroup.usdt_wallet,
-                        fieldKey: `partner:${partner.id}:usdt_wallet`,
-                        onChange: (value) =>
-                          updatePartner(partner.id, { usdt_wallet: value }),
-                        placeholder: "Введите адрес USDT TRC20 кошелька",
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-soft bg-[var(--bg-soft)] px-4 py-8 text-center text-sm text-muted">
-              Партнеры пока не добавлены. Нажмите «Добавить партнера», чтобы создать первый блок.
-            </div>
-          )}
         </SectionCard>
 
         <div className="flex flex-wrap items-center justify-end gap-3">
