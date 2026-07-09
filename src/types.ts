@@ -103,6 +103,9 @@ export interface AdminSettings {
   central_bank_som_account: string;
   central_bank_salam_wallet: string;
   central_bank_usdt_wallet: string;
+  bank_commission_central_bank_pct: string;
+  bank_commission_bank_pct: string;
+  bank_commission_partners_pct: string;
   bank_som_account: string;
   bank_salam_wallet: string;
   bank_usdt_wallet: string;

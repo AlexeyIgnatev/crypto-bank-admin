@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from "react";
 import {
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip as RechartsTooltip,
+} from "recharts";
+import {
   getAdminSettings,
   getBankCommissionBalances,
   putAdminSettings,
@@ -40,6 +47,9 @@ const EMPTY_SETTINGS: AdminSettings = {
   central_bank_som_account: "",
   central_bank_salam_wallet: "",
   central_bank_usdt_wallet: "",
+  bank_commission_central_bank_pct: "20",
+  bank_commission_bank_pct: "40",
+  bank_commission_partners_pct: "40",
   bank_som_account: "",
   bank_salam_wallet: "",
   bank_usdt_wallet: "",
@@ -65,6 +75,9 @@ type ResourceFieldKey =
   | "central_bank_som_account"
   | "central_bank_salam_wallet"
   | "central_bank_usdt_wallet"
+  | "bank_commission_central_bank_pct"
+  | "bank_commission_bank_pct"
+  | "bank_commission_partners_pct"
   | "bank_som_account"
   | "bank_salam_wallet"
   | "bank_usdt_wallet"
@@ -72,8 +85,31 @@ type ResourceFieldKey =
   | "partner_salam_wallet"
   | "partner_usdt_wallet";
 
+type CommissionSplit = {
+  central: string;
+  bank: string;
+  partners: string;
+};
+
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
+}
+
+function parsePercent(value: string): number {
+  const parsed = Number.parseFloat(value.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function clampPercent(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(100, Math.max(0, value));
+}
+
+function formatPercent(value: number): string {
+  const rounded = Math.round(clampPercent(value) * 100) / 100;
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 }
 
 function formatBalance(value: number | null, asset: string) {
@@ -235,6 +271,125 @@ function GroupGrid({
   );
 }
 
+function CommissionSplitPanel({
+  value,
+  onCentralChange,
+  onBankChange,
+  onPartnersChange,
+}: {
+  value: CommissionSplit;
+  onCentralChange: (value: string) => void;
+  onBankChange: (value: string) => void;
+  onPartnersChange: (value: string) => void;
+}) {
+  const data = [
+    {
+      name: "ЦБ",
+      value: clampPercent(parsePercent(value.central)),
+      color: "#2563eb",
+    },
+    {
+      name: "Банк",
+      value: clampPercent(parsePercent(value.bank)),
+      color: "#f97316",
+    },
+    {
+      name: "Партнеры",
+      value: clampPercent(parsePercent(value.partners)),
+      color: "#10b981",
+    },
+  ];
+
+  return (
+    <div className="grid gap-4 rounded-2xl border border-soft bg-[var(--bg-soft)] p-4 xl:grid-cols-[220px_1fr]">
+      <div className="grid gap-3">
+        <div className="grid gap-1">
+          <span className="text-xs text-muted">ЦБ, %</span>
+          <input
+            className="ui-input"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={value.central}
+            onChange={(e) => onCentralChange(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-1">
+          <span className="text-xs text-muted">Банк, %</span>
+          <input
+            className="ui-input"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={value.bank}
+            onChange={(e) => onBankChange(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-1">
+          <span className="text-xs text-muted">Партнеры, %</span>
+          <input
+            className="ui-input"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={value.partners}
+            onChange={(e) => onPartnersChange(e.target.value)}
+          />
+        </div>
+        <div className="text-xs text-muted">
+          Банк и партнеры всегда делят остаток комиссии 50/50.
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        <div className="h-[220px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                innerRadius={60}
+                outerRadius={92}
+                paddingAngle={2}
+              >
+                {data.map((entry) => (
+                  <Cell key={entry.name} fill={entry.color} />
+                ))}
+              </Pie>
+              <RechartsTooltip
+                formatter={(val: number) => [`${val}%`, "Доля"]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="grid gap-2 text-sm text-muted sm:grid-cols-3">
+          {data.map((entry) => (
+            <div
+              key={entry.name}
+              className="rounded-xl border border-soft bg-white/60 p-3"
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="font-medium text-foreground">{entry.name}</span>
+              </div>
+              <div className="mt-2 text-lg font-semibold text-foreground">
+                {entry.value.toFixed(2)}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BankCommissionsPage() {
   const [settings, setSettings] = useState<AdminSettings>(EMPTY_SETTINGS);
   const [balances, setBalances] = useState<BankCommissionBalances>(EMPTY_BALANCES);
@@ -250,21 +405,39 @@ export default function BankCommissionsPage() {
     let alive = true;
 
     (async () => {
-      try {
-        const [settingsData, balanceData] = await Promise.all([
-          getAdminSettings(),
-          getBankCommissionBalances(),
-        ]);
-        if (!alive) return;
-        setSettings(settingsData);
-        setBalances(balanceData);
-        setPartner(parsePartner(settingsData.bank_commission_partners_json || "[]"));
-      } catch (err: unknown) {
-        if (!alive) return;
-        setError(getErrorMessage(err, "Не удалось загрузить раздел комиссий банка"));
-      } finally {
-        if (alive) setLoading(false);
+      const [settingsResult, balanceResult] = await Promise.allSettled([
+        getAdminSettings(),
+        getBankCommissionBalances(),
+      ]);
+
+      if (!alive) return;
+
+      if (settingsResult.status === "fulfilled") {
+        setSettings(settingsResult.value);
+        setPartner(
+          parsePartner(settingsResult.value.bank_commission_partners_json || "[]"),
+        );
+      } else {
+        setError(
+          getErrorMessage(
+            settingsResult.reason,
+            "Не удалось загрузить admin settings",
+          ),
+        );
       }
+
+      if (balanceResult.status === "fulfilled") {
+        setBalances(balanceResult.value);
+      } else if (settingsResult.status === "fulfilled") {
+        setError(
+          getErrorMessage(
+            balanceResult.reason,
+            "Не удалось загрузить балансы комиссий",
+          ),
+        );
+      }
+
+      if (alive) setLoading(false);
     })();
 
     return () => {
@@ -290,6 +463,29 @@ export default function BankCommissionsPage() {
     setPartner((prev) => ({ ...prev, ...patch }));
   }
 
+  function setCommissionSplitFromCentral(raw: string) {
+    const central = clampPercent(parsePercent(raw));
+    const remainder = Math.max(100 - central, 0);
+    const shared = clampPercent(remainder / 2);
+    setSettings((prev) => ({
+      ...prev,
+      bank_commission_central_bank_pct: formatPercent(central),
+      bank_commission_bank_pct: formatPercent(shared),
+      bank_commission_partners_pct: formatPercent(shared),
+    }));
+  }
+
+  function setCommissionSplitFromShared(raw: string) {
+    const shared = clampPercent(Math.min(parsePercent(raw), 50));
+    const central = clampPercent(100 - shared * 2);
+    setSettings((prev) => ({
+      ...prev,
+      bank_commission_central_bank_pct: formatPercent(central),
+      bank_commission_bank_pct: formatPercent(shared),
+      bank_commission_partners_pct: formatPercent(shared),
+    }));
+  }
+
   async function refreshBalances() {
     setRefreshingBalances(true);
     try {
@@ -313,6 +509,10 @@ export default function BankCommissionsPage() {
         central_bank_som_account: settings.central_bank_som_account.trim(),
         central_bank_salam_wallet: settings.central_bank_salam_wallet.trim(),
         central_bank_usdt_wallet: settings.central_bank_usdt_wallet.trim(),
+        bank_commission_central_bank_pct:
+          settings.bank_commission_central_bank_pct.trim(),
+        bank_commission_bank_pct: settings.bank_commission_bank_pct.trim(),
+        bank_commission_partners_pct: settings.bank_commission_partners_pct.trim(),
         bank_som_account: settings.bank_som_account.trim(),
         bank_salam_wallet: settings.bank_salam_wallet.trim(),
         bank_usdt_wallet: settings.bank_usdt_wallet.trim(),
@@ -388,13 +588,27 @@ export default function BankCommissionsPage() {
         </section>
 
         <SectionCard
-          title="Время зачисления"
-          subtitle="Укажите время, по которому будут зачисляться комиссии в часовом поясе Бишкека."
+          title="Р’СЂРµРјСЏ Р·Р°С‡РёСЃР»РµРЅРёСЏ"
+          subtitle="РЈРєР°Р¶РёС‚Рµ РІСЂРµРјСЏ, РїРѕ РєРѕС‚РѕСЂРѕРјСѓ Р±СѓРґСѓС‚ Р·Р°С‡РёСЃР»СЏС‚СЊСЏ РєРѕРјРёСЃСЃРёРё РІ С‡Р°СЃРѕРІРѕРј РїРѕСЏСЃРµ Р‘РёС€РєРµРєР°."
         >
-          <TimeField
-            value={settings.bank_fee_posting_time_bishkek}
-            onChange={(value) => updateSetting("bank_fee_posting_time_bishkek", value)}
-          />
+          <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <TimeField
+              value={settings.bank_fee_posting_time_bishkek}
+              onChange={(value) =>
+                updateSetting("bank_fee_posting_time_bishkek", value)
+              }
+            />
+            <CommissionSplitPanel
+              value={{
+                central: settings.bank_commission_central_bank_pct,
+                bank: settings.bank_commission_bank_pct,
+                partners: settings.bank_commission_partners_pct,
+              }}
+              onCentralChange={setCommissionSplitFromCentral}
+              onBankChange={setCommissionSplitFromShared}
+              onPartnersChange={setCommissionSplitFromShared}
+            />
+          </div>
         </SectionCard>
 
         <GroupGrid
