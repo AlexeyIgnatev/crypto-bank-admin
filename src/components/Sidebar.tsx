@@ -65,7 +65,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const [role, setRole] = useState<string | null>(null);
-  const allowedHrefs = allowedByRole(role || "");
+  const allowedHrefs = role ? allowedByRole(role) : allItems.map((item) => item.href);
 
   useEffect(() => {
     (async () => {
