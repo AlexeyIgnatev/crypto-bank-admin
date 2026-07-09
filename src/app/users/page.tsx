@@ -405,6 +405,7 @@ function EditUserForm({
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState<UserStatus>(user.status);
   const [statusComment, setStatusComment] = useState(user.statusComment || "");
+  const [statusCommentError, setStatusCommentError] = useState<string | null>(null);
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -414,6 +415,24 @@ function EditUserForm({
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const statusChanged = status !== user.status;
+  const trimmedStatusComment = statusComment.trim();
+
+  const handleStatusChange = (nextStatus: UserStatus) => {
+    setStatus(nextStatus);
+    setStatusComment("");
+    setStatusCommentError(null);
+    setErr(null);
+  };
+
+  const handleStatusCommentChange = (value: string) => {
+    setStatusComment(value);
+    if (statusCommentError) {
+      setStatusCommentError(null);
+    }
+    if (err) {
+      setErr(null);
+    }
+  };
 
   return (
     <form
@@ -421,7 +440,7 @@ function EditUserForm({
       onSubmit={async (event) => {
         event.preventDefault();
         setErr(null);
-        if (statusChanged && !statusComment.trim()) {
+        if (statusChanged && !trimmedStatusComment) {
           setErr("Укажите причину изменения статуса");
           return;
         }
@@ -434,7 +453,7 @@ function EditUserForm({
             phone,
             email,
             status,
-            statusComment,
+            statusComment: trimmedStatusComment,
             tariffCategory,
             residency,
           });
@@ -444,7 +463,7 @@ function EditUserForm({
             phone,
             email,
             status,
-            statusComment: statusComment.trim() || undefined,
+            statusComment: trimmedStatusComment || undefined,
             tariffCategory,
             residency,
           });
@@ -470,9 +489,10 @@ function EditUserForm({
         onMiddleName={setMiddleName}
         onPhone={setPhone}
         onEmail={setEmail}
-        onStatus={setStatus}
-        onStatusComment={setStatusComment}
+        onStatus={handleStatusChange}
+        onStatusComment={handleStatusCommentChange}
         requireStatusComment={statusChanged}
+        statusCommentError={statusChanged ? statusCommentError : null}
         onTariffCategory={setTariffCategory}
         onResidency={setResidency}
         showTariff
@@ -485,7 +505,7 @@ function EditUserForm({
         <button
           type="submit"
           className="btn btn-success h-9 w-full"
-          disabled={submitting || (statusChanged && !statusComment.trim())}
+          disabled={submitting}
         >
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>
@@ -512,6 +532,7 @@ function UserFormFields({
   onStatus,
   onStatusComment,
   requireStatusComment = false,
+  statusCommentError,
   onTariffCategory,
   onResidency,
   showTariff = false,
@@ -533,6 +554,7 @@ function UserFormFields({
   onStatus: (value: UserStatus) => void;
   onStatusComment?: (value: string) => void;
   requireStatusComment?: boolean;
+  statusCommentError?: string | null;
   onTariffCategory?: (value: TariffCategory) => void;
   onResidency?: (value: CustomerResidency) => void;
   showTariff?: boolean;
@@ -599,17 +621,20 @@ function UserFormFields({
       </div>
       {onStatusComment ? (
         <div className="col-span-2">
-          <div className="mb-1 text-sm">
+          <div className={`mb-1 text-sm ${statusCommentError ? "text-red-500" : ""}`}>
             Комментарий к статусу
             {requireStatusComment ? " *" : ""}
           </div>
           <textarea
-            className="ui-input min-h-24 w-full resize-y"
+            className={`ui-input min-h-24 w-full resize-y ${statusCommentError ? "border-red-500 focus:border-red-500" : ""}`}
+            aria-invalid={Boolean(statusCommentError)}
             value={statusComment || ""}
             onChange={(event) => onStatusComment(event.target.value)}
             placeholder="Укажите причину изменения статуса"
-            required={requireStatusComment}
           />
+          {statusCommentError ? (
+            <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>
+          ) : null}
         </div>
       ) : null}
       {showTariff && onTariffCategory && onResidency ? (

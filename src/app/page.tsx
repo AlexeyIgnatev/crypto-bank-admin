@@ -273,6 +273,7 @@ function EditUserInline({
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState(user.status);
   const [statusComment, setStatusComment] = useState(user.statusComment || "");
+  const [statusCommentError, setStatusCommentError] = useState<string | null>(null);
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -281,6 +282,25 @@ function EditUserInline({
   );
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const statusChanged = status !== user.status;
+  const trimmedStatusComment = statusComment.trim();
+
+  const handleStatusChange = (nextStatus: UserStatus) => {
+    setStatus(nextStatus);
+    setStatusComment("");
+    setStatusCommentError(null);
+    setErr(null);
+  };
+
+  const handleStatusCommentChange = (value: string) => {
+    setStatusComment(value);
+    if (statusCommentError) {
+      setStatusCommentError(null);
+    }
+    if (err) {
+      setErr(null);
+    }
+  };
 
   return (
     <form
@@ -288,7 +308,12 @@ function EditUserInline({
       onSubmit={async (e) => {
         e.preventDefault();
         setErr(null);
-        const statusChanged = status !== user.status;
+        if (statusChanged && !trimmedStatusComment) {
+          const message = "Укажите причину изменения статуса";
+          setStatusCommentError(message);
+          setErr(message);
+          return;
+        }
         if (statusChanged && !statusComment.trim()) {
           setErr("Укажите причину изменения статуса");
           return;
@@ -302,7 +327,7 @@ function EditUserInline({
             phone,
             email,
             status,
-            statusComment,
+            statusComment: trimmedStatusComment,
             tariffCategory,
             residency,
           });
@@ -314,7 +339,7 @@ function EditUserInline({
             phone,
             email,
             status,
-            statusComment: statusComment.trim() || undefined,
+            statusComment: trimmedStatusComment || undefined,
             tariffCategory,
             residency,
           });
@@ -377,7 +402,7 @@ function EditUserInline({
           <select
             className="ui-input"
             value={status}
-            onChange={(e) => setStatus(e.target.value as any)}
+            onChange={(e) => handleStatusChange(e.target.value as any)}
           >
             <option value="ACTIVE">ACTIVE</option>
             <option value="BLOCKED">BLOCKED</option>
@@ -387,11 +412,15 @@ function EditUserInline({
         <div className="col-span-2">
           <div className="text-sm mb-1">Комментарий к статусу</div>
           <textarea
-            className="ui-input w-full min-h-24 resize-y"
+            className={`ui-input w-full min-h-24 resize-y ${statusCommentError ? "border-red-500 focus:border-red-500" : ""}`}
+            aria-invalid={Boolean(statusCommentError)}
             value={statusComment}
-            onChange={(e) => setStatusComment(e.target.value)}
+            onChange={(e) => handleStatusCommentChange(e.target.value)}
             placeholder="Укажите причину изменения статуса"
           />
+          {statusCommentError ? (
+            <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>
+          ) : null}
         </div>
         <div>
           <div className="text-sm mb-1">Тариф</div>
@@ -436,7 +465,7 @@ function EditUserInline({
         <button
           type="submit"
           className="btn btn-success w-full h-9"
-          disabled={submitting || (status !== user.status && !statusComment.trim())}
+          disabled={submitting}
         >
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>
