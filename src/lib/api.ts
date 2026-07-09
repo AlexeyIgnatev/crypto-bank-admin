@@ -90,6 +90,22 @@ function toNumberOrZero(value: unknown): number {
   return parsed ?? 0;
 }
 
+async function readErrorBody(res: Response): Promise<string> {
+  const raw = await res.text().catch(() => "");
+  if (!raw.trim()) return "";
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed === "string") return parsed;
+    if (Array.isArray(parsed?.message)) return parsed.message.join("; ");
+    if (typeof parsed?.message === "string") return parsed.message;
+    if (typeof parsed?.error === "string") return parsed.error;
+    return raw;
+  } catch {
+    return raw;
+  }
+}
+
 export async function getTransactions(params: {
   offset?: number;
   limit?: number;
@@ -693,7 +709,14 @@ export async function getAdminSettings(): Promise<AdminSettings> {
   const res = await fetch(`/api/blockchain-config/admin-settings`, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Failed to load admin settings");
+  if (!res.ok) {
+    const body = await readErrorBody(res);
+    throw new Error(
+      body
+        ? `Failed to load admin settings: ${body}`
+        : `Failed to load admin settings (HTTP ${res.status})`,
+    );
+  }
   return res.json();
 }
 
@@ -1038,7 +1061,12 @@ export async function getTariffs(): Promise<TariffSetting[]> {
   const res = await fetch(`/api/blockchain-config/tariffs`, {
     cache: "no-store",
   });
-  if (!res.ok) throw new Error("Failed to load tariffs");
+  if (!res.ok) {
+    const body = await readErrorBody(res);
+    throw new Error(
+      body ? `Failed to load tariffs: ${body}` : `Failed to load tariffs (HTTP ${res.status})`,
+    );
+  }
   return res.json();
 }
 

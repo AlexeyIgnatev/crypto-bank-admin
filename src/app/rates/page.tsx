@@ -216,43 +216,39 @@ function TariffGridRowCard({
   label,
   percent,
   fixed,
-  minimum,
   percentReason,
   fixedReason,
   onPercentChange,
   onFixedChange,
-  onMinimumChange,
   percentDisabled = false,
   fixedDisabled = false,
-  minimumDisabled = false,
   percentLabel = "Процент",
   fixedLabel = "Фикс сумма комиссии",
-  minimumLabel = "Минимум вывода USDT TRC20",
   showPercent = true,
   showFixed = true,
-  showMinimum = true,
 }: {
   label: string;
   percent: string;
   fixed: string;
-  minimum: string;
   percentReason?: string;
   fixedReason?: string;
   onPercentChange?: (value: string) => void;
   onFixedChange: (value: string) => void;
-  onMinimumChange?: (value: string) => void;
   percentDisabled?: boolean;
   fixedDisabled?: boolean;
-  minimumDisabled?: boolean;
   percentLabel?: string;
   fixedLabel?: string;
-  minimumLabel?: string;
   showPercent?: boolean;
   showFixed?: boolean;
-  showMinimum?: boolean;
 }) {
+  const gridClassName = showFixed
+    ? "xl:grid-cols-[1.8fr_0.7fr_0.9fr]"
+    : "xl:grid-cols-[1.8fr_1fr]";
+
   return (
-    <div className="grid grid-cols-1 gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 xl:grid-cols-[1.8fr_0.7fr_0.9fr_1fr] xl:items-center">
+    <div
+      className={`grid grid-cols-1 gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 ${gridClassName} xl:items-center`}
+    >
       <div className="min-w-0">
         <div className="text-sm font-semibold">{label}</div>
       </div>
@@ -265,23 +261,17 @@ function TariffGridRowCard({
         reason={percentReason}
         showReason={showPercent && !percentDisabled}
       />
-      <GridValue
-        label={fixedLabel}
-        value={fixed}
-        onChange={onFixedChange}
-        disabled={fixedDisabled || !showFixed}
-        muted={fixedDisabled || !showFixed}
-        reason={fixedReason}
-        showReason={showFixed}
-      />
-      <GridValue
-        label={minimumLabel}
-        value={minimum}
-        onChange={onMinimumChange}
-        disabled={minimumDisabled || !showMinimum}
-        muted={minimumDisabled || !showMinimum}
-        suffix={minimumDisabled || !showMinimum ? undefined : "USDT"}
-      />
+      {showFixed ? (
+        <GridValue
+          label={fixedLabel}
+          value={fixed}
+          onChange={onFixedChange}
+          disabled={fixedDisabled}
+          muted={fixedDisabled}
+          reason={fixedReason}
+          showReason={true}
+        />
+      ) : null}
     </div>
   );
 }
@@ -427,6 +417,16 @@ export default function RatesPage() {
       items.push({
         key: "external:usdt_withdraw_fee_fixed",
         label: "Фикс сумма комиссии перевода USDT TRC20 внешним пользователям",
+      });
+    }
+
+    if (
+      normalizeDecimalInput(settings.min_withdraw_usdt_trc20) !==
+      normalizeDecimalInput(originalSettings.min_withdraw_usdt_trc20)
+    ) {
+      items.push({
+        key: "external:min_withdraw_usdt_trc20",
+        label: "Минимум вывода USDT TRC20",
       });
     }
 
@@ -665,7 +665,7 @@ export default function RatesPage() {
               </label>
             </div>
 
-            <div className="mb-3 hidden xl:grid xl:grid-cols-[1.8fr_0.7fr_0.9fr_1fr] xl:gap-3 xl:px-1">
+            <div className="mb-3 hidden xl:grid xl:grid-cols-[1.8fr_0.7fr_0.9fr] xl:gap-3 xl:px-1">
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
                 Операция
               </div>
@@ -674,9 +674,6 @@ export default function RatesPage() {
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
                 Фикс сумма комиссии
-              </div>
-              <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                Минимум вывода
               </div>
             </div>
 
@@ -689,7 +686,6 @@ export default function RatesPage() {
                       label={row.label}
                       percent={settings.usdt_trade_fee_pct}
                       fixed={settings.usdt_withdraw_fee_fixed}
-                      minimum="—"
                       percentReason={
                         reasons["external:usdt_trade_fee_pct"] ||
                         "Причина изменения процента пока не указана."
@@ -704,7 +700,6 @@ export default function RatesPage() {
                       onFixedChange={(value) =>
                         updateSetting("usdt_withdraw_fee_fixed", value)
                       }
-                      showMinimum={false}
                     />
                   );
                 }
@@ -714,16 +709,18 @@ export default function RatesPage() {
                     <TariffGridRowCard
                       key={row.label}
                       label={row.label}
-                      percent="—"
+                      percent={settings.min_withdraw_usdt_trc20}
                       fixed="—"
-                      minimum={settings.min_withdraw_usdt_trc20}
-                      onMinimumChange={(value) =>
+                      percentLabel="Минимум вывода"
+                      percentReason={
+                        reasons["external:min_withdraw_usdt_trc20"] ||
+                        "Причина изменения минимума вывода пока не указана."
+                      }
+                      onPercentChange={(value) =>
                         updateSetting("min_withdraw_usdt_trc20", value)
                       }
-                      showPercent={false}
+                      showPercent
                       showFixed={false}
-                      showMinimum
-                      minimumDisabled={false}
                     />
                   );
                 }
@@ -733,27 +730,25 @@ export default function RatesPage() {
                 );
 
                 return (
-                    <TariffGridRowCard
-                      key={row.operation}
-                      label={row.label}
-                      percent={item?.percent_fee ?? "0"}
-                      fixed={item?.fixed_fee ?? "0"}
-                      minimum="—"
-                      percentReason={
-                        reasons[`tariff:${row.operation}`] ||
-                        "Причина изменения комиссии пока не указана."
-                      }
-                      fixedReason={
-                        reasons[`tariff:${row.operation}`] ||
-                        "Причина изменения комиссии пока не указана."
-                      }
+                  <TariffGridRowCard
+                    key={row.operation}
+                    label={row.label}
+                    percent={item?.percent_fee ?? "0"}
+                    fixed={item?.fixed_fee ?? "0"}
+                    percentReason={
+                      reasons[`tariff:${row.operation}`] ||
+                      "Причина изменения комиссии пока не указана."
+                    }
+                    fixedReason={
+                      reasons[`tariff:${row.operation}`] ||
+                      "Причина изменения комиссии пока не указана."
+                    }
                     onPercentChange={(value) =>
                       updateTariff(row.operation, { percent_fee: value })
                     }
                     onFixedChange={(value) =>
                       updateTariff(row.operation, { fixed_fee: value })
                     }
-                    showMinimum={false}
                   />
                 );
               })}
