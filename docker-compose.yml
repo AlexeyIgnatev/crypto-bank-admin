@@ -6,10 +6,12 @@ services:
     ports:
       - "46346:3000"
     environment:
-      # You can override this to point to your backend
-      - API_BASE=${API_BASE:-http://192.168.254.121:8000}
-      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://192.168.254.121:8000}
+      # Point the container at the backend running on the host machine.
+      - API_BASE=${API_BASE:-http://host.docker.internal:8000}
+      - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://host.docker.internal:8000}
       - NODE_ENV=production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     # If your backend is also in compose, you can declare a depends_on
     # depends_on:
     #   - backend
