@@ -301,7 +301,7 @@ function CommissionSplitPanel({
   ];
 
   return (
-    <div className="grid gap-4 rounded-2xl border border-soft bg-[var(--bg-soft)] p-4 xl:grid-cols-[220px_1fr]">
+    <div className="grid items-start gap-2 rounded-2xl border border-soft bg-[var(--bg-soft)] p-3 xl:grid-cols-[180px_1fr]">
       <div className="grid gap-3">
         <div className="grid gap-1">
           <span className="text-xs text-muted">ЦБ, %</span>
@@ -344,16 +344,16 @@ function CommissionSplitPanel({
         </div>
       </div>
 
-      <div className="grid gap-3">
-        <div className="h-[220px]">
+      <div className="grid gap-2 self-start">
+        <div className="h-[140px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 dataKey="value"
                 nameKey="name"
-                innerRadius={60}
-                outerRadius={92}
+                innerRadius={38}
+                outerRadius={58}
                 paddingAngle={2}
               >
                 {data.map((entry) => (
@@ -370,7 +370,7 @@ function CommissionSplitPanel({
           {data.map((entry) => (
             <div
               key={entry.name}
-              className="rounded-xl border border-soft bg-white/60 p-3"
+              className="rounded-xl border border-soft bg-white/60 p-2.5"
             >
               <div className="flex items-center gap-2">
                 <span
@@ -379,7 +379,7 @@ function CommissionSplitPanel({
                 />
                 <span className="font-medium text-foreground">{entry.name}</span>
               </div>
-              <div className="mt-2 text-lg font-semibold text-foreground">
+              <div className="mt-1 text-base font-semibold text-foreground">
                 {entry.value.toFixed(2)}%
               </div>
             </div>
@@ -591,7 +591,7 @@ export default function BankCommissionsPage() {
           title="Время зачисления"
           subtitle="Укажите время, по которому будут зачисляться комиссии в часовом поясе Бишкек."
         >
-          <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="grid items-start gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
             <TimeField
               value={settings.bank_fee_posting_time_bishkek}
               onChange={(value) =>
