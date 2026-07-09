@@ -588,8 +588,8 @@ export default function BankCommissionsPage() {
         </section>
 
         <SectionCard
-          title="Р’СЂРµРјСЏ Р·Р°С‡РёСЃР»РµРЅРёСЏ"
-          subtitle="РЈРєР°Р¶РёС‚Рµ РІСЂРµРјСЏ, РїРѕ РєРѕС‚РѕСЂРѕРјСѓ Р±СѓРґСѓС‚ Р·Р°С‡РёСЃР»СЏС‚СЊСЏ РєРѕРјРёСЃСЃРёРё РІ С‡Р°СЃРѕРІРѕРј РїРѕСЏСЃРµ Р‘РёС€РєРµРєР°."
+          title="Время зачисления"
+          subtitle="Укажите время, по которому будут зачисляться комиссии в часовом поясе Бишкек."
         >
           <div className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
             <TimeField
