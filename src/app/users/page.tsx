@@ -5,12 +5,7 @@ import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import UserDetailsCard from "../../components/UserDetails";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
-import {
-  createUser,
-  deleteUser,
-  getUsers,
-  updateUser,
-} from "@/lib/api";
+import { createUser, deleteUser, getUsers, updateUser } from "@/lib/api";
 import {
   CustomerResidency,
   TariffCategory,
@@ -154,9 +149,7 @@ export default function UsersPage() {
           {
             header: "Последний логин",
             getValue: (row) =>
-              row.lastLoginAt
-                ? new Date(row.lastLoginAt).toLocaleString()
-                : "—",
+              row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "—",
           },
           { header: "COM", getValue: (row) => row.balances.COM },
           { header: "SALAM", getValue: (row) => row.balances.SALAM },
@@ -170,8 +163,8 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
-      <div className="shrink-0 flex items-center justify-end gap-2">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+      <div className="flex shrink-0 items-center justify-end gap-2">
         <button
           className="btn h-9"
           disabled={!!exporting}
@@ -195,13 +188,13 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 flex flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         {loading ? (
           <div className="m-auto text-muted">Загрузка...</div>
         ) : error ? (
           <div className="m-auto text-red-500">{error}</div>
         ) : (
-          <div className="flex-1 min-h-0">
+          <div className="min-h-0 flex-1">
             <UsersTable
               data={data}
               onOpen={(user) => {
@@ -220,7 +213,7 @@ export default function UsersPage() {
       </div>
 
       <button
-        className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg flex items-center justify-center text-xl bg-[var(--primary)] text-white hover:opacity-90"
+        className="fixed bottom-6 right-6 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--primary)] text-xl text-white shadow-lg hover:opacity-90"
         onClick={() => setOpenCreate(true)}
         aria-label="Добавить пользователя"
         title="Добавить пользователя"
@@ -366,14 +359,14 @@ function CreateUserForm({
       <div className="grid grid-cols-2 gap-2 pt-4">
         <button
           type="button"
-          className="btn btn-danger w-full h-9"
+          className="btn btn-danger h-9 w-full"
           onClick={onCancel}
         >
           Сбросить
         </button>
         <button
           type="submit"
-          className="btn btn-success w-full h-9"
+          className="btn btn-success h-9 w-full"
           disabled={submitting}
         >
           {submitting ? "Сохранение..." : "Сохранить"}
@@ -393,7 +386,13 @@ function EditUserForm({
   onSave: (
     next: Pick<
       User,
-      "fullName" | "phone" | "email" | "status" | "tariffCategory" | "residency"
+      | "fullName"
+      | "phone"
+      | "email"
+      | "status"
+      | "statusComment"
+      | "tariffCategory"
+      | "residency"
     >,
   ) => Promise<void> | void;
 }) {
@@ -405,6 +404,7 @@ function EditUserForm({
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState<UserStatus>(user.status);
+  const [statusComment, setStatusComment] = useState(user.statusComment || "");
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -413,6 +413,7 @@ function EditUserForm({
   );
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const statusChanged = status !== user.status;
 
   return (
     <form
@@ -420,6 +421,10 @@ function EditUserForm({
       onSubmit={async (event) => {
         event.preventDefault();
         setErr(null);
+        if (statusChanged && !statusComment.trim()) {
+          setErr("Укажите причину изменения статуса");
+          return;
+        }
         setSubmitting(true);
         try {
           await updateUser(user.id, {
@@ -429,6 +434,7 @@ function EditUserForm({
             phone,
             email,
             status,
+            statusComment,
             tariffCategory,
             residency,
           });
@@ -438,6 +444,7 @@ function EditUserForm({
             phone,
             email,
             status,
+            statusComment: statusComment.trim() || undefined,
             tariffCategory,
             residency,
           });
@@ -455,6 +462,7 @@ function EditUserForm({
         phone={phone}
         email={email}
         status={status}
+        statusComment={statusComment}
         tariffCategory={tariffCategory}
         residency={residency}
         onLastName={setLastName}
@@ -463,19 +471,21 @@ function EditUserForm({
         onPhone={setPhone}
         onEmail={setEmail}
         onStatus={setStatus}
+        onStatusComment={setStatusComment}
+        requireStatusComment={statusChanged}
         onTariffCategory={setTariffCategory}
         onResidency={setResidency}
         showTariff
       />
       {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-4">
-        <button type="button" className="btn w-full h-9" onClick={onCancel}>
+        <button type="button" className="btn h-9 w-full" onClick={onCancel}>
           Отмена
         </button>
         <button
           type="submit"
-          className="btn btn-success w-full h-9"
-          disabled={submitting}
+          className="btn btn-success h-9 w-full"
+          disabled={submitting || (statusChanged && !statusComment.trim())}
         >
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>
@@ -491,6 +501,7 @@ function UserFormFields({
   phone,
   email,
   status,
+  statusComment,
   tariffCategory,
   residency,
   onLastName,
@@ -499,6 +510,8 @@ function UserFormFields({
   onPhone,
   onEmail,
   onStatus,
+  onStatusComment,
+  requireStatusComment = false,
   onTariffCategory,
   onResidency,
   showTariff = false,
@@ -509,6 +522,7 @@ function UserFormFields({
   phone: string;
   email: string;
   status: UserStatus;
+  statusComment?: string;
   tariffCategory: TariffCategory;
   residency: CustomerResidency;
   onLastName: (value: string) => void;
@@ -517,6 +531,8 @@ function UserFormFields({
   onPhone: (value: string) => void;
   onEmail: (value: string) => void;
   onStatus: (value: UserStatus) => void;
+  onStatusComment?: (value: string) => void;
+  requireStatusComment?: boolean;
   onTariffCategory?: (value: TariffCategory) => void;
   onResidency?: (value: CustomerResidency) => void;
   showTariff?: boolean;
@@ -524,7 +540,7 @@ function UserFormFields({
   return (
     <div className="grid grid-cols-2 gap-3">
       <div>
-        <div className="text-sm mb-1">Фамилия</div>
+        <div className="mb-1 text-sm">Фамилия</div>
         <input
           className="ui-input w-full"
           required
@@ -533,7 +549,7 @@ function UserFormFields({
         />
       </div>
       <div>
-        <div className="text-sm mb-1">Имя</div>
+        <div className="mb-1 text-sm">Имя</div>
         <input
           className="ui-input w-full"
           required
@@ -542,7 +558,7 @@ function UserFormFields({
         />
       </div>
       <div className="col-span-2">
-        <div className="text-sm mb-1">Отчество</div>
+        <div className="mb-1 text-sm">Отчество</div>
         <input
           className="ui-input w-full"
           value={middleName}
@@ -551,7 +567,7 @@ function UserFormFields({
         />
       </div>
       <div>
-        <div className="text-sm mb-1">Телефон</div>
+        <div className="mb-1 text-sm">Телефон</div>
         <input
           className="ui-input w-full"
           required
@@ -560,7 +576,7 @@ function UserFormFields({
         />
       </div>
       <div>
-        <div className="text-sm mb-1">E-mail</div>
+        <div className="mb-1 text-sm">E-mail</div>
         <input
           className="ui-input w-full"
           required
@@ -570,7 +586,7 @@ function UserFormFields({
         />
       </div>
       <div className="col-span-2">
-        <div className="text-sm mb-1">Статус</div>
+        <div className="mb-1 text-sm">Статус</div>
         <select
           className="ui-input"
           value={status}
@@ -581,10 +597,25 @@ function UserFormFields({
           <option>Фин контроль</option>
         </select>
       </div>
+      {onStatusComment ? (
+        <div className="col-span-2">
+          <div className="mb-1 text-sm">
+            Комментарий к статусу
+            {requireStatusComment ? " *" : ""}
+          </div>
+          <textarea
+            className="ui-input min-h-24 w-full resize-y"
+            value={statusComment || ""}
+            onChange={(event) => onStatusComment(event.target.value)}
+            placeholder="Укажите причину изменения статуса"
+            required={requireStatusComment}
+          />
+        </div>
+      ) : null}
       {showTariff && onTariffCategory && onResidency ? (
         <>
           <div>
-            <div className="text-sm mb-1">Тариф</div>
+            <div className="mb-1 text-sm">Тариф</div>
             <select
               className="ui-input w-full"
               value={tariffCategory}
@@ -602,7 +633,7 @@ function UserFormFields({
             </select>
           </div>
           <div>
-            <div className="text-sm mb-1">Резидентство</div>
+            <div className="mb-1 text-sm">Резидентство</div>
             <select
               className="ui-input w-full"
               value={residency}
@@ -639,11 +670,11 @@ function DeleteUserConfirm({
       </div>
       {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-2">
-        <button className="btn w-full h-9" onClick={onCancel}>
+        <button className="btn h-9 w-full" onClick={onCancel}>
           Отмена
         </button>
         <button
-          className="btn btn-danger w-full h-9"
+          className="btn btn-danger h-9 w-full"
           disabled={submitting}
           onClick={async () => {
             if (!user) return;

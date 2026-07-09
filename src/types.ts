@@ -57,6 +57,7 @@ export interface User {
   phone: string;
   email: string;
   status: UserStatus;
+  statusComment?: string;
   tariffCategory: TariffCategory;
   residency: CustomerResidency;
   balances: {
@@ -88,6 +89,50 @@ export interface TreasuryReserves {
   networkFeeTrxTotal: number;
   bricsBurnedToday: number;
   bricsBurnedTotal: number;
+}
+
+export interface AdminSettings {
+  esom_per_usd: string;
+  esom_som_conversion_fee_pct: string;
+  esom_som_conversion_fee_min: string;
+  usdt_trade_fee_pct: string;
+  usdt_withdraw_fee_fixed: string;
+  min_withdraw_usdt_trc20: string;
+  rates_change_reasons_json: string;
+  bank_fee_posting_time_bishkek: string;
+  central_bank_som_account: string;
+  central_bank_salam_wallet: string;
+  central_bank_usdt_wallet: string;
+  bank_som_account: string;
+  bank_salam_wallet: string;
+  bank_usdt_wallet: string;
+  bank_commission_partners_json: string;
+}
+
+export interface BankCommissionBalanceSlot {
+  reference: string;
+  balance: number | null;
+  asset: string;
+  error: string | null;
+}
+
+export interface BankCommissionGroupBalances {
+  som_account: BankCommissionBalanceSlot | null;
+  salam_wallet: BankCommissionBalanceSlot | null;
+  usdt_wallet: BankCommissionBalanceSlot | null;
+}
+
+export interface BankCommissionPartnerBalances
+  extends BankCommissionGroupBalances {
+  id: string;
+  title: string;
+}
+
+export interface BankCommissionBalances {
+  posting_time_bishkek: string;
+  central_bank: BankCommissionGroupBalances;
+  bank: BankCommissionGroupBalances;
+  partners: BankCommissionPartnerBalances[];
 }
 
 export type SupportTicketStatus = "OPEN" | "CLOSED";

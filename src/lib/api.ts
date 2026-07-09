@@ -1,5 +1,7 @@
 ﻿import {
   Admin,
+  AdminSettings,
+  BankCommissionBalances,
   CustomerResidency,
   SupportMessage,
   SupportTicket,
@@ -297,6 +299,8 @@ export async function getUsers(params: {
         : u.status === "FRAUD"
           ? "Фин контроль"
           : "Активен",
+    statusComment:
+      typeof u.status_comment === "string" ? u.status_comment : undefined,
     tariffCategory: (u.tariff_category ||
       u.tariffCategory ||
       "K1") as TariffCategory,
@@ -341,6 +345,8 @@ export async function getUserById(id: string | number): Promise<User> {
         : u.status === "FRAUD"
           ? "Фин контроль"
           : "Активен",
+    statusComment:
+      typeof u.status_comment === "string" ? u.status_comment : undefined,
     tariffCategory: (u.tariff_category ||
       u.tariffCategory ||
       "K1") as TariffCategory,
@@ -397,6 +403,7 @@ export async function updateUser(
     phone: string;
     email: string;
     status: "Активен" | "Заблокирован" | "Фин контроль";
+    statusComment?: string;
     tariffCategory: TariffCategory;
     residency: CustomerResidency;
   }>,
@@ -408,6 +415,9 @@ export async function updateUser(
     ...(payload.phone != null ? { phone: payload.phone } : {}),
     ...(payload.email != null ? { email: payload.email } : {}),
     ...(payload.status != null ? { status: payload.status } : {}),
+    ...(payload.statusComment != null
+      ? { status_comment: payload.statusComment }
+      : {}),
     ...(payload.tariffCategory != null
       ? { tariff_category: payload.tariffCategory }
       : {}),
@@ -679,6 +689,33 @@ export async function putSettings(payload: Record<string, string>) {
   return res.json();
 }
 
+export async function getAdminSettings(): Promise<AdminSettings> {
+  const res = await fetch(`/api/blockchain-config/admin-settings`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load admin settings");
+  return res.json();
+}
+
+export async function putAdminSettings(
+  payload: Partial<AdminSettings>,
+): Promise<AdminSettings> {
+  const res = await fetch(`/api/blockchain-config/admin-settings`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      body
+        ? `Failed to save admin settings: ${body}`
+        : `Failed to save admin settings (HTTP ${res.status})`,
+    );
+  }
+  return res.json();
+}
+
 export async function getReserves(): Promise<TreasuryReserves> {
   const res = await fetch(`/api/blockchain-config/reserves`, {
     cache: "no-store",
@@ -704,6 +741,14 @@ export async function getReserves(): Promise<TreasuryReserves> {
     bricsBurnedToday: Number(data.brics_burned_today ?? 0),
     bricsBurnedTotal: Number(data.brics_burned_total ?? 0),
   };
+}
+
+export async function getBankCommissionBalances(): Promise<BankCommissionBalances> {
+  const res = await fetch(`/api/blockchain-config/bank-commission-balances`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load bank commission balances");
+  return res.json();
 }
 
 function mapAssetToDisplay(x?: string): string {

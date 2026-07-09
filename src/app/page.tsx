@@ -272,6 +272,7 @@ function EditUserInline({
   const [phone, setPhone] = useState(user.phone);
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState(user.status);
+  const [statusComment, setStatusComment] = useState(user.statusComment || "");
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -287,6 +288,11 @@ function EditUserInline({
       onSubmit={async (e) => {
         e.preventDefault();
         setErr(null);
+        const statusChanged = status !== user.status;
+        if (statusChanged && !statusComment.trim()) {
+          setErr("Укажите причину изменения статуса");
+          return;
+        }
         setSubmitting(true);
         try {
           await updateUser(user.id, {
@@ -296,6 +302,7 @@ function EditUserInline({
             phone,
             email,
             status,
+            statusComment,
             tariffCategory,
             residency,
           });
@@ -307,6 +314,7 @@ function EditUserInline({
             phone,
             email,
             status,
+            statusComment: statusComment.trim() || undefined,
             tariffCategory,
             residency,
           });
@@ -376,6 +384,15 @@ function EditUserInline({
             <option value="FRAUD">FRAUD</option>
           </select>
         </div>
+        <div className="col-span-2">
+          <div className="text-sm mb-1">Комментарий к статусу</div>
+          <textarea
+            className="ui-input w-full min-h-24 resize-y"
+            value={statusComment}
+            onChange={(e) => setStatusComment(e.target.value)}
+            placeholder="Укажите причину изменения статуса"
+          />
+        </div>
         <div>
           <div className="text-sm mb-1">Тариф</div>
           <select
@@ -419,7 +436,7 @@ function EditUserInline({
         <button
           type="submit"
           className="btn btn-success w-full h-9"
-          disabled={submitting}
+          disabled={submitting || (status !== user.status && !statusComment.trim())}
         >
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>

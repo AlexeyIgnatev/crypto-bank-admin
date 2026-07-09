@@ -10,7 +10,9 @@ const allItems = [
   { href: "/users", label: "Пользователи", icon: "👥" },
   { href: "/transactions", label: "Транзакции", icon: "💳" },
   { href: "/statements", label: "Выписка", icon: "📄" },
-  { href: "/reserves", label: "Резервы", icon: "🏦" },
+  { href: "/reserves", label: "Резервы банка", icon: "🏦" },
+  { href: "/bank-commissions", label: "Комиссии банка", icon: "💼" },
+  { href: "/aml-rules", label: "AML правила", icon: "🧪" },
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
@@ -27,23 +29,33 @@ function allowedByRole(role?: string): string[] {
     case "UID":
       return allItems.map((i) => i.href);
     case "UIT":
-      return ["/admins", "/faq", "/support", "/push"];
+      return ["/admins", "/aml-rules", "/faq", "/support", "/push"];
     case "SKK":
-      return ["/control-cases", "/faq", "/support", "/push"];
+      return ["/control-cases", "/aml-rules", "/faq", "/support", "/push"];
     case "UDBO":
     case "UBUIO":
       return [
         "/transactions",
         "/statements",
         "/reserves",
+        "/bank-commissions",
+        "/aml-rules",
         "/faq",
         "/support",
         "/push",
       ];
     case "TREASURY":
-      return ["/rates", "/reserves", "/faq", "/support", "/push"];
+      return [
+        "/rates",
+        "/reserves",
+        "/bank-commissions",
+        "/aml-rules",
+        "/faq",
+        "/support",
+        "/push",
+      ];
     default:
-      return ["/support", "/push", "/faq"];
+      return ["/aml-rules", "/support", "/push", "/faq"];
   }
 }
 
@@ -66,7 +78,7 @@ export default function Sidebar() {
         setRole(null);
       }
     })();
-  }, [pathname]);
+  }, [pathname, router]);
 
   return (
     <aside

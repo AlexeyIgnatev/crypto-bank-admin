@@ -1,17 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getSettings, getTariffs, TariffOperation, TariffSetting } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { getSettings } from "@/lib/api";
 import { useTheme } from "./ThemeProvider";
-
-const TOPBAR_OPERATION_ORDER: { operation: TariffOperation; label: string }[] = [
-  { operation: "SOM_TO_ESOM", label: "СОМ→САЛАМ" },
-  { operation: "ESOM_TO_SOM", label: "САЛАМ→СОМ" },
-  { operation: "WALLET_TRANSFER_ESOM", label: "САЛАМ→САЛАМ" },
-  { operation: "ESOM_TO_USDT_TRC20", label: "САЛАМ→USDT TRC20" },
-  { operation: "USDT_TRC20_TO_ESOM", label: "USDT TRC20→САЛАМ" },
-  { operation: "WALLET_TRANSFER_USDT_TRC20", label: "USDT TRC20→USDT TRC20" },
-];
 
 export default function Topbar({ title }: { title?: string }) {
   const { theme, toggle } = useTheme();
@@ -43,42 +34,27 @@ export default function Topbar({ title }: { title?: string }) {
 
 function TopbarRates() {
   const [settings, setSettings] = useState<Record<string, string> | null>(null);
-  const [tariffs, setTariffs] = useState<TariffSetting[] | null>(null);
 
   useEffect(() => {
     let alive = true;
+
     (async () => {
-      const [settingsResult, tariffsResult] = await Promise.allSettled([
-        getSettings(),
-        getTariffs(),
-      ]);
-
-      if (!alive) return;
-
-      if (settingsResult.status === "fulfilled") {
-        setSettings(settingsResult.value);
-      }
-      if (tariffsResult.status === "fulfilled") {
-        setTariffs(tariffsResult.value);
+      try {
+        const settingsResult = await getSettings();
+        if (alive) {
+          setSettings(settingsResult);
+        }
+      } catch {
+        if (alive) {
+          setSettings(null);
+        }
       }
     })();
+
     return () => {
       alive = false;
     };
   }, []);
-
-  const currentCategory = "K1";
-  const currentResidency = "RESIDENT";
-
-  const tariffByOperation = useMemo(() => {
-    const rows =
-      tariffs?.filter(
-        (item) =>
-          item.category === currentCategory &&
-          item.residency === currentResidency,
-      ) ?? [];
-    return new Map(rows.map((row) => [row.operation, row]));
-  }, [currentCategory, currentResidency, tariffs]);
 
   const rate = Number(settings?.esom_per_usd ?? NaN);
   const rateValue =
@@ -87,26 +63,8 @@ function TopbarRates() {
   return (
     <div className="hidden xl:flex items-center gap-2 min-w-0 flex-1 overflow-x-auto pr-2">
       <RateChip label="USD→СОМ" value={rateValue} accent />
-      {TOPBAR_OPERATION_ORDER.map((item) => {
-        const row = tariffByOperation.get(item.operation);
-        return (
-          <RateChip
-            key={item.operation}
-            label={item.label}
-            value={formatTariffValue(row)}
-          />
-        );
-      })}
     </div>
   );
-}
-
-function formatTariffValue(row?: TariffSetting) {
-  if (!row) return "—";
-  const percent = fmtPercent(row.percent_fee);
-  const fixed = Number(row.fixed_fee ?? 0);
-  if (!Number.isFinite(fixed) || fixed <= 0) return percent;
-  return `${percent} + ${fmtMoney(fixed)}`;
 }
 
 function RateChip({
@@ -138,13 +96,6 @@ function fmtMoney(value: number) {
   });
 }
 
-function fmtPercent(value?: string) {
-  const n = Number(value);
-  return Number.isFinite(n)
-    ? `${n.toLocaleString("ru-RU", { maximumFractionDigits: 2 })}%`
-    : "—";
-}
-
 function ThemeSwitch({
   theme,
   onToggle,
@@ -161,10 +112,12 @@ function ThemeSwitch({
       style={{ background: "var(--primary)" }}
     >
       <span
-        className={`absolute inset-y-0 left-1 my-auto w-6 h-6 rounded-full bg-white shadow transition-transform duration-300 ${isDark ? "translate-x-8" : "translate-x-0"}`}
+        className={`absolute inset-y-0 left-1 my-auto w-6 h-6 rounded-full bg-white shadow transition-transform duration-300 ${
+          isDark ? "translate-x-8" : "translate-x-0"
+        }`}
       />
       <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs">
-        {isDark ? "🌙" : "☀️"}
+        {isDark ? "\u{1F319}" : "\u2600\uFE0F"}
       </span>
       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">
         &nbsp;
