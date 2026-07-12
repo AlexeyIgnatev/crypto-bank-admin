@@ -30,9 +30,9 @@ type PartnerForm = {
 const EMPTY_PARTNER: PartnerForm = {
   id: "partner-1",
   title: "Партнер 1",
-  som_account: "910000003",
-  salam_wallet: "0x3333333333333333333333333333333333333333",
-  usdt_wallet: "TQYvtaMVomk4BFgGPNjnEadrnVaLAqS5Kj",
+  som_account: "",
+  salam_wallet: "",
+  usdt_wallet: "",
 };
 
 const EMPTY_SETTINGS: AdminSettings = {
@@ -44,17 +44,16 @@ const EMPTY_SETTINGS: AdminSettings = {
   min_withdraw_usdt_trc20: "0",
   rates_change_reasons_json: "",
   bank_fee_posting_time_bishkek: "",
-  central_bank_som_account: "910000001",
-  central_bank_salam_wallet: "0x1111111111111111111111111111111111111111",
-  central_bank_usdt_wallet: "TH6v4FYhVPEE39oYLd7roSfGj2H49pkRUX",
+  central_bank_som_account: "",
+  central_bank_salam_wallet: "",
+  central_bank_usdt_wallet: "",
   bank_commission_central_bank_pct: "20",
   bank_commission_bank_pct: "40",
   bank_commission_partners_pct: "40",
-  bank_som_account: "910000002",
-  bank_salam_wallet: "0x2222222222222222222222222222222222222222",
-  bank_usdt_wallet: "TRVh3EuuWTkCfECfXM77SGZZZQwJT49WBm",
-  bank_commission_partners_json:
-    '[{"id":"partner-1","title":"Partner 1","som_account":"910000003","salam_wallet":"0x3333333333333333333333333333333333333333","usdt_wallet":"TQYvtaMVomk4BFgGPNjnEadrnVaLAqS5Kj"}]',
+  bank_som_account: "",
+  bank_salam_wallet: "",
+  bank_usdt_wallet: "",
+  bank_commission_partners_json: "[]",
 };
 
 const EMPTY_BALANCES: BankCommissionBalances = {
