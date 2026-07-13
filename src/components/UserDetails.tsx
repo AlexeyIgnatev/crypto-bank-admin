@@ -6,8 +6,8 @@ import { formatAmount6 } from "@/lib/format";
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="grid grid-cols-3 gap-3">
-      <div className="text-muted">{label}</div>
-      <div className="col-span-2">{value}</div>
+      <div className="text-sm text-muted">{label}</div>
+      <div className="col-span-2 break-words text-sm text-fg">{value}</div>
     </div>
   );
 }
@@ -26,87 +26,116 @@ export default function UserDetails({
   const total = user.balances.COM + user.balances.SALAM + user.balances.USDT;
 
   return (
-    <div className="space-y-3 text-sm">
-      <Row label="ФИО" value={user.fullName} />
-      <Row label="Телефон" value={user.phone} />
-      <Row label="E-mail" value={user.email} />
-      <Row
-        label="Статус"
-        value={
-          <span
-            className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
-              user.status === "Активен"
-                ? "bg-green-500/20 text-green-700"
-                : user.status === "Фин контроль"
-                  ? "bg-amber-500/20 text-amber-700"
-                  : "bg-red-500/20 text-red-700"
-            }`}
-          >
-            {user.status}
-          </span>
-        }
-      />
-      <Row label="Комментарий к статусу" value={user.statusComment || "—"} />
-      <Row label="Тариф" value={user.tariffCategory || "K1"} />
-      <Row
-        label="Резидентство"
-        value={user.residency === "NON_RESIDENT" ? "Нерезидент" : "Резидент"}
-      />
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <div className="text-muted">Балансы</div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>COM</div>
-            <div className="text-right">{formatAmount6(user.balances.COM)}</div>
-            <div>SALAM</div>
-            <div className="text-right">{formatAmount6(user.balances.SALAM)}</div>
-            <div>USDT TRC20</div>
-            <div className="text-right">{formatAmount6(user.balances.USDT)}</div>
+    <div className="space-y-4 text-sm">
+      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+        <div className="surface rounded-[24px] p-4">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+            Основные данные
+          </div>
+          <div className="mt-4 space-y-3">
+            <Row label="ФИО" value={user.fullName} />
+            <Row label="Телефон" value={user.phone} />
+            <Row label="E-mail" value={user.email} />
+            <Row
+              label="Статус"
+              value={
+                <span
+                  className={`badge ${
+                    user.status === "Активен"
+                      ? "badge-success"
+                      : user.status === "Фин контроль"
+                        ? "badge-warning"
+                        : "badge-danger"
+                  }`}
+                >
+                  {user.status}
+                </span>
+              }
+            />
+            <Row label="Комментарий к статусу" value={user.statusComment || "—"} />
+            <Row label="Тариф" value={user.tariffCategory || "K1"} />
+            <Row
+              label="Резидентство"
+              value={user.residency === "NON_RESIDENT" ? "Нерезидент" : "Резидент"}
+            />
           </div>
         </div>
-        <div className="space-y-2">
-          <div className="text-muted">Итоги</div>
-          <div className="flex justify-between">
-            <span>Баланс СОМ</span>
-            <span>{formatAmount6(user.balances.COM)}</span>
+
+        <div className="surface rounded-[24px] p-4">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+            Балансы
           </div>
-          <div className="flex justify-between">
-            <span>Общий баланс</span>
-            <span>{formatAmount6(total)}</span>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <BalanceTile label="COM" value={formatAmount6(user.balances.COM)} />
+            <BalanceTile label="SALAM" value={formatAmount6(user.balances.SALAM)} />
+            <BalanceTile
+              label="USDT TRC20"
+              value={formatAmount6(user.balances.USDT)}
+            />
+            <BalanceTile
+              label="Общий баланс"
+              value={formatAmount6(total)}
+              accent
+            />
           </div>
-          <div className="flex justify-between">
-            <span>Создан</span>
-            <span>{new Date(user.createdAt).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Время последнего логина</span>
-            <span>
-              {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "—"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>IP адрес</span>
-            <span>{user.lastLoginIp || "—"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Модель устройства</span>
-            <span>{user.lastLoginDevice || "—"}</span>
+
+          <div className="mt-4 space-y-3 rounded-[20px] border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_80%,var(--bg-soft))] p-4">
+            <StatLine label="Создан" value={new Date(user.createdAt).toLocaleString()} />
+            <StatLine
+              label="Последний login"
+              value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "—"}
+            />
+            <StatLine label="IP адрес" value={user.lastLoginIp || "—"} />
+            <StatLine label="Модель устройства" value={user.lastLoginDevice || "—"} />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 pt-6">
-        <button className="btn h-9 w-full" onClick={onClose}>
+      <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3">
+        <button className="btn h-11 w-full" onClick={onClose}>
           Закрыть
         </button>
-        <button className="btn btn-info h-9 w-full" onClick={onEdit}>
+        <button className="btn btn-info h-11 w-full" onClick={onEdit}>
           Редактировать
         </button>
-        <button className="btn btn-danger h-9 w-full" onClick={onDelete}>
+        <button className="btn btn-danger h-11 w-full" onClick={onDelete}>
           Удалить
         </button>
       </div>
+    </div>
+  );
+}
+
+function BalanceTile({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-[20px] border p-3 ${
+        accent
+          ? "border-[color:var(--primary)]/20 bg-[color-mix(in_srgb,var(--primary)_10%,var(--card))]"
+          : "border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_80%,var(--bg-soft))]"
+      }`}
+    >
+      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+        {label}
+      </div>
+      <div className="mt-2 text-lg font-semibold text-fg">{value}</div>
+    </div>
+  );
+}
+
+function StatLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <span className="text-muted">{label}</span>
+      <span className="max-w-[65%] break-words text-right text-fg">{value}</span>
     </div>
   );
 }
