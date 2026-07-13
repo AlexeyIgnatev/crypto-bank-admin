@@ -66,39 +66,17 @@ export default function Cards({ dateFrom, dateTo }: { dateFrom?: string; dateTo?
   const fmt = (n: number) => n.toLocaleString();
   const periodLabel = useMemo(() => formatPeriod(stats?.dateFrom, stats?.dateTo), [stats?.dateFrom, stats?.dateTo]);
 
-  const Card = ({
-    title,
-    value,
-    accent = false,
-  }: {
-    title: string;
-    value: string;
-    accent?: boolean;
-  }) => (
-    <div
-      className={`metric-tile ${accent ? "metric-tile-accent" : ""} rounded-[24px] border shadow-sm`}
-    >
-      <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
-        {title}
-      </div>
-      <div className="mt-4 text-3xl font-semibold tracking-tight text-[color:var(--foreground)]">
-        {value}
-      </div>
+  const Card = ({ title, value, accent = false }: { title: string; value: string; accent?: boolean }) => (
+    <div className={`rounded-xl p-4 shadow-sm border transition-colors ${accent ? "bg-[var(--red)] text-white border-[color:var(--red-hover)]" : "card border-black/10 dark:border-white/10"}`}>
+      <div className="text-sm text-muted">{title}</div>
+      <div className="mt-2 text-2xl font-bold text-fg">{value}</div>
     </div>
   );
 
   return (
-    <section className="space-y-4">
-      <div className="page-hero flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="hero-label">Сводка</div>
-          <div className="mt-2 text-lg font-semibold tracking-tight">Показатели по выбранному периоду</div>
-        </div>
-        <div className="rounded-full border border-soft bg-[var(--bg-soft)] px-4 py-2 text-sm text-muted">
-          Период данных: {periodLabel}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <section className="space-y-3">
+      <div className="text-sm text-muted">Период данных: {periodLabel}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
         <Card title="Общая сумма транзакций (СОМ)" value={`${fmt(stats?.total ?? 0)}`} accent />
         <Card title="Между банковскими счетами (СОМ)" value={`${fmt(stats?.bank ?? 0)}`} />
         <Card title="Между криптокошельками (СОМ)" value={`${fmt(stats?.wallet ?? 0)}`} />
