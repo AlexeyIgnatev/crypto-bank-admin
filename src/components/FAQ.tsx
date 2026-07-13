@@ -1,64 +1,113 @@
 "use client";
-import React, { useState } from "react";
+
+import Link from "next/link";
+import { useEffect } from "react";
+import { faqSections } from "@/lib/faq";
 
 export default function FAQ() {
-  const [open, setOpen] = useState<string | null>("about");
-  const Item = ({ id, q, children }: { id: string; q: string; children: React.ReactNode }) => (
-    <div className="rounded-xl border border-soft overflow-hidden">
-      <button
-        className="w-full flex items-center justify-between text-left p-4 hover-surface"
-        onClick={() => setOpen((o) => (o === id ? null : id))}
-        aria-expanded={open === id}
-      >
-        <span className="font-medium">{q}</span>
-        <svg className={`w-5 h-5 transition-transform ${open === id ? "rotate-180" : "rotate-0"}`} viewBox="0 0 20 20" fill="currentColor"><path d="M5 7l5 5 5-5H5z"/></svg>
-      </button>
-      {open === id && <div className="px-4 pb-4 text-sm text-fg/90">{children}</div>}
-    </div>
-  );
+  useEffect(() => {
+    const scrollToHash = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (!hash) return;
+      const target = document.getElementById(hash);
+      if (!target) return;
+      requestAnimationFrame(() => {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    };
+
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
 
   return (
-    <div className="space-y-3">
-      <header>
-        <div className="text-2xl font-bold">FAQ</div>
-        <div className="text-sm text-muted">Ответы на частые вопросы</div>
-      </header>
-      <Item id="about" q="О проекте">
-        <p>
-          Crypto Bank Admin — демонстрационная админ‑панель на Next.js (App Router) с поддержкой светлой/тёмной темы и современным UI. Доступ в систему защищён простой cookie‑аутентификацией (demo: admin/admin).
-        </p>
-        <ul className="list-disc pl-5 mt-2 space-y-1">
-          <li>Технологии: Next.js, React, TypeScript, Tailwind (через postcss), Recharts.</li>
-          <li>Страницы: Главная, Администраторы, Пользователи, Транзакции, Фин. контроль, Проценты, Кейсы фин. контроля.</li>
-          <li>Все данные демо‑уровня, для ознакомления с UX и потоком работ.</li>
-        </ul>
-      </Item>
-      <Item id="dashboard" q="Главная (Дашборд)">
-        <p>Карточки со сводной статистикой за сегодня и быстрый доступ к ключевым разделам.</p>
-      </Item>
-      <Item id="admins" q="Администраторы">
-        <p>Список админов. Создание, редактирование, удаление. Поиск и сортировка по основным полям.</p>
-      </Item>
-      <Item id="users" q="Пользователи">
-        <p>Каталог пользователей с балансами и статусами. Просмотр карточки, редактирование, фильтрация по статусам.</p>
-      </Item>
-      <Item id="transactions" q="Транзакции">
-        <p>
-          Аналитика переводов с фильтрами по датам, статусам, валютам и типам операций. График по метрикам «Сумма»/«Количество» с группировкой по дням/неделям/месяцам. Доступен экспорт данных графика в CSV через красную кнопку «Экспорт» в правой карточке статистики.
-        </p>
-      </Item>
-      <Item id="control" q="Финансовый контроль">
-        <p>Раздел для мониторинга и управления финансовыми операциями. Настройки правил и просмотр агрегатов.</p>
-      </Item>
-      <Item id="rates" q="Проценты (ставки)">
-        <p>Настройка ставок/процентов. Изменение параметров с валидацией и сохранением.</p>
-      </Item>
-      <Item id="cases" q="Кейсы финансового контроля">
-        <p>Обработка кейсов (инцидентов): просмотр, фильтрация, изменение статусов.</p>
-      </Item>
-      <footer className="pt-2 text-xs text-muted">
-        Если не нашли ответ — обратитесь к команде разработки.
-      </footer>
+    <div className="min-h-0 flex-1 overflow-auto">
+      <div className="space-y-6">
+        <header className="faq-hero rounded-2xl p-6 md:p-7">
+          <div className="flex flex-col gap-3">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-soft bg-[var(--card)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+              FAQ
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-fg md:text-4xl">
+                FAQ по разделам админки
+              </h1>
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted md:text-base">
+                Здесь собраны короткие и понятные объяснения по каждому разделу.
+                Если не ясно, что делает страница, нажмите значок <span className="font-semibold text-fg">?</span> справа сверху в нужном разделе
+                или перейдите по ссылке ниже.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {faqSections.map((section) => (
+              <Link
+                key={section.id}
+                href={`#${section.id}`}
+                className="pill text-sm"
+              >
+                {section.title}
+              </Link>
+            ))}
+          </div>
+        </header>
+
+        <div className="space-y-4">
+          {faqSections.map((section) => (
+            <section
+              id={section.id}
+              key={section.id}
+              className="card rounded-2xl border border-soft p-5 md:p-6 scroll-mt-6"
+            >
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div className="min-w-0">
+                  <h2 className="text-xl font-bold text-fg md:text-2xl">
+                    {section.title}
+                  </h2>
+                  <p className="mt-2 max-w-4xl text-sm leading-6 text-muted md:text-[15px]">
+                    {section.summary}
+                  </p>
+                </div>
+                <Link
+                  href={`#${section.id}`}
+                  className="btn btn-edit shrink-0 self-start text-sm"
+                >
+                  Ссылка на этот раздел
+                </Link>
+              </div>
+
+              <div className="mt-5 grid gap-3">
+                {section.items.map((item) => (
+                  <article
+                    key={item.question}
+                    className="rounded-xl border border-soft bg-[color-mix(in_srgb,var(--bg-soft)_50%,transparent)] p-4"
+                  >
+                    <h3 className="text-sm font-semibold text-fg md:text-base">
+                      {item.question}
+                    </h3>
+                    <p className="mt-2 text-sm leading-6 text-muted md:text-[15px]">
+                      {item.answer}
+                    </p>
+                    {item.bullets && item.bullets.length > 0 && (
+                      <ul className="mt-3 space-y-1.5 text-sm text-muted">
+                        {item.bullets.map((bullet) => (
+                          <li key={bullet} className="flex gap-2">
+                            <span className="mt-[7px] h-1.5 w-1.5 rounded-full bg-[var(--primary)] shrink-0" />
+                            <span>{bullet}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+

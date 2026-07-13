@@ -1,13 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getSettings } from "@/lib/api";
 import { useTheme } from "./ThemeProvider";
 
-export default function Topbar({ title }: { title?: string }) {
+export default function Topbar({
+  title,
+  faqHref,
+  faqLabel,
+}: {
+  title?: string;
+  faqHref?: string | null;
+  faqLabel?: string;
+}) {
   const { theme, toggle } = useTheme();
   const pageTitle = title || "Главная";
   const showRates = pageTitle === "Главная";
+  const showFaq = Boolean(faqHref);
 
   return (
     <header
@@ -26,9 +36,37 @@ export default function Topbar({ title }: { title?: string }) {
           </div>
           {showRates && <TopbarRates />}
         </div>
-        <ThemeSwitch theme={theme} onToggle={toggle} />
+        <div className="flex items-center gap-2 shrink-0">
+          {showFaq && <FaqQuickLink href={faqHref!} label={faqLabel || pageTitle} />}
+          <ThemeSwitch theme={theme} onToggle={toggle} />
+        </div>
       </div>
     </header>
+  );
+}
+
+function FaqQuickLink({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <div className="relative group">
+      <Link
+        href={href}
+        title={`Открыть FAQ: ${label}`}
+        aria-label={`Открыть FAQ: ${label}`}
+        className="relative flex h-8 w-8 items-center justify-center rounded-full border border-soft bg-[var(--card)] text-[var(--foreground)] transition hover:border-[var(--primary)] hover:text-[var(--primary)]"
+      >
+        <span className="text-sm font-bold leading-none">?</span>
+      </Link>
+      <div className="pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-max max-w-[18rem] rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-left text-xs shadow-lg group-hover:block">
+        <div className="font-semibold text-fg">FAQ: {label}</div>
+        <div className="mt-1 break-any text-muted">{href}</div>
+      </div>
+    </div>
   );
 }
 
@@ -58,11 +96,11 @@ function TopbarRates() {
 
   const rate = Number(settings?.esom_per_usd ?? NaN);
   const rateValue =
-    Number.isFinite(rate) && rate > 0 ? `${fmtMoney(rate)} СОМ` : "—";
+    Number.isFinite(rate) && rate > 0 ? `${fmtMoney(rate)} SOM` : "—";
 
   return (
     <div className="hidden xl:flex items-center gap-2 min-w-0 flex-1 overflow-x-auto pr-2">
-      <RateChip label="USD→СОМ" value={rateValue} accent />
+      <RateChip label="USD→SOM" value={rateValue} accent />
     </div>
   );
 }
@@ -125,3 +163,4 @@ function ThemeSwitch({
     </button>
   );
 }
+
