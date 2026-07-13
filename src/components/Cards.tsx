@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useMemo, useState } from "react";
 import { getStatsToday, getTransactionsStats } from "@/lib/api";
 
@@ -16,48 +16,13 @@ function formatPeriod(dateFrom?: string, dateTo?: string): string {
   if (!dateFrom || !dateTo) return "Текущий день";
   const from = new Date(dateFrom);
   const to = new Date(dateTo);
-  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime())) {
-    return "Текущий день";
-  }
-  return `${from.toLocaleString()} - ${to.toLocaleString()}`;
+  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime())) return "Текущий день";
+  const fromStr = from.toLocaleString();
+  const toStr = to.toLocaleString();
+  return `${fromStr} - ${toStr}`;
 }
 
-function MetricCard({
-  title,
-  value,
-  hint,
-  accent = false,
-}: {
-  title: string;
-  value: string;
-  hint?: string;
-  accent?: boolean;
-}) {
-  return (
-    <div
-      className={`surface-strong relative overflow-hidden rounded-[24px] p-5 transition-transform duration-200 hover:-translate-y-0.5 ${
-        accent
-          ? "bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_14%,var(--card)),color-mix(in_srgb,var(--card)_94%,transparent))]"
-          : ""
-      }`}
-    >
-      <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--primary),color-mix(in_srgb,var(--primary)_18%,transparent))]" />
-      <div className="text-sm font-medium text-muted">{title}</div>
-      <div className="mt-3 text-[1.9rem] font-semibold tracking-tight text-fg">
-        {value}
-      </div>
-      {hint ? <div className="mt-2 text-xs text-muted">{hint}</div> : null}
-    </div>
-  );
-}
-
-export default function Cards({
-  dateFrom,
-  dateTo,
-}: {
-  dateFrom?: string;
-  dateTo?: string;
-}) {
+export default function Cards({ dateFrom, dateTo }: { dateFrom?: string; dateTo?: string }) {
   const [stats, setStats] = useState<TodayStats | null>(null);
 
   useEffect(() => {
@@ -70,32 +35,13 @@ export default function Cards({
           return;
         }
 
-        const [totalStats, bankStats, walletStats, successfulStats, usersStats] =
-          await Promise.all([
-            getTransactionsStats({ dateFrom, dateTo, metric: "sum", bucket: "day" }),
-            getTransactionsStats({
-              dateFrom,
-              dateTo,
-              metric: "sum",
-              operations: ["bank"],
-              bucket: "day",
-            }),
-            getTransactionsStats({
-              dateFrom,
-              dateTo,
-              metric: "sum",
-              operations: ["crypto"],
-              bucket: "day",
-            }),
-            getTransactionsStats({
-              dateFrom,
-              dateTo,
-              metric: "count",
-              statuses: ["SUCCESS"],
-              bucket: "day",
-            }),
-            getStatsToday(),
-          ]);
+        const [totalStats, bankStats, walletStats, successfulStats, usersStats] = await Promise.all([
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", operations: ["bank"], bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "sum", operations: ["crypto"], bucket: "day" }),
+          getTransactionsStats({ dateFrom, dateTo, metric: "count", statuses: ["SUCCESS"], bucket: "day" }),
+          getStatsToday(),
+        ]);
 
         if (alive) {
           setStats({
@@ -109,17 +55,7 @@ export default function Cards({
           });
         }
       } catch {
-        if (alive) {
-          setStats({
-            total: 0,
-            bank: 0,
-            wallet: 0,
-            users: 0,
-            successful: 0,
-            dateFrom,
-            dateTo,
-          });
-        }
+        if (alive) setStats({ total: 0, bank: 0, wallet: 0, users: 0, successful: 0, dateFrom, dateTo });
       }
     })();
     return () => {
@@ -128,50 +64,24 @@ export default function Cards({
   }, [dateFrom, dateTo]);
 
   const fmt = (n: number) => n.toLocaleString();
-  const periodLabel = useMemo(
-    () => formatPeriod(stats?.dateFrom, stats?.dateTo),
-    [stats?.dateFrom, stats?.dateTo],
+  const periodLabel = useMemo(() => formatPeriod(stats?.dateFrom, stats?.dateTo), [stats?.dateFrom, stats?.dateTo]);
+
+  const Card = ({ title, value, accent = false }: { title: string; value: string; accent?: boolean }) => (
+    <div className={`rounded-xl p-4 shadow-sm border transition-colors ${accent ? "bg-[var(--red)] text-white border-[color:var(--red-hover)]" : "card border-black/10 dark:border-white/10"}`}>
+      <div className="text-sm text-muted">{title}</div>
+      <div className="mt-2 text-2xl font-bold text-fg">{value}</div>
+    </div>
   );
 
   return (
-    <section className="space-y-4">
-      <div className="surface rounded-[24px] px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted">
-              Период данных
-            </div>
-            <div className="mt-1 text-sm text-fg">{periodLabel}</div>
-          </div>
-          <div className="rounded-full border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--primary)_10%,var(--card))] px-4 py-2 text-sm font-semibold text-[color:var(--primary-hover)]">
-            Статистика в реальном времени
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <MetricCard
-          title="Общая сумма транзакций (СОМ)"
-          value={fmt(stats?.total ?? 0)}
-          accent
-        />
-        <MetricCard
-          title="Между банковскими счетами (СОМ)"
-          value={fmt(stats?.bank ?? 0)}
-        />
-        <MetricCard
-          title="Между криптокошельками (СОМ)"
-          value={fmt(stats?.wallet ?? 0)}
-        />
-        <MetricCard
-          title="Успешные транзакции"
-          value={fmt(stats?.successful ?? 0)}
-        />
-        <MetricCard
-          title="Количество пользователей"
-          value={fmt(stats?.users ?? 0)}
-          accent
-        />
+    <section className="space-y-3">
+      <div className="text-sm text-muted">Период данных: {periodLabel}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+        <Card title="Общая сумма транзакций (СОМ)" value={`${fmt(stats?.total ?? 0)}`} accent />
+        <Card title="Между банковскими счетами (СОМ)" value={`${fmt(stats?.bank ?? 0)}`} />
+        <Card title="Между криптокошельками (СОМ)" value={`${fmt(stats?.wallet ?? 0)}`} />
+        <Card title="Успешные транзакции" value={`${fmt(stats?.successful ?? 0)}`} />
+        <Card title="Количество пользователей" value={`${fmt(stats?.users ?? 0)}`} accent />
       </div>
     </section>
   );

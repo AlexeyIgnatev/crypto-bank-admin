@@ -167,12 +167,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-strong overflow-hidden rounded-[28px]">
-      <header className="border-b border-[color:var(--border-soft)] px-5 py-4 sm:px-6">
-        <div className="section-title">{title}</div>
-        {subtitle ? <div className="section-subtitle">{subtitle}</div> : null}
+    <section className="card overflow-hidden rounded-2xl border border-soft shadow-sm">
+      <header className="border-b border-soft px-5 py-4">
+        <div className="text-lg font-semibold">{title}</div>
+        {subtitle ? <div className="mt-1 text-sm text-muted">{subtitle}</div> : null}
       </header>
-      <div className="p-5 sm:p-6">{children}</div>
+      <div className="p-5">{children}</div>
     </section>
   );
 }
@@ -185,12 +185,10 @@ function TimeField({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="grid gap-2">
-      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-        Время зачисления
-      </span>
+    <label className="grid gap-1">
+      <span className="text-xs text-muted">Время зачислений комиссий</span>
       <input
-        className="ui-input h-11 max-w-sm"
+        className="ui-input max-w-xs"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Например: 09:00"
@@ -209,23 +207,23 @@ function BalanceCard({
   onEdit: () => void;
 }) {
   return (
-    <div className="rounded-[26px] border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_86%,var(--bg-soft))] p-4 shadow-sm">
+    <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-fg">{title}</div>
+          <div className="text-sm font-semibold">{title}</div>
           <div className="mt-1 break-all text-xs text-muted">
             {slot?.reference || "Реквизит сохранен"}
           </div>
         </div>
-        <button className="btn h-10 px-4" type="button" onClick={onEdit}>
+        <button className="btn h-9 px-3" type="button" onClick={onEdit}>
           Изменить
         </button>
       </div>
-      <div className="mt-4 text-2xl font-semibold tracking-tight text-fg">
+      <div className="mt-4 text-2xl font-semibold">
         {slot ? formatBalance(slot.balance, slot.asset) : "Баланс появится после сохранения"}
       </div>
       {slot?.error ? (
-        <div className="mt-2 text-xs text-[color:var(--danger)]">
+        <div className="mt-2 text-xs text-red-600">
           Не удалось получить баланс: {slot.error}
         </div>
       ) : null}
@@ -245,10 +243,8 @@ function InlineField({
   placeholder: string;
 }) {
   return (
-    <label className="grid gap-2">
-      <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-        {label}
-      </span>
+    <label className="grid gap-1">
+      <span className="text-xs text-muted">{label}</span>
       <input
         className="ui-input"
         value={value}
@@ -305,10 +301,10 @@ function CommissionSplitPanel({
   ];
 
   return (
-    <div className="grid items-start gap-4 rounded-[28px] border border-[color:var(--border-soft)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--card)_92%,transparent),color-mix(in_srgb,var(--bg-soft)_35%,transparent))] p-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="grid items-start gap-2 rounded-2xl border border-soft bg-[var(--bg-soft)] p-3 xl:grid-cols-[180px_1fr]">
       <div className="grid gap-3">
         <div className="grid gap-1">
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">ЦБ, %</span>
+          <span className="text-xs text-muted">ЦБ, %</span>
           <input
             className="ui-input"
             type="number"
@@ -320,7 +316,7 @@ function CommissionSplitPanel({
           />
         </div>
         <div className="grid gap-1">
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Банк, %</span>
+          <span className="text-xs text-muted">Банк, %</span>
           <input
             className="ui-input"
             type="number"
@@ -332,7 +328,7 @@ function CommissionSplitPanel({
           />
         </div>
         <div className="grid gap-1">
-          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Партнеры, %</span>
+          <span className="text-xs text-muted">Партнеры, %</span>
           <input
             className="ui-input"
             type="number"
@@ -343,46 +339,47 @@ function CommissionSplitPanel({
             onChange={(e) => onPartnersChange(e.target.value)}
           />
         </div>
-        <div className="rounded-2xl border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_78%,var(--bg-soft))] px-4 py-3 text-xs leading-5 text-muted">
-          Банк и партнёры всегда делят остаток комиссии 50/50. Центральный банк
-          получает отдельную долю от общей комиссии.
+        <div className="text-xs text-muted">
+          Банк и партнеры всегда делят остаток комиссии 50/50.
         </div>
       </div>
 
-      <div className="grid gap-4 self-start">
-        <div className="h-[220px] rounded-[28px] border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_80%,var(--bg-soft))] p-3">
+      <div className="grid gap-2 self-start">
+        <div className="h-[140px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 dataKey="value"
                 nameKey="name"
-                innerRadius={52}
-                outerRadius={82}
-                paddingAngle={3}
+                innerRadius={38}
+                outerRadius={58}
+                paddingAngle={2}
               >
                 {data.map((entry) => (
                   <Cell key={entry.name} fill={entry.color} />
                 ))}
               </Pie>
-              <RechartsTooltip formatter={(val: number) => [`${val}%`, "Доля"]} />
+              <RechartsTooltip
+                formatter={(val: number) => [`${val}%`, "Доля"]}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="grid gap-3 text-sm text-muted sm:grid-cols-3">
+        <div className="grid gap-2 text-sm text-muted sm:grid-cols-3">
           {data.map((entry) => (
             <div
               key={entry.name}
-              className="rounded-2xl border border-[color:var(--border-soft)] bg-[color-mix(in_srgb,var(--card)_84%,var(--bg-soft))] p-3"
+              className="rounded-xl border border-soft bg-white/60 p-2.5"
             >
               <div className="flex items-center gap-2">
                 <span
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="font-medium text-fg">{entry.name}</span>
+                <span className="font-medium text-foreground">{entry.name}</span>
               </div>
-              <div className="mt-1 text-base font-semibold text-fg">
+              <div className="mt-1 text-base font-semibold text-foreground">
                 {entry.value.toFixed(2)}%
               </div>
             </div>
@@ -571,27 +568,22 @@ export default function BankCommissionsPage() {
 
   return (
     <div className="flex-1 min-h-0 overflow-auto pb-8">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
-        <section className="surface rounded-[28px] px-5 py-5 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <div className="section-title">Комиссии банка</div>
-              <div className="section-subtitle">
-                Настройка реквизитов и живых остатков для начисления комиссий банка.
+      <div className="mx-auto flex w-full max-w-[1300px] flex-col gap-5 px-4">
+        <section className="card rounded-2xl border border-soft px-5 py-4 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="rounded-full border border-soft bg-[var(--bg-soft)] px-4 py-2 text-sm text-muted">
+              Настройка реквизитов и живых остатков для начисления комиссий банка
+            </div>
+            {success ? (
+              <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-600">
+                {success}
               </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {success ? (
-                <div className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-700">
-                  {success}
-                </div>
-              ) : null}
-              {error ? (
-                <div className="rounded-full border border-red-500/20 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-600">
-                  {error}
-                </div>
-              ) : null}
-            </div>
+            ) : null}
+            {error ? (
+              <div className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-600">
+                {error}
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -599,7 +591,7 @@ export default function BankCommissionsPage() {
           title="Время зачисления"
           subtitle="Укажите время, по которому будут зачисляться комиссии."
         >
-          <div className="grid items-start gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="grid items-start gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
             <TimeField
               value={settings.bank_fee_posting_time_bishkek}
               onChange={(value) =>
@@ -718,11 +710,11 @@ export default function BankCommissionsPage() {
         </SectionCard>
 
         <div className="flex flex-wrap items-center justify-end gap-3">
-          <button className="btn h-11 px-4" type="button" onClick={refreshBalances}>
+          <button className="btn h-10 px-4" type="button" onClick={refreshBalances}>
             {refreshingBalances ? "Обновление..." : "Обновить балансы"}
           </button>
           <button
-            className="btn btn-primary h-11 px-4"
+            className="btn btn-primary h-10 px-4"
             type="button"
             onClick={save}
             disabled={saving}
