@@ -11,11 +11,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAuthPage) {
     return (
-      <div className="flex" style={{ height: "100svh", overflow: "hidden" }}>
-        <div className="flex-1 flex flex-col" style={{ height: "100%" }}>
+      <div className="flex h-screen overflow-hidden">
+        <div className="flex flex-1 flex-col">
           <Topbar title="Вход" />
-          <main className="grid place-items-center p-6" style={{ background: "var(--bg-soft)", height: "calc(100svh - 3.5rem - 1px)", overflow: "hidden" }}>
-            {children}
+          <main className="page-shell flex-1 overflow-hidden p-4">
+            <div className="page-frame flex flex-1 items-center justify-center">
+              {children}
+            </div>
           </main>
         </div>
       </div>
@@ -62,9 +64,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 flex flex-col" style={{ height: "100svh", overflow: "hidden" }}>
+      <div className="flex flex-1 flex-col h-screen overflow-hidden">
         <Topbar title={title} />
-        <main className="min-h-0 flex-1 overflow-hidden p-4 w-full flex flex-col gap-4">{children}</main>
+        <main className="page-shell min-h-0 flex-1 overflow-hidden p-4">
+          <div className="page-frame flex min-h-0 flex-1 flex-col gap-4">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ function InfoHint({ text }: { text: string }) {
       <span className="flex h-6 w-6 cursor-help items-center justify-center rounded-full border border-soft bg-[var(--bg-soft)] text-xs font-semibold text-muted">
         ?
       </span>
-      <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-xs leading-5 text-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+      <span className="pointer-events-none absolute right-0 top-full z-20 mt-2 w-[min(24rem,calc(100vw-1rem))] rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-xs leading-5 text-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
         {text}
       </span>
     </span>

@@ -200,7 +200,7 @@ export default function UsersTable({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col rounded-xl border border-black/10 dark:border-white/10 overflow-hidden card shadow-sm">
+    <div className="table-shell flex-1 min-h-0 flex flex-col rounded-[24px] border overflow-hidden card shadow-sm">
       <div
         ref={headerRef}
         className="shrink-0 rounded-t-xl"

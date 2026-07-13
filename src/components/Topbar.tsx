@@ -10,23 +10,22 @@ export default function Topbar({ title }: { title?: string }) {
   const showRates = pageTitle === "Главная";
 
   return (
-    <header
-      className="relative z-10 border-b"
-      style={{
-        background: "color-mix(in srgb, var(--card) 70%, transparent)",
-        borderColor: "var(--sidebar-border)",
-      }}
-    >
-      <div className="h-14 flex items-center justify-between px-4 gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-xl font-semibold">Банк</div>
-            <div className="text-muted">/</div>
-            <div className="text-xl font-semibold">{pageTitle}</div>
+    <header className="topbar-shell relative z-10 border-b">
+      <div className="flex h-18 items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="min-w-0">
+          <div className="topbar-kicker">Административная панель</div>
+          <div className="mt-1 flex items-center gap-3 min-w-0">
+            <div className="topbar-title truncate">{pageTitle}</div>
+            <span className="hidden sm:inline-flex h-6 items-center rounded-full border px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+              White / Red
+            </span>
           </div>
-          {showRates && <TopbarRates />}
         </div>
-        <ThemeSwitch theme={theme} onToggle={toggle} />
+
+        <div className="flex items-center gap-3">
+          {showRates ? <TopbarRates /> : null}
+          <ThemeSwitch theme={theme} onToggle={toggle} />
+        </div>
       </div>
     </header>
   );
@@ -57,12 +56,11 @@ function TopbarRates() {
   }, []);
 
   const rate = Number(settings?.esom_per_usd ?? NaN);
-  const rateValue =
-    Number.isFinite(rate) && rate > 0 ? `${fmtMoney(rate)} СОМ` : "—";
+  const rateValue = Number.isFinite(rate) && rate > 0 ? `${fmtMoney(rate)} SOM` : "—";
 
   return (
-    <div className="hidden xl:flex items-center gap-2 min-w-0 flex-1 overflow-x-auto pr-2">
-      <RateChip label="USD→СОМ" value={rateValue} accent />
+    <div className="hidden xl:flex items-center gap-2">
+      <RateChip label="USD → SOM" value={rateValue} accent />
     </div>
   );
 }
@@ -78,7 +76,7 @@ function RateChip({
 }) {
   return (
     <div
-      className={`h-8 px-3 rounded-md border flex items-center gap-2 text-xs whitespace-nowrap shrink-0 ${
+      className={`h-10 px-4 rounded-2xl border flex items-center gap-3 text-xs whitespace-nowrap shrink-0 shadow-sm ${
         accent ? "bg-[var(--primary)] text-white" : "bg-[var(--bg-soft)]"
       }`}
       style={{ borderColor: "var(--border-soft)" }}
@@ -104,23 +102,21 @@ function ThemeSwitch({
   onToggle: () => void;
 }) {
   const isDark = theme === "dark";
+
   return (
     <button
       aria-label="Toggle theme"
       onClick={onToggle}
-      className="relative w-16 h-8 rounded-full transition-colors shrink-0"
-      style={{ background: "var(--primary)" }}
+      className="relative flex h-11 w-[4.75rem] shrink-0 items-center rounded-full border border-soft transition-colors"
+      style={{ background: "var(--card)" }}
     >
       <span
-        className={`absolute inset-y-0 left-1 my-auto w-6 h-6 rounded-full bg-white shadow transition-transform duration-300 ${
-          isDark ? "translate-x-8" : "translate-x-0"
+        className={`absolute inset-y-0 left-1 my-auto h-9 w-9 rounded-full shadow transition-transform duration-300 ${
+          isDark ? "translate-x-14 bg-[var(--primary)]" : "translate-x-0 bg-white"
         }`}
       />
-      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs">
-        {isDark ? "\u{1F319}" : "\u2600\uFE0F"}
-      </span>
-      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs opacity-70">
-        &nbsp;
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
+        {isDark ? "ON" : "OFF"}
       </span>
     </button>
   );
