@@ -137,7 +137,7 @@ export default function ReservesPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
               label="Основной баланс SALAM"
-              value={`${fmtAmount(reserves.salamBalance)} SALAM`}
+              value={`${fmtAmount(Math.abs(reserves.salamBalance))} SALAM`}
             />
             <MetricCard
               label="Объём транзакций SALAM за сегодня"
