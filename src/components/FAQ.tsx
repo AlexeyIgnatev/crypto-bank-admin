@@ -22,7 +22,10 @@ export default function FAQ() {
   }, []);
 
   return (
-    <div className="min-h-0 flex-1 overflow-auto">
+    <div
+      className="faq-scrollbar min-h-0 flex-1 overflow-y-auto scroll-smooth"
+      style={{ scrollbarGutter: "stable" }}
+    >
       <div className="space-y-6">
         <header className="faq-hero rounded-2xl p-6 md:p-7">
           <div className="flex flex-col gap-3">
@@ -45,7 +48,7 @@ export default function FAQ() {
             {faqSections.map((section) => (
               <Link
                 key={section.id}
-                href={`#${section.id}`}
+                href={`/faq#${section.id}`}
                 className="pill text-sm"
               >
                 {section.title}
@@ -70,12 +73,6 @@ export default function FAQ() {
                     {section.summary}
                   </p>
                 </div>
-                <Link
-                  href={`#${section.id}`}
-                  className="btn btn-edit shrink-0 self-start text-sm"
-                >
-                  Ссылка на этот раздел
-                </Link>
               </div>
 
               <div className="mt-5 grid gap-3">
@@ -110,4 +107,3 @@ export default function FAQ() {
     </div>
   );
 }
-

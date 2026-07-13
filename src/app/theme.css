@@ -134,3 +134,27 @@ html.theme-switching textarea::placeholder {
 /* FAQ helpers */
 .faq-hero { background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 14%, transparent), transparent); border: 1px solid var(--border-soft); }
 
+.faq-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary) 60%, transparent) transparent;
+}
+
+.faq-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.faq-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.faq-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary) 55%, transparent);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.faq-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary) 70%, transparent);
+  background-clip: padding-box;
+}
