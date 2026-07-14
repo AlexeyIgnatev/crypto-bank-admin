@@ -186,50 +186,71 @@ function parseActionDetails(details: unknown): Record<string, any> | null {
   }
 }
 
+const RATE_HISTORY_KEYS = [
+  "usdt_trade_fee_pct",
+  "usdt_withdraw_fee_fixed",
+  "min_withdraw_usdt_trc20",
+] as const;
+
+function normalizeHistoryValue(value: unknown): string {
+  return normalizeDecimalInput(String(value ?? ""));
+}
+
 function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
+  let previousValues: Record<string, string> | null = null;
+
   return logs
     .map((log) => {
       const details = parseActionDetails(log.details);
       const body = (details?.body && typeof details.body === "object"
         ? details.body
         : {}) as Record<string, any>;
+      const currentValues = Object.fromEntries(
+        RATE_HISTORY_KEYS.map((key) => [key, normalizeHistoryValue(body[key])]),
+      ) as Record<(typeof RATE_HISTORY_KEYS)[number], string>;
+      const hasRelevantChange = RATE_HISTORY_KEYS.some((key) => {
+        const current = currentValues[key];
+        const previous = previousValues?.[key] ?? "";
+        return current !== previous;
+      });
+      if (!hasRelevantChange) return null;
+      previousValues = currentValues;
+
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
           : "",
       );
-      const reasonEntries = Object.entries(reasons).filter(([, value]) =>
-        String(value).trim(),
-      );
-      const comment = reasonEntries
-        .map(([key, value]) => `${rateHistoryLabelForKey(key)}: ${String(value).trim()}`)
+      const comment = [
+        {
+          label: "Комиссия внешнего перевода USDT TRC20",
+          value: reasons["external:usdt_trade_fee_pct"],
+        },
+        {
+          label: "Минимум вывода USDT TRC20",
+          value: reasons["external:min_withdraw_usdt_trc20"],
+        },
+      ]
+        .filter((item) => String(item.value).trim())
+        .map((item) => `${item.label}: ${String(item.value).trim()}`)
         .join(" | ");
 
-      const changes = reasonEntries.length
-        ? reasonEntries
-            .map(([key]) => rateHistoryLabelForKey(key))
-            .join(" | ")
-        : [
-            body.usd_buy_rate != null || body.esom_per_usd != null
-              ? `Курс покупки USD: ${String(body.usd_buy_rate ?? body.esom_per_usd)}`
-              : null,
-            body.usd_sell_rate != null || body.esom_per_usd != null
-              ? `Курс продажи USD: ${String(body.usd_sell_rate ?? body.esom_per_usd)}`
-              : null,
-            body.usdt_trade_fee_pct != null
-              ? `Комиссия внешнего перевода USDT TRC20: ${String(body.usdt_trade_fee_pct)}`
-              : null,
-            body.usdt_withdraw_fee_fixed != null
-              ? `Фикс. сумма комиссии внешнего вывода USDT TRC20: ${String(body.usdt_withdraw_fee_fixed)}`
-              : null,
-            body.min_withdraw_usdt_trc20 != null
-              ? `Минимум вывода USDT TRC20: ${String(body.min_withdraw_usdt_trc20)}`
-              : null,
-          ]
-            .filter(Boolean)
-            .join(" | ");
+      const changes = RATE_HISTORY_KEYS.map((key) => {
+        const current = currentValues[key];
+        const previous = previousValues?.[key] ?? "";
+        if (current === previous) return null;
+        if (key === "usdt_trade_fee_pct") {
+          return `Комиссия внешнего перевода USDT TRC20: ${current}`;
+        }
+        if (key === "usdt_withdraw_fee_fixed") {
+          return `Фикс. сумма комиссии внешнего вывода USDT TRC20: ${current}`;
+        }
+        return `Минимум вывода USDT TRC20: ${current}`;
+      })
+        .filter(Boolean)
+        .join(" | ");
 
-      if (!changes && !comment) return null;
+      if (!changes) return null;
 
       return {
         createdAt: log.createdAt,

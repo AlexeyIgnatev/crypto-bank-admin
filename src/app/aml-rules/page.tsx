@@ -502,7 +502,7 @@ export default function AmlRulesPage() {
     <div className="flex-1 min-h-0 overflow-auto pb-8">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
         <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
-          <div className="grid gap-4 border-b border-soft px-5 py-5 lg:grid-cols-[1.4fr_0.8fr] lg:items-end">
+          <div className="grid gap-4 border-b border-soft px-5 py-5">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
@@ -579,7 +579,7 @@ export default function AmlRulesPage() {
           )}
         </section>
 
-        <div className="grid gap-5 lg:grid-cols-[1.5fr_0.95fr]">
+        <div className="flex flex-col gap-5">
           <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
             <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
               <div>
@@ -600,7 +600,7 @@ export default function AmlRulesPage() {
                   Загрузка правил...
                 </div>
               ) : rules.length ? (
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="grid gap-4">
                   {rules.map((rule) => {
                     const draft = drafts[rule.key] || createDraft(rule);
                     const meta = RULE_META[rule.key] || {
@@ -632,7 +632,7 @@ export default function AmlRulesPage() {
                                     : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                                 }`}
                               >
-                                {draft.enabled ? "Используется" : "Выключено"}
+                                {draft.enabled ? "Активно" : "Неактивно"}
                               </span>
                               {changed && (
                                 <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)]">
@@ -662,11 +662,11 @@ export default function AmlRulesPage() {
                               }))
                             }
                           >
-                            {draft.enabled ? "Включено" : "Отключено"}
+                            {draft.enabled ? "Активно" : "Выкл."}
                           </button>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div className="mt-4 grid grid-cols-1 gap-3">
                           {meta.fields.map((field) => (
                             <label key={field.key} className="block text-sm">
                               <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted">

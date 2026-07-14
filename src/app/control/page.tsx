@@ -45,15 +45,15 @@ const CATEGORY_META: Record<TariffCategory, { title: string; description: string
   },
   K4: {
     title: "K4",
-    description: "Не используется в этом разделе.",
+    description: "Дополнительная категория финконтроля.",
   },
   K5: {
     title: "K5",
-    description: "Не используется в этом разделе.",
+    description: "Дополнительная категория финконтроля.",
   },
   K6: {
     title: "K6",
-    description: "Не используется в этом разделе.",
+    description: "Дополнительная категория финконтроля.",
   },
 };
 
@@ -222,7 +222,7 @@ function formatSummary(rule: AntiFraudRule, draft: RuleDraft): string {
   const values = meta.fields
     .map((field) => `${field.label}: ${formatNumber(draft[field.key])}`)
     .join(" | ");
-  return `${rule.enabled ? "Включено" : "Выключено"}${values ? ` | ${values}` : ""}`;
+  return `${rule.enabled ? "Активно" : "Неактивно"}${values ? ` | ${values}` : ""}`;
 }
 
 function sortRules(rules: AntiFraudRule[]): AntiFraudRule[] {
@@ -347,7 +347,7 @@ export default function ControlPage() {
     <div className="flex-1 min-h-0 overflow-auto pb-8">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
         <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
-          <div className="grid gap-4 border-b border-soft px-5 py-5 lg:grid-cols-[1.1fr_auto] lg:items-end">
+          <div className="grid gap-4 border-b border-soft px-5 py-5">
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
@@ -357,7 +357,7 @@ export default function ControlPage() {
                   Категория: {selectedCategory}
                 </span>
               </div>
-              <div className="mt-3 text-2xl font-semibold">Категории K1, K2, K3</div>
+              <div className="mt-3 text-2xl font-semibold">Категории K1-K6</div>
               <div className="mt-2 max-w-3xl text-sm leading-6 text-muted">
                 Для каждой категории настраивается свой набор правил и числовых порогов.
                 Изменения сохраняются отдельно по выбранной категории.
@@ -365,22 +365,20 @@ export default function ControlPage() {
             </div>
 
             <div className="flex flex-wrap gap-2 rounded-2xl border border-soft bg-[var(--bg-soft)] p-2">
-              {(Object.keys(CATEGORY_META) as TariffCategory[])
-                .filter((category) => ["K1", "K2", "K3"].includes(category))
-                .map((category) => (
-                  <button
-                    key={category}
-                    type="button"
-                    onClick={() => setSelectedCategory(category)}
-                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                      selectedCategory === category
-                        ? "bg-[var(--primary)] text-white shadow-sm"
-                        : "text-muted hover:bg-white/70 hover:text-fg dark:hover:bg-white/5"
-                    }`}
-                  >
-                    {CATEGORY_META[category].title}
-                  </button>
-                ))}
+              {(Object.keys(CATEGORY_META) as TariffCategory[]).map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => setSelectedCategory(category)}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                    selectedCategory === category
+                      ? "bg-[var(--primary)] text-white shadow-sm"
+                      : "text-muted hover:bg-white/70 hover:text-fg dark:hover:bg-white/5"
+                  }`}
+                >
+                  {CATEGORY_META[category].title}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -390,7 +388,7 @@ export default function ControlPage() {
               <div className="mt-1 text-xl font-semibold">{rules.length}</div>
             </div>
             <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
-              <div className="text-xs uppercase tracking-wide text-muted">Включено</div>
+              <div className="text-xs uppercase tracking-wide text-muted">Активно</div>
               <div className="mt-1 text-xl font-semibold">{enabledCount}</div>
             </div>
             <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
@@ -441,7 +439,7 @@ export default function ControlPage() {
                 Загрузка правил...
               </div>
             ) : rules.length ? (
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid gap-4">
                 {rules.map((rule) => {
                   const draft = drafts[rule.key] || createDraft(rule);
                   const meta = RULE_META[rule.key];
@@ -467,7 +465,7 @@ export default function ControlPage() {
                                   : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                               }`}
                             >
-                              {draft.enabled ? "Используется" : "Выключено"}
+                              {draft.enabled ? "Активно" : "Неактивно"}
                             </span>
                             {dirty ? (
                               <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)]">
@@ -498,11 +496,11 @@ export default function ControlPage() {
                             }))
                           }
                         >
-                          {draft.enabled ? "Включено" : "Отключено"}
+                          {draft.enabled ? "Активно" : "Выкл."}
                         </button>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <div className="mt-4 grid grid-cols-1 gap-3">
                         {meta.fields.map((field) => (
                           <label key={field.key} className="block text-sm">
                             <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted">

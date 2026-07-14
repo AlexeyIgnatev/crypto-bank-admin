@@ -161,47 +161,51 @@ function asText(value: unknown): string {
   return String(value ?? "").trim();
 }
 
-function diffLabel(label: string, current: unknown, previous: unknown): string | null {
+function formatDelta(label: string, current: unknown, previous: unknown): string | null {
   const next = asText(current);
   const prev = asText(previous);
   if (!next && !prev) return null;
   if (next === prev) return null;
   if (!prev) return `${label}: ${next}`;
-  if (!next) return `${label}: ${prev} ? ?`;
-  return `${label}: ${prev} ? ${next}`;
+  if (!next) return `${label}: ${prev} →`;
+  return `${label}: ${prev} → ${next}`;
+}
+
+function diffLabel(label: string, current: unknown, previous: unknown): string | null {
+  return formatDelta(label, current, previous);
 }
 
 function buildBankCommissionChangeSummary(
   current: Record<string, any>,
   previous: Record<string, any> | null,
-): string {
+): string | null {
   const prev = previous || {};
   const parts = [
     diffLabel(
-      "?????",
+      "Режим распределения",
       current.bank_commission_distribution_mode ?? current.mode ?? current.distribution_mode,
       prev.bank_commission_distribution_mode ?? prev.mode ?? prev.distribution_mode,
     ),
-    diffLabel("?? %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
-    diffLabel("???? %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
-    diffLabel("???????? %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
-    diffLabel("?? fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
-    diffLabel("???? fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
-    diffLabel("???????? fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    diffLabel("ЦБ %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
+    diffLabel("Банк %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
+    diffLabel("Партнёры %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
+    diffLabel("ЦБ fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    diffLabel("Банк fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    diffLabel("Партнёры fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
     diffLabel(
-      "????? ??????????",
+      "Время зачисления",
       current.bank_fee_posting_time_bishkek,
       prev.bank_fee_posting_time_bishkek,
     ),
-    diffLabel("???? ??? ??", current.central_bank_som_account, prev.central_bank_som_account),
-    diffLabel("??????? SALAM ??", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
-    diffLabel("??????? USDT ??", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
-    diffLabel("???? ??? ?????", current.bank_som_account, prev.bank_som_account),
-    diffLabel("??????? SALAM ?????", current.bank_salam_wallet, prev.bank_salam_wallet),
-    diffLabel("??????? USDT ?????", current.bank_usdt_wallet, prev.bank_usdt_wallet),
-    diffLabel("????????", current.bank_commission_partners_json, prev.bank_commission_partners_json),
+    diffLabel("Счёт СОМ ЦБ", current.central_bank_som_account, prev.central_bank_som_account),
+    diffLabel("Кошелёк SALAM ЦБ", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
+    diffLabel("Кошелёк USDT ЦБ", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
+    diffLabel("Счёт СОМ банка", current.bank_som_account, prev.bank_som_account),
+    diffLabel("Кошелёк SALAM банка", current.bank_salam_wallet, prev.bank_salam_wallet),
+    diffLabel("Кошелёк USDT банка", current.bank_usdt_wallet, prev.bank_usdt_wallet),
+    diffLabel("Партнёры", current.bank_commission_partners_json, prev.bank_commission_partners_json),
   ].filter(Boolean);
-  return parts.length ? parts.join(" | ") : "??? ?????????";
+  return parts.length ? parts.join(" | ") : null;
 }
 
 function extractBankCommissionHistory(
@@ -236,7 +240,7 @@ function extractBankCommissionHistory(
       const changes = buildBankCommissionChangeSummary(body, previousBody);
       previousBody = body;
 
-      if (changes === "??? ?????????" && !comment) return null;
+      if (!changes) return null;
 
       return {
         createdAt: log.createdAt,
@@ -977,13 +981,13 @@ export default function BankCommissionsClient() {
       fileBaseName: "bank-commission-history",
       title: "Bank commission changes",
       columns: [
-        { header: "????", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
-        { header: "?????", getValue: (row: CommissionHistoryRow) => row.adminName },
+        { header: "Дата", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
+        { header: "Админ", getValue: (row: CommissionHistoryRow) => row.adminName },
         {
-          header: "?????????",
+          header: "Изменения",
           getValue: (row: CommissionHistoryRow) => row.changes,
         },
-        { header: "???????????", getValue: (row: CommissionHistoryRow) => row.comment },
+        { header: "Комментарий", getValue: (row: CommissionHistoryRow) => row.comment },
       ],
       rows: historyRows,
     });

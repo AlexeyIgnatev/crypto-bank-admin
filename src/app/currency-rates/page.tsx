@@ -80,37 +80,58 @@ function parseActionDetails(details: unknown): Record<string, any> | null {
   }
 }
 
+const CURRENCY_HISTORY_KEYS = ["usd_buy_rate", "usd_sell_rate"] as const;
+
+function normalizeHistoryValue(value: unknown): string {
+  return normalizeDecimalInput(String(value ?? ""));
+}
+
 function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
+  let previousValues: Record<string, string> | null = null;
+
   return logs
     .map((log) => {
       const details = parseActionDetails(log.details);
       const body = (details?.body && typeof details.body === "object"
         ? details.body
         : {}) as Record<string, any>;
+      const currentValues = Object.fromEntries(
+        CURRENCY_HISTORY_KEYS.map((key) => [key, normalizeHistoryValue(body[key])]),
+      ) as Record<(typeof CURRENCY_HISTORY_KEYS)[number], string>;
+      const hasRelevantChange = CURRENCY_HISTORY_KEYS.some((key) => {
+        const current = currentValues[key];
+        const previous = previousValues?.[key] ?? "";
+        return current !== previous;
+      });
+      if (!hasRelevantChange) return null;
+      previousValues = currentValues;
+
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
           : "",
       );
-      const reasonEntries = Object.entries(reasons).filter(([, value]) =>
-        String(value).trim(),
-      );
-      const comment = reasonEntries
-        .map(([key, value]) => `${key}: ${String(value).trim()}`)
-        .join(" | ");
-
-      const changes = [
-        body.usd_buy_rate != null
-          ? `Курс покупки USD: ${String(body.usd_buy_rate)}`
-          : null,
-        body.usd_sell_rate != null
-          ? `Курс продажи USD: ${String(body.usd_sell_rate)}`
-          : null,
-      ]
+      const comment = CURRENCY_HISTORY_KEYS.map((key) => {
+        const label =
+          key === "usd_buy_rate" ? "Курс покупки USD" : "Курс продажи USD";
+        const reason = reasons[`rate:${key}`];
+        return reason && String(reason).trim() ? `${label}: ${String(reason).trim()}` : "";
+      })
         .filter(Boolean)
         .join(" | ");
 
-      if (!changes && !comment) return null;
+      const changes = CURRENCY_HISTORY_KEYS.map((key) => {
+        const current = currentValues[key];
+        const previous = previousValues?.[key] ?? "";
+        if (current === previous) return null;
+        const label =
+          key === "usd_buy_rate" ? "Курс покупки USD" : "Курс продажи USD";
+        return `${label}: ${current}`;
+      })
+        .filter(Boolean)
+        .join(" | ");
+
+      if (!changes) return null;
 
       return {
         createdAt: log.createdAt,
