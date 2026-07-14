@@ -377,6 +377,29 @@ export const faqSections: FaqSection[] = [
       },
     ],
   },
+  {
+    id: "currency-rates",
+    title: "Курсы валют",
+    summary:
+      "Отдельный раздел для изменения курса покупки и продажи USD. Здесь важно указывать комментарий рядом с каждым полем до сохранения, чтобы изменения было легко проверить в истории.",
+    items: [
+      {
+        question: "Что меняется в этом разделе?",
+        answer:
+          "Здесь редактируются два значения: курс покупки USD и курс продажи USD. Эти значения влияют на отображение и расчёт валютных операций в админке и на связанных экранах.",
+      },
+      {
+        question: "Зачем нужен комментарий?",
+        answer:
+          "Комментарий объясняет причину изменения курса. Без комментария сохранение должно быть недоступно, чтобы всегда было понятно, почему значение изменилось.",
+      },
+      {
+        question: "Что делать после изменения?",
+        answer:
+          "Проверьте новые значения, добавьте комментарий к каждому изменённому полю и нажмите сохранение. После этого можно сверить историю изменений в журнале действий.",
+      },
+    ],
+  },
 ];
 
 export const faqSectionByPath: Record<string, string> = {
@@ -391,6 +414,7 @@ export const faqSectionByPath: Record<string, string> = {
   "/control": "control",
   "/control-cases": "control-cases",
   "/rates": "rates",
+  "/currency-rates": "currency-rates",
   "/logs": "logs",
   "/support": "support",
   "/push": "push",
@@ -409,4 +433,3 @@ export function getFaqLabelForPath(pathname: string) {
   const section = faqSections.find((item) => item.id === sectionId);
   return section?.title || "";
 }
-

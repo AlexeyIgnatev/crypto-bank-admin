@@ -929,7 +929,7 @@ export default function RatesPage() {
 
           <Card
             title="Тарифная сетка клиентов"
-            subtitle="Для курса и комиссий теперь обязательно указывается причина изменений, а минимум вывода USDT TRC20 вынесен отдельной строкой под внешними переводами."
+            subtitle="Для тарифов теперь обязательно указывается причина изменений, а минимум вывода USDT TRC20 вынесен отдельной строкой под внешними переводами."
           >
             <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="grid gap-1">
@@ -959,48 +959,6 @@ export default function RatesPage() {
                   <option value="NON_RESIDENT">Нерезидент</option>
                 </select>
               </label>
-            </div>
-
-            <div className="mb-6 grid gap-4 xl:grid-cols-[360px_1fr]">
-              <section className="rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
-                <div className="text-base font-semibold">Курсы валют</div>
-                <div className="mt-1 text-sm text-muted">
-                  Любое изменение требует комментарий рядом с полем перед сохранением.
-                </div>
-                <div className="mt-4 grid gap-4">
-                  <GridValue
-                    label="Курс покупки USD"
-                    value={settings.usd_buy_rate}
-                    onChange={(value) => updateSetting("usd_buy_rate", value)}
-                    comment={getRateReason("rate:usd_buy_rate")}
-                    onCommentChange={(value) =>
-                      updateReasonDraft("rate:usd_buy_rate", value)
-                    }
-                    placeholder="0"
-                    commentPlaceholder="Например: изменение курса по распоряжению финансового отдела"
-                  />
-                  <GridValue
-                    label="Курс продажи USD"
-                    value={settings.usd_sell_rate}
-                    onChange={(value) => updateSetting("usd_sell_rate", value)}
-                    comment={getRateReason("rate:usd_sell_rate")}
-                    onCommentChange={(value) =>
-                      updateReasonDraft("rate:usd_sell_rate", value)
-                    }
-                    placeholder="0"
-                    commentPlaceholder="Например: изменение курса продажи после пересчёта"
-                  />
-                </div>
-                <div className="mt-4 flex justify-end">
-                  <button
-                    className="btn btn-primary h-10 px-4"
-                    onClick={saveCurrencyRates}
-                    disabled={saving}
-                  >
-                    {saving ? "Сохранение..." : "Сохранить курсы"}
-                  </button>
-                </div>
-              </section>
             </div>
 
             <div className="mb-3 hidden xl:grid xl:grid-cols-[1.8fr_0.7fr_0.9fr] xl:gap-3 xl:px-1">

@@ -18,6 +18,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/control": "Фин. контроль",
   "/control-cases": "Кейсы фин контроля",
   "/rates": "Проценты",
+  "/currency-rates": "Курсы валют",
   "/logs": "Логи",
   "/support": "Техподдержка",
   "/push": "Push-уведомления",
@@ -72,4 +73,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

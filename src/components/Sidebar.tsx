@@ -15,6 +15,7 @@ const allItems = [
   { href: "/aml-rules", label: "AML правила", icon: "🧪" },
   { href: "/control", label: "Фин. контроль", icon: "📊" },
   { href: "/rates", label: "Проценты", icon: "%" },
+  { href: "/currency-rates", label: "Курсы валют", icon: "💱" },
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
   { href: "/logs", label: "Логи", icon: "🧾" },
   { href: "/faq", label: "FAQ", icon: "❓" },
@@ -47,6 +48,7 @@ function allowedByRole(role?: string): string[] {
     case "TREASURY":
       return [
         "/rates",
+        "/currency-rates",
         "/reserves",
         "/bank-commissions",
         "/aml-rules",
