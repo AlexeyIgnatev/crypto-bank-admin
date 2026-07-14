@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { upstreamFetch, type UpstreamResponse } from "@/lib/http";
 
 function withCookies(
@@ -14,8 +14,12 @@ function withCookies(
   return res;
 }
 
-export async function GET() {
-  const upstream = await upstreamFetch(`/antifraud/rules`, { method: "GET" });
+export async function GET(req: NextRequest) {
+  const category = req.nextUrl.searchParams.get("category");
+  const path = category
+    ? `/antifraud/rules?category=${encodeURIComponent(category)}`
+    : `/antifraud/rules`;
+  const upstream = await upstreamFetch(path, { method: "GET" });
   const json = await upstream.json().catch(() => null);
   return withCookies(upstream, json, upstream.status);
 }

@@ -802,6 +802,7 @@ function mapDisplayToAssetDisplayHelper(x?: string): string {
 
 export type AntiFraudRule = {
   id: number;
+  category: TariffCategory;
   key: string;
   enabled: boolean;
   period_days?: any;
@@ -819,20 +820,32 @@ export type AntiFraudRuleUpdate = Partial<{
   comment: string;
 }>;
 
-export async function getAntifraudRules(): Promise<AntiFraudRule[]> {
-  const res = await fetch(`/api/antifraud/rules`, { cache: "no-store" });
+export async function getAntifraudRules(
+  category: TariffCategory = "K1",
+): Promise<AntiFraudRule[]> {
+  const q = new URLSearchParams();
+  if (category) q.set("category", category);
+  const res = await fetch(`/api/antifraud/rules?${q.toString()}`, {
+    cache: "no-store",
+  });
   if (!res.ok) throw new Error("Failed to load antifraud rules");
   return res.json();
 }
 export async function updateAntifraudRule(
   key: string,
   payload: AntiFraudRuleUpdate,
+  category: TariffCategory = "K1",
 ): Promise<AntiFraudRule> {
-  const res = await fetch(`/api/antifraud/rules/${encodeURIComponent(key)}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const q = new URLSearchParams();
+  if (category) q.set("category", category);
+  const res = await fetch(
+    `/api/antifraud/rules/${encodeURIComponent(key)}?${q.toString()}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
   if (!res.ok) throw new Error("Failed to update antifraud rule");
   return res.json();
 }

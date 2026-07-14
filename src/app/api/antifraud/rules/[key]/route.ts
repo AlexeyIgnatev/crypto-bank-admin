@@ -20,8 +20,12 @@ export async function PUT(
 ) {
   const body = await req.json().catch(() => ({}));
   const { key } = await ctx.params;
+  const category = req.nextUrl.searchParams.get("category");
+  const path = category
+    ? `/antifraud/rules/${encodeURIComponent(key)}?category=${encodeURIComponent(category)}`
+    : `/antifraud/rules/${encodeURIComponent(key)}`;
   const upstream = await upstreamFetch(
-    `/antifraud/rules/${encodeURIComponent(key)}`,
+    path,
     { method: "PUT", body: JSON.stringify(body) },
   );
   const json = await upstream.json().catch(() => null);

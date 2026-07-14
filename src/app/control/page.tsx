@@ -1,790 +1,617 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
-
-type Category = "Обязательный контроль" | "Поведение клиента";
-
-type RuleBase = { id: string; category: Category; condition: string };
-
-type RuleParams =
-  | { type: "fiatOpsThreshold"; amountSom: number }
-  | { type: "singleDeal"; amountSom: number }
-  | { type: "frequentOps"; count: number; days: number; perOpMinSom: number }
-  | {
-      type: "withdrawAfterLargeIncome";
-      percent: number;
-      baseAmountSom: number;
-      days: number;
-    }
-  | { type: "splitFiatAmounts"; amountSom: number; days: number }
-  | {
-      type: "thirdPartyDeposits";
-      count: number;
-      days: number;
-      totalSom: number;
-    }
-  | { type: "accountActivityAfterInactivity"; months: number }
-  | { type: "manyTransfersFromDifferentPersons"; persons: number };
-
 import {
   getAntifraudRules,
   updateAntifraudRule,
   type AntiFraudRule,
+  type AntiFraudRuleUpdate,
 } from "@/lib/api";
+import type { TariffCategory } from "@/types";
 
-function ApiRulesManager() {
-  const [rules, setRules] = useState<AntiFraudRule[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState<string | null>(null);
+type RuleField = "period_days" | "threshold_som" | "min_count" | "percent_threshold";
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const list = await getAntifraudRules();
-        setRules(list);
-      } catch (e) {
-        setError("Не удалось загрузить правила");
-      }
-    })();
-  }, []);
+type RuleDraft = {
+  enabled: boolean;
+  period_days: string;
+  threshold_som: string;
+  min_count: string;
+  percent_threshold: string;
+};
 
-  async function toggleEnabled(rule: AntiFraudRule) {
-    setSaving(rule.key);
-    try {
-      const next = await updateAntifraudRule(rule.key, {
-        enabled: !rule.enabled,
-      });
-      setRules((prev) =>
-        (prev || []).map((r) => (r.key === rule.key ? next : r)),
-      );
-    } catch {
-      setError("Не удалось обновить правило");
-    } finally {
-      setSaving(null);
-    }
-  }
+type RuleMeta = {
+  title: string;
+  description: string;
+  fields: Array<{
+    key: RuleField;
+    label: string;
+    kind: "number" | "percent";
+  }>;
+};
 
-  if (error) return <div className="p-3 text-sm text-red-500">{error}</div>;
-  if (!rules)
-    return <div className="p-3 text-sm text-muted">Загрузка правил…</div>;
+const CATEGORY_META: Record<TariffCategory, { title: string; description: string }> = {
+  K1: {
+    title: "K1",
+    description: "Базовая категория финконтроля.",
+  },
+  K2: {
+    title: "K2",
+    description: "Усиленный контроль для отдельных сценариев.",
+  },
+  K3: {
+    title: "K3",
+    description: "Самая строгая категория контроля.",
+  },
+  K4: {
+    title: "K4",
+    description: "Не используется в этом разделе.",
+  },
+  K5: {
+    title: "K5",
+    description: "Не используется в этом разделе.",
+  },
+  K6: {
+    title: "K6",
+    description: "Не используется в этом разделе.",
+  },
+};
 
-  return (
-    <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
-      <header className="p-4 border-b border-soft flex items-center justify-between">
-        <div className="text-lg font-semibold">Правила антифрода (API)</div>
-      </header>
-      <div className="p-2 divide-y divide-soft">
-        {rules.map((r) => (
-          <div
-            key={r.key}
-            className="flex items-center justify-between gap-3 p-2"
-          >
-            <div className="min-w-0">
-              <div className="text-sm font-medium truncate">{r.key}</div>
-              <div className="text-xs text-muted truncate">
-                обновлено: {new Date(r.updatedAt).toLocaleString()}
-              </div>
-            </div>
-            <button
-              className="btn h-8"
-              disabled={saving === r.key}
-              onClick={() => toggleEnabled(r)}
-            >
-              {r.enabled ? "Отключить" : "Включить"}
-            </button>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
+const RULE_META: Record<string, RuleMeta> = {
+  FIAT_ANY_GE_1M: {
+    title: "Крупная операция с фиатом",
+    description: "Срабатывает, если операция в сомах превышает заданный порог.",
+    fields: [{ key: "threshold_som", label: "Порог, SOM", kind: "number" }],
+  },
+  ONE_TIME_GE_8M: {
+    title: "Разовая крупная сделка",
+    description: "Контроль одной большой операции.",
+    fields: [{ key: "threshold_som", label: "Сумма сделки, SOM", kind: "number" }],
+  },
+  FREQUENT_OPS_3_30D_EACH_GE_100K: {
+    title: "Частые операции",
+    description: "Считывает частые операции за период и минимальную сумму каждой.",
+    fields: [
+      { key: "min_count", label: "Количество операций", kind: "number" },
+      { key: "period_days", label: "Период, дней", kind: "number" },
+      {
+        key: "threshold_som",
+        label: "Минимум одной операции, SOM",
+        kind: "number",
+      },
+    ],
+  },
+  WITHDRAW_AFTER_LARGE_INFLOW: {
+    title: "Вывод после крупного поступления",
+    description: "Срабатывает при выводе после недавнего крупного поступления.",
+    fields: [
+      { key: "percent_threshold", label: "Процент от поступления, %", kind: "percent" },
+      { key: "threshold_som", label: "Порог поступления, SOM", kind: "number" },
+      { key: "period_days", label: "Период, дней", kind: "number" },
+    ],
+  },
+  SPLITTING_TOTAL_14D_GE_1M: {
+    title: "Дробление суммы",
+    description: "Слежение за суммарным дроблением операций в рамках периода.",
+    fields: [
+      { key: "threshold_som", label: "Сумма, SOM", kind: "number" },
+      { key: "period_days", label: "Период, дней", kind: "number" },
+    ],
+  },
+  THIRD_PARTY_DEPOSITS_3_30D_TOTAL_GE_1M: {
+    title: "Внесения третьими лицами",
+    description: "Контроль пополнений от разных людей на один счет.",
+    fields: [
+      { key: "min_count", label: "Количество лиц", kind: "number" },
+      { key: "period_days", label: "Период, дней", kind: "number" },
+      { key: "threshold_som", label: "Общая сумма, SOM", kind: "number" },
+    ],
+  },
+  AFTER_INACTIVITY_6M: {
+    title: "Активность после паузы",
+    description: "Срабатывает после длительного простоя счета.",
+    fields: [{ key: "period_days", label: "Пауза, дней", kind: "number" }],
+  },
+  MANY_SENDERS_TO_ONE_10_PER_MONTH: {
+    title: "Много отправителей на один счет",
+    description: "Считает количество разных отправителей за период.",
+    fields: [
+      { key: "min_count", label: "Количество физлиц", kind: "number" },
+      { key: "period_days", label: "Период, дней", kind: "number" },
+    ],
+  },
+};
+
+const RULE_ORDER = [
+  "FIAT_ANY_GE_1M",
+  "ONE_TIME_GE_8M",
+  "FREQUENT_OPS_3_30D_EACH_GE_100K",
+  "WITHDRAW_AFTER_LARGE_INFLOW",
+  "SPLITTING_TOTAL_14D_GE_1M",
+  "THIRD_PARTY_DEPOSITS_3_30D_TOTAL_GE_1M",
+  "AFTER_INACTIVITY_6M",
+  "MANY_SENDERS_TO_ONE_10_PER_MONTH",
+] as const;
+
+function toDraftValue(value: unknown): string {
+  if (value == null || value === "") return "";
+  return String(value);
 }
 
-type Rule = RuleBase & { enabled: boolean; params: RuleParams };
+function createDraft(rule: AntiFraudRule): RuleDraft {
+  return {
+    enabled: Boolean(rule.enabled),
+    period_days: toDraftValue(rule.period_days),
+    threshold_som: toDraftValue(rule.threshold_som),
+    min_count: toDraftValue(rule.min_count),
+    percent_threshold: toDraftValue(rule.percent_threshold),
+  };
+}
 
-type EditState = { open: boolean; rule: Rule | null };
+function parseNumber(value: string): number | undefined {
+  const normalized = value.trim().replace(/\s+/g, "").replace(",", ".");
+  if (!normalized) return undefined;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function sameNumber(a: unknown, b: string): boolean {
+  const left = parseNumber(toDraftValue(a));
+  const right = parseNumber(b);
+  if (left == null && right == null) return true;
+  return left === right;
+}
+
+function buildUpdatePayload(
+  rule: AntiFraudRule,
+  draft: RuleDraft,
+): AntiFraudRuleUpdate {
+  const payload: AntiFraudRuleUpdate = {};
+  if (Boolean(rule.enabled) !== draft.enabled) payload.enabled = draft.enabled;
+  if (!sameNumber(rule.period_days, draft.period_days)) {
+    const num = parseNumber(draft.period_days);
+    if (num != null) payload.period_days = num.toString();
+  }
+  if (!sameNumber(rule.threshold_som, draft.threshold_som)) {
+    const num = parseNumber(draft.threshold_som);
+    if (num != null) payload.threshold_som = num.toString();
+  }
+  if (!sameNumber(rule.min_count, draft.min_count)) {
+    const num = parseNumber(draft.min_count);
+    if (num != null) payload.min_count = num.toString();
+  }
+  if (!sameNumber(rule.percent_threshold, draft.percent_threshold)) {
+    const num = parseNumber(draft.percent_threshold);
+    if (num != null) payload.percent_threshold = num.toString();
+  }
+  return payload;
+}
+
+function isRuleDirty(rule: AntiFraudRule, draft: RuleDraft): boolean {
+  if (Boolean(rule.enabled) !== draft.enabled) return true;
+  if (!sameNumber(rule.period_days, draft.period_days)) return true;
+  if (!sameNumber(rule.threshold_som, draft.threshold_som)) return true;
+  if (!sameNumber(rule.min_count, draft.min_count)) return true;
+  if (!sameNumber(rule.percent_threshold, draft.percent_threshold)) return true;
+  return false;
+}
+
+function validateDraft(rule: AntiFraudRule, draft: RuleDraft): string | null {
+  const meta = RULE_META[rule.key];
+  for (const field of meta.fields) {
+    const value = draft[field.key];
+    if (!value.trim()) return `Заполните поле "${field.label}"`;
+    const num = parseNumber(value);
+    if (num == null) return `Поле "${field.label}" должно быть числом`;
+    if (num < 0) return `Поле "${field.label}" должно быть не меньше 0`;
+    if (field.kind === "percent" && (num < 0 || num > 100)) {
+      return `Поле "${field.label}" должно быть от 0 до 100`;
+    }
+  }
+  return null;
+}
+
+function formatNumber(value: unknown): string {
+  const n = parseNumber(toDraftValue(value));
+  if (n == null) return "—";
+  return n.toLocaleString("ru-RU", { maximumFractionDigits: 18 });
+}
+
+function formatSummary(rule: AntiFraudRule, draft: RuleDraft): string {
+  const meta = RULE_META[rule.key];
+  const values = meta.fields
+    .map((field) => `${field.label}: ${formatNumber(draft[field.key])}`)
+    .join(" | ");
+  return `${rule.enabled ? "Включено" : "Выключено"}${values ? ` | ${values}` : ""}`;
+}
+
+function sortRules(rules: AntiFraudRule[]): AntiFraudRule[] {
+  const order = new Map(RULE_ORDER.map((key, index) => [key, index]));
+  return [...rules].sort((a, b) => {
+    const ai = order.get(a.key) ?? Number.MAX_SAFE_INTEGER;
+    const bi = order.get(b.key) ?? Number.MAX_SAFE_INTEGER;
+    return ai - bi;
+  });
+}
 
 export default function ControlPage() {
-  const [rules, setRules] = useState<Rule[]>(() => initialRules());
+  const [selectedCategory, setSelectedCategory] = useState<TariffCategory>("K1");
+  const [rules, setRules] = useState<AntiFraudRule[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, RuleDraft>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    setError(null);
+    setSaveMessage(null);
     (async () => {
       try {
-        const list = await getAntifraudRules();
-        setRules((prev) => applyFromBackend(list, prev));
-      } catch {}
+        const list = sortRules(await getAntifraudRules(selectedCategory));
+        if (!alive) return;
+        setRules(list);
+        const nextDrafts: Record<string, RuleDraft> = {};
+        for (const rule of list) nextDrafts[rule.key] = createDraft(rule);
+        setDrafts(nextDrafts);
+      } catch (e) {
+        if (!alive) return;
+        setError(
+          e instanceof Error ? e.message : "Не удалось загрузить правила контроля",
+        );
+        setRules([]);
+        setDrafts({});
+      } finally {
+        if (alive) setLoading(false);
+      }
     })();
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [selectedCategory]);
 
-  const [edit, setEdit] = useState<EditState>({ open: false, rule: null });
-  const [selectedCategory, setSelectedCategory] =
-    useState<Category>("Обязательный контроль");
-
-  const groups = useMemo(
-    () => ({
-      required: rules.filter((r) => r.category === "Обязательный контроль"),
-      behavior: rules.filter((r) => r.category === "Поведение клиента"),
-    }),
-    [rules],
+  const dirtyKeys = useMemo(
+    () =>
+      rules
+        .filter((rule) => {
+          const draft = drafts[rule.key];
+          return draft ? isRuleDirty(rule, draft) : false;
+        })
+        .map((rule) => rule.key),
+    [drafts, rules],
   );
 
-  const visibleRules =
-    selectedCategory === "Обязательный контроль"
-      ? groups.required
-      : groups.behavior;
+  const dirtyRules = useMemo(
+    () => rules.filter((rule) => dirtyKeys.includes(rule.key)),
+    [dirtyKeys, rules],
+  );
 
-  const openEdit = (rule: Rule) => setEdit({ open: true, rule: clone(rule) });
-  const closeEdit = () => setEdit({ open: false, rule: null });
+  const enabledCount = useMemo(
+    () => rules.filter((rule) => drafts[rule.key]?.enabled ?? rule.enabled).length,
+    [drafts, rules],
+  );
 
-  function isEnabled(rule: Rule) {
-    return rule.enabled;
-  }
+  const hasChanges = dirtyRules.length > 0;
 
-  async function toggleRule(rule: Rule) {
-    setRules((prev) =>
-      prev.map((item) =>
-        item.id === rule.id ? { ...item, enabled: !item.enabled } : item,
-      ),
-    );
-    try {
-      const key = KEY_MAP[rule.id];
-      const next = await updateAntifraudRule(key, {
-        enabled: !rule.enabled,
-      });
-      setRules((prev) =>
-        prev.map((item) =>
-          item.id === rule.id
-            ? {
-                ...item,
-                enabled: next.enabled,
-                period_days: next.period_days,
-                threshold_som: next.threshold_som,
-                min_count: next.min_count,
-                percent_threshold: next.percent_threshold,
-              }
-            : item,
-        ),
-      );
-    } catch {
-      setRules((prev) =>
-        prev.map((item) =>
-          item.id === rule.id ? { ...item, enabled: rule.enabled } : item,
-        ),
-      );
+  async function saveChanges(comment: string) {
+    if (!hasChanges) {
+      setSaveMessage("Изменений нет");
+      return;
     }
-  }
-
-  const KEY_MAP: Record<string, string> = {
-    "req-1": "FIAT_ANY_GE_1M",
-    "req-2": "ONE_TIME_GE_8M",
-    "beh-1": "FREQUENT_OPS_3_30D_EACH_GE_100K",
-    "beh-2": "WITHDRAW_AFTER_LARGE_INFLOW",
-    "beh-3": "SPLITTING_TOTAL_14D_GE_1M",
-    "beh-4": "THIRD_PARTY_DEPOSITS_3_30D_TOTAL_GE_1M",
-    "beh-5": "AFTER_INACTIVITY_6M",
-    "beh-6": "MANY_SENDERS_TO_ONE_10_PER_MONTH",
-  };
-  function toDto(rule: Rule): any {
-    const t = rule.params;
-    switch (t.type) {
-      case "fiatOpsThreshold":
-        return { threshold_som: String(t.amountSom) };
-      case "singleDeal":
-        return { threshold_som: String(t.amountSom) };
-      case "frequentOps":
-        return {
-          min_count: t.count,
-          period_days: t.days,
-          threshold_som: String(t.perOpMinSom),
-        };
-      case "withdrawAfterLargeIncome":
-        return {
-          percent_threshold: String(t.percent),
-          threshold_som: String(t.baseAmountSom),
-          period_days: t.days,
-        };
-      case "splitFiatAmounts":
-        return { threshold_som: String(t.amountSom), period_days: t.days };
-      case "thirdPartyDeposits":
-        return {
-          min_count: t.count,
-          period_days: t.days,
-          threshold_som: String(t.totalSom),
-        };
-      case "accountActivityAfterInactivity":
-        return { period_days: Math.max(1, Math.trunc(t.months * 30)) };
-      case "manyTransfersFromDifferentPersons":
-        return { min_count: t.persons, period_days: 30 };
-    }
-  }
-  function applyFromBackend(list: AntiFraudRule[], prev: Rule[]): Rule[] {
-    const byKey = Object.fromEntries(list.map((r) => [r.key, r] as const));
-    return prev.map((r) => {
-      const key = KEY_MAP[r.id];
-      const br = byKey[key];
-      if (!br) return r;
-      const p = r.params as any;
-      switch (p.type) {
-        case "fiatOpsThreshold":
-        case "singleDeal":
-          p.amountSom =
-            Number((br as any).threshold_som ?? p.amountSom) || p.amountSom;
-          break;
-        case "frequentOps":
-          p.count = Number((br as any).min_count ?? p.count) || p.count;
-          p.days = Number((br as any).period_days ?? p.days) || p.days;
-          p.perOpMinSom =
-            Number((br as any).threshold_som ?? p.perOpMinSom) || p.perOpMinSom;
-          break;
-        case "withdrawAfterLargeIncome":
-          p.percent =
-            Number((br as any).percent_threshold ?? p.percent) || p.percent;
-          p.baseAmountSom =
-            Number((br as any).threshold_som ?? p.baseAmountSom) ||
-            p.baseAmountSom;
-          p.days = Number((br as any).period_days ?? p.days) || p.days;
-          break;
-        case "splitFiatAmounts":
-          p.amountSom =
-            Number((br as any).threshold_som ?? p.amountSom) || p.amountSom;
-          p.days = Number((br as any).period_days ?? p.days) || p.days;
-          break;
-        case "thirdPartyDeposits":
-          p.count = Number((br as any).min_count ?? p.count) || p.count;
-          p.days = Number((br as any).period_days ?? p.days) || p.days;
-          p.totalSom =
-            Number((br as any).threshold_som ?? p.totalSom) || p.totalSom;
-          break;
-        case "accountActivityAfterInactivity":
-          p.months = Math.max(
-            1,
-            Math.round(Number((br as any).period_days ?? p.months * 30) / 30),
-          );
-          break;
-        case "manyTransfersFromDifferentPersons":
-          p.persons = Number((br as any).min_count ?? p.persons) || p.persons;
-          break;
+    for (const rule of dirtyRules) {
+      const draft = drafts[rule.key];
+      if (!draft) continue;
+      const validationError = validateDraft(rule, draft);
+      if (validationError) {
+        setError(`Проверьте правило "${RULE_META[rule.key].title}": ${validationError}`);
+        return;
       }
-      return {
-        ...r,
-        enabled: br?.enabled ?? r.enabled,
-        params: { ...p },
-      } as Rule;
-    });
-  }
+    }
 
-  const [saving, setSaving] = useState(false);
-  const saveEdit = async () => {
-    if (!edit.rule) return;
     setSaving(true);
+    setError(null);
+    setSaveMessage(null);
     try {
-      const key = KEY_MAP[edit.rule.id];
-      const dto = toDto(edit.rule);
-      await updateAntifraudRule(key, dto);
-      setRules((prev) =>
-        prev.map((r) => (r.id === edit.rule!.id ? edit.rule! : r)),
+      const nonEmptyComment = comment.trim();
+      for (const rule of dirtyRules) {
+        const draft = drafts[rule.key];
+        if (!draft) continue;
+        const payload = buildUpdatePayload(rule, draft);
+        if (!Object.keys(payload).length) continue;
+        await updateAntifraudRule(rule.key, { ...payload, comment: nonEmptyComment }, selectedCategory);
+      }
+      const refreshed = sortRules(await getAntifraudRules(selectedCategory));
+      setRules(refreshed);
+      const nextDrafts: Record<string, RuleDraft> = {};
+      for (const rule of refreshed) nextDrafts[rule.key] = createDraft(rule);
+      setDrafts(nextDrafts);
+      setSaveMessage("Правила сохранены");
+      setCommentOpen(false);
+      setCommentDraft("");
+      setCommentError(null);
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Не удалось сохранить правила контроля",
       );
     } finally {
       setSaving(false);
-      closeEdit();
     }
-  };
+  }
 
   return (
-    <div className="flex-1 min-h-0 flex">
-      <div className="m-auto w-full max-w-5xl">
-        <div className="rounded-xl border border-soft shadow-sm overflow-hidden card">
-          <div className="border-b border-soft p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-lg font-semibold">Фин контроль</div>
-                <div className="mt-1 text-sm text-muted">
-                  Выберите категорию и включите нужные правила галочками.
-                </div>
+    <div className="flex-1 min-h-0 overflow-auto pb-8">
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
+          <div className="grid gap-4 border-b border-soft px-5 py-5 lg:grid-cols-[1.1fr_auto] lg:items-end">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+                  Фин контроль
+                </span>
+                <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
+                  Категория: {selectedCategory}
+                </span>
               </div>
-              <div className="flex rounded-full border border-soft bg-[var(--bg-soft)] p-1">
-                {(["Обязательный контроль", "Поведение клиента"] as Category[]).map(
-                  (category) => (
-                    <button
-                      key={category}
-                      className={`rounded-full px-4 py-2 text-sm transition ${
-                        selectedCategory === category
-                          ? "bg-[var(--primary)] text-white"
-                          : "text-muted hover:text-fg"
-                      }`}
-                      onClick={() => setSelectedCategory(category)}
-                    >
-                      {category}
-                    </button>
-                  ),
-                )}
+              <div className="mt-3 text-2xl font-semibold">Категории K1, K2, K3</div>
+              <div className="mt-2 max-w-3xl text-sm leading-6 text-muted">
+                Для каждой категории настраивается свой набор правил и числовых порогов.
+                Изменения сохраняются отдельно по выбранной категории.
               </div>
             </div>
-          </div>
-          <div className="p-4 space-y-3">
-            {visibleRules.map((rule) => (
-              <div
-                key={rule.id}
-                className="flex flex-col gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 lg:flex-row lg:items-center lg:justify-between"
-              >
-                <label className="flex min-w-0 items-start gap-3">
-                  <input
-                    type="checkbox"
-                    className="mt-1 h-4 w-4"
-                    checked={isEnabled(rule)}
-                    onChange={() => toggleRule(rule)}
-                  />
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold">{rule.condition}</div>
-                    <div className="mt-1 text-sm text-muted">
-                      {formatSummary(rule.params)}
-                    </div>
-                  </div>
-                </label>
-                <div className="flex gap-2 lg:shrink-0">
-                  <button className="btn h-8" onClick={() => openEdit(rule)}>
-                    Изменить
+
+            <div className="flex flex-wrap gap-2 rounded-2xl border border-soft bg-[var(--bg-soft)] p-2">
+              {(Object.keys(CATEGORY_META) as TariffCategory[])
+                .filter((category) => ["K1", "K2", "K3"].includes(category))
+                .map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+                      selectedCategory === category
+                        ? "bg-[var(--primary)] text-white shadow-sm"
+                        : "text-muted hover:bg-white/70 hover:text-fg dark:hover:bg-white/5"
+                    }`}
+                  >
+                    {CATEGORY_META[category].title}
                   </button>
+                ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 border-b border-soft px-5 py-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-muted">Всего правил</div>
+              <div className="mt-1 text-xl font-semibold">{rules.length}</div>
+            </div>
+            <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-muted">Включено</div>
+              <div className="mt-1 text-xl font-semibold">{enabledCount}</div>
+            </div>
+            <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3">
+              <div className="text-xs uppercase tracking-wide text-muted">Изменено</div>
+              <div className="mt-1 text-xl font-semibold">{dirtyRules.length}</div>
+            </div>
+          </div>
+
+          {(error || saveMessage) && (
+            <div className="border-b border-soft px-5 py-3">
+              {error ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+                  {error}
                 </div>
+              ) : null}
+              {!error && saveMessage ? (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
+                  {saveMessage}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </section>
+
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
+            <div>
+              <div className="text-lg font-semibold">Правила категории {selectedCategory}</div>
+              <div className="text-sm text-muted">{CATEGORY_META[selectedCategory].description}</div>
+            </div>
+            <button
+              type="button"
+              className={`btn btn-primary h-10 ${!hasChanges || saving ? "opacity-60" : ""}`}
+              disabled={!hasChanges || saving}
+              onClick={() => {
+                setCommentError(null);
+                if (!hasChanges) return;
+                setCommentOpen(true);
+              }}
+            >
+              {saving ? "Сохранение..." : "Сохранить изменения"}
+            </button>
+          </div>
+
+          <div className="p-4">
+            {loading ? (
+              <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-6 text-sm text-muted">
+                Загрузка правил...
               </div>
-            ))}
+            ) : rules.length ? (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {rules.map((rule) => {
+                  const draft = drafts[rule.key] || createDraft(rule);
+                  const meta = RULE_META[rule.key];
+                  const dirty = dirtyKeys.includes(rule.key);
+                  const validationError = validateDraft(rule, draft);
+                  return (
+                    <article
+                      key={rule.key}
+                      className={`rounded-2xl border p-4 shadow-sm transition ${
+                        dirty
+                          ? "border-[color-mix(in_srgb,var(--primary)_35%,var(--border-color))] bg-[color-mix(in_srgb,var(--primary)_4%,var(--card))]"
+                          : "border-soft bg-[var(--card)]"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="text-base font-semibold">{meta.title}</h3>
+                            <span
+                              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                                draft.enabled
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+                                  : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                              }`}
+                            >
+                              {draft.enabled ? "Используется" : "Выключено"}
+                            </span>
+                            {dirty ? (
+                              <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)]">
+                                Изменено
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 text-sm leading-6 text-muted">{meta.description}</div>
+                          <div className="mt-2 text-xs leading-5 text-muted">
+                            {formatSummary(rule, draft)}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className={`inline-flex h-9 items-center rounded-full border px-4 text-sm font-semibold transition-colors ${
+                            draft.enabled
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200"
+                              : "border-soft bg-[var(--bg-soft)] text-muted hover:bg-[color-mix(in_srgb,var(--primary)_5%,var(--bg-soft))]"
+                          }`}
+                          onClick={() =>
+                            setDrafts((prev) => ({
+                              ...prev,
+                              [rule.key]: {
+                                ...draft,
+                                enabled: !draft.enabled,
+                              },
+                            }))
+                          }
+                        >
+                          {draft.enabled ? "Включено" : "Отключено"}
+                        </button>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                        {meta.fields.map((field) => (
+                          <label key={field.key} className="block text-sm">
+                            <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted">
+                              {field.label}
+                            </span>
+                            <input
+                              className="ui-input w-full"
+                              type="number"
+                              inputMode="decimal"
+                              step={field.kind === "percent" ? "0.1" : "1"}
+                              value={draft[field.key]}
+                              onChange={(e) =>
+                                setDrafts((prev) => ({
+                                  ...prev,
+                                  [rule.key]: {
+                                    ...draft,
+                                    [field.key]: e.target.value,
+                                  },
+                                }))
+                              }
+                            />
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted">
+                        <span>Ключ: {rule.key}</span>
+                        <span>Обновлено: {new Date(rule.updatedAt).toLocaleString("ru-RU")}</span>
+                      </div>
+
+                      {validationError ? (
+                        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+                          {validationError}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-6 text-sm text-muted">
+                Нет правил для этой категории.
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      <Modal
+        open={commentOpen}
+        onClose={() => {
+          setCommentOpen(false);
+          setCommentError(null);
+          setCommentDraft("");
+        }}
+        title="Комментарий к изменению"
+      >
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
+            Комментарий обязателен. Он попадёт в историю изменений и в audit-log.
+          </div>
+
+          <label className="block text-sm">
+            <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
+              Причина изменения
+            </span>
+            <textarea
+              className="ui-input min-h-32 w-full resize-y leading-6"
+              value={commentDraft}
+              onChange={(e) => {
+                setCommentDraft(e.target.value);
+                if (commentError) setCommentError(null);
+              }}
+              placeholder="Например: обновление параметров финконтроля по распоряжению комплаенса"
+            />
+          </label>
+
+          {commentError ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+              {commentError}
+            </div>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className="btn h-10"
+              onClick={() => {
+                setCommentOpen(false);
+                setCommentError(null);
+                setCommentDraft("");
+              }}
+            >
+              Отмена
+            </button>
+            <button
+              className="btn btn-primary h-10"
+              onClick={async () => {
+                if (!commentDraft.trim()) {
+                  setCommentError("Укажите комментарий");
+                  return;
+                }
+                await saveChanges(commentDraft);
+              }}
+            >
+              Сохранить
+            </button>
           </div>
         </div>
-      </div>
-
-      <EditModal
-        open={edit.open}
-        rule={edit.rule}
-        onChange={setEdit}
-        onClose={closeEdit}
-        onSave={saveEdit}
-        saving={saving}
-      />
+      </Modal>
     </div>
   );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="card rounded-xl border border-soft shadow-sm overflow-hidden">
-      <header className="p-4 border-b border-soft flex items-center justify-between">
-        <div className="text-lg font-semibold">{title}</div>
-      </header>
-      <div className="p-4 space-y-3">{children}</div>
-    </section>
-  );
-}
-
-function RuleRow({
-  label,
-  value,
-  onEdit,
-}: {
-  label: string;
-  value: string;
-  onEdit: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-soft bg-[var(--card)]">
-      <div className="min-w-0">
-        <div className="text-sm font-medium truncate" title={label}>
-          {label}
-        </div>
-        <div className="text-muted text-sm truncate" title={value}>
-          {value}
-        </div>
-      </div>
-      <button className="btn btn-edit whitespace-nowrap" onClick={onEdit}>
-        ✎ Изменить
-      </button>
-    </div>
-  );
-}
-
-function EditModal({
-  open,
-  rule,
-  onChange,
-  onClose,
-  onSave,
-  saving,
-}: {
-  open: boolean;
-  rule: Rule | null;
-  onChange: (s: EditState) => void;
-  onClose: () => void;
-  onSave: () => void;
-  saving: boolean;
-}) {
-  if (!open || !rule) return null;
-
-  const setParams = (patch: Partial<RuleParams>) => {
-    onChange({
-      open: true,
-      rule: {
-        ...rule,
-        params: { ...(rule.params as any), ...patch } as RuleParams,
-      },
-    });
-  };
-
-  const err = validate(rule.params);
-  const disabled = !!err;
-
-  return (
-    <Modal open={open} onClose={onClose} title={`Изменить: ${rule.condition}`}>
-      <div className="space-y-3">
-        {rule.params.type === "fiatOpsThreshold" && (
-          <NumberField
-            label="Сумма, сом"
-            value={rule.params.amountSom}
-            onChange={(v) => setParams({ amountSom: v })}
-            min={0}
-            step="1000"
-          />
-        )}
-        {rule.params.type === "singleDeal" && (
-          <NumberField
-            label="Сумма сделки, сом"
-            value={rule.params.amountSom}
-            onChange={(v) => setParams({ amountSom: v })}
-            min={0}
-            step="1000"
-          />
-        )}
-        {rule.params.type === "frequentOps" && (
-          <>
-            <IntegerField
-              label="Кол-во операций"
-              value={rule.params.count}
-              onChange={(v) => setParams({ count: v })}
-              min={1}
-            />
-            <IntegerField
-              label="Период, дней"
-              value={rule.params.days}
-              onChange={(v) => setParams({ days: v })}
-              min={1}
-              max={365}
-            />
-            <NumberField
-              label="Мин. сумма одной операции, сом"
-              value={rule.params.perOpMinSom}
-              onChange={(v) => setParams({ perOpMinSom: v })}
-              min={0}
-              step="1000"
-            />
-          </>
-        )}
-        {rule.params.type === "withdrawAfterLargeIncome" && (
-          <>
-            <NumberField
-              label="Процент от крупного поступления, %"
-              value={rule.params.percent}
-              onChange={(v) => setParams({ percent: v })}
-              min={0}
-              max={100}
-              step="0.1"
-            />
-            <NumberField
-              label="Крупное поступление от, сом"
-              value={rule.params.baseAmountSom}
-              onChange={(v) => setParams({ baseAmountSom: v })}
-              min={0}
-              step="1000"
-            />
-            <IntegerField
-              label="Период после поступления, дней"
-              value={rule.params.days}
-              onChange={(v) => setParams({ days: v })}
-              min={1}
-              max={365}
-            />
-          </>
-        )}
-        {rule.params.type === "splitFiatAmounts" && (
-          <>
-            <NumberField
-              label="Сумма изменений, сом"
-              value={rule.params.amountSom}
-              onChange={(v) => setParams({ amountSom: v })}
-              min={0}
-              step="1000"
-            />
-            <IntegerField
-              label="Период, дней"
-              value={rule.params.days}
-              onChange={(v) => setParams({ days: v })}
-              min={1}
-              max={365}
-            />
-          </>
-        )}
-        {rule.params.type === "thirdPartyDeposits" && (
-          <>
-            <IntegerField
-              label="Кол-во разных лиц"
-              value={rule.params.count}
-              onChange={(v) => setParams({ count: v })}
-              min={1}
-            />
-            <IntegerField
-              label="Период, дней"
-              value={rule.params.days}
-              onChange={(v) => setParams({ days: v })}
-              min={1}
-              max={365}
-            />
-            <NumberField
-              label="Общая сумма, сом"
-              value={rule.params.totalSom}
-              onChange={(v) => setParams({ totalSom: v })}
-              min={0}
-              step="1000"
-            />
-          </>
-        )}
-        {rule.params.type === "accountActivityAfterInactivity" && (
-          <IntegerField
-            label="Неактивность, месяцев"
-            value={rule.params.months}
-            onChange={(v) => setParams({ months: v })}
-            min={1}
-            max={120}
-          />
-        )}
-        {rule.params.type === "manyTransfersFromDifferentPersons" && (
-          <IntegerField
-            label="Кол-во физлиц за месяц"
-            value={rule.params.persons}
-            onChange={(v) => setParams({ persons: v })}
-            min={1}
-          />
-        )}
-
-        {err && <div className="text-sm text-red-500">{err}</div>}
-
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <button className="btn h-9" onClick={onClose}>
-            Отмена
-          </button>
-          <button
-            className="btn btn-primary h-9"
-            disabled={disabled || saving}
-            onClick={onSave}
-          >
-            {saving ? "Сохранение…" : "Сохранить"}
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-  step?: string;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="text-muted">{label}</span>
-      <input
-        className="ui-input w-full mt-1"
-        type="number"
-        inputMode="decimal"
-        step={step || "0.01"}
-        value={Number.isFinite(value) ? String(value) : ""}
-        onChange={(e) => onChange(safeNum(e.target.value))}
-        min={min as any}
-        max={max as any}
-      />
-    </label>
-  );
-}
-function IntegerField({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="text-muted">{label}</span>
-      <input
-        className="ui-input w-full mt-1"
-        type="number"
-        inputMode="numeric"
-        step="1"
-        value={Number.isFinite(value) ? String(value) : ""}
-        onChange={(e) => onChange(Math.trunc(safeNum(e.target.value)))}
-        min={min as any}
-        max={max as any}
-      />
-    </label>
-  );
-}
-
-function formatSummary(p: RuleParams): string {
-  switch (p.type) {
-    case "fiatOpsThreshold":
-      return `Порог: ≥ ${fmt(p.amountSom)} сом`;
-    case "singleDeal":
-      return `Разовая сумма: ≥ ${fmt(p.amountSom)} сом`;
-    case "frequentOps":
-      return `≥ ${p.count} операций за ${p.days} дн.; каждая ≥ ${fmt(p.perOpMinSom)} сом`;
-    case "withdrawAfterLargeIncome":
-      return `Вывод ≥ ${fmt(p.percent)}% от поступления ≥ ${fmt(p.baseAmountSom)} сом в ${p.days} дн.`;
-    case "splitFiatAmounts":
-      return `Изменения баланса ≥ ${fmt(p.amountSom)} сом за ${p.days} дн.`;
-    case "thirdPartyDeposits":
-      return `≥ ${p.count} лиц за ${p.days} дн.; общая сумма ≥ ${fmt(p.totalSom)} сом`;
-    case "accountActivityAfterInactivity":
-      return `После неактивности ≥ ${p.months} мес.`;
-    case "manyTransfersFromDifferentPersons":
-      return `Переводы от ≥ ${p.persons} физлиц за месяц`;
-  }
-}
-
-function validate(p: RuleParams): string | null {
-  const gt0 = (n: number) => Number.isFinite(n) && n > 0;
-  const ge0 = (n: number) => Number.isFinite(n) && n >= 0;
-  switch (p.type) {
-    case "fiatOpsThreshold":
-    case "singleDeal":
-      return ge0(p.amountSom) ? null : "Сумма должна быть ≥ 0";
-    case "frequentOps":
-      if (!gt0(p.count)) return "Кол-во операций должно быть > 0";
-      if (!gt0(p.days)) return "Период в днях должен быть > 0";
-      if (!ge0(p.perOpMinSom)) return "Мин. сумма операции должна быть ≥ 0";
-      return null;
-    case "withdrawAfterLargeIncome":
-      if (!(p.percent >= 0 && p.percent <= 100))
-        return "Процент должен быть от 0 до 100";
-      if (!ge0(p.baseAmountSom)) return "Крупное поступление должно быть ≥ 0";
-      if (!gt0(p.days)) return "Период должен быть > 0";
-      return null;
-    case "splitFiatAmounts":
-      if (!ge0(p.amountSom)) return "Сумма должна быть ≥ 0";
-      if (!gt0(p.days)) return "Период должен быть > 0";
-      return null;
-    case "thirdPartyDeposits":
-      if (!gt0(p.count)) return "Кол-во лиц должно быть > 0";
-      if (!gt0(p.days)) return "Период должен быть > 0";
-      if (!ge0(p.totalSom)) return "Сумма должна быть ≥ 0";
-      return null;
-    case "accountActivityAfterInactivity":
-      return gt0(p.months) ? null : "Месяцы должны быть > 0";
-    case "manyTransfersFromDifferentPersons":
-      return gt0(p.persons) ? null : "Кол-во физлиц должно быть > 0";
-  }
-}
-
-function fmt(x: number) {
-  try {
-    return Number(x).toLocaleString();
-  } catch {
-    return String(x);
-  }
-}
-function safeNum(v: string): number {
-  const x = Number(v.replace(/,/g, "."));
-  return Number.isFinite(x) ? x : 0;
-}
-function clone<T>(x: T): T {
-  return JSON.parse(JSON.stringify(x));
-}
-
-function initialRules(): Rule[] {
-  return [
-    {
-      id: "req-1",
-      category: "Обязательный контроль",
-      condition: "(внесение, снятие, обмен) с фиата",
-      enabled: true,
-      params: { type: "fiatOpsThreshold", amountSom: 1_000_000 },
-    },
-    {
-      id: "req-2",
-      category: "Обязательный контроль",
-      condition: "Разовая сделка",
-      enabled: true,
-      params: { type: "singleDeal", amountSom: 2_800_000 },
-    },
-
-    {
-      id: "beh-1",
-      category: "Поведение клиента",
-      condition: "Частые внесения/снятия",
-      enabled: true,
-      params: { type: "frequentOps", count: 3, days: 30, perOpMinSom: 100_000 },
-    },
-    {
-      id: "beh-2",
-      category: "Поведение клиента",
-      condition: "Вывод в фиат после крупного поступления",
-      enabled: true,
-      params: {
-        type: "withdrawAfterLargeIncome",
-        percent: 50,
-        baseAmountSom: 1_000_000,
-        days: 7,
-      },
-    },
-    {
-      id: "beh-3",
-      category: "Поведение клиента",
-      condition: "Дробление сумм перевода с фиата",
-      enabled: true,
-      params: { type: "splitFiatAmounts", amountSom: 1_000_000, days: 14 },
-    },
-    {
-      id: "beh-4",
-      category: "Поведение клиента",
-      condition: "Внесение третьими лицами на кошелёк",
-      enabled: true,
-      params: {
-        type: "thirdPartyDeposits",
-        count: 3,
-        days: 30,
-        totalSom: 1_000_000,
-      },
-    },
-    {
-      id: "beh-5",
-      category: "Поведение клиента",
-      condition: "Активность счёта",
-      enabled: true,
-      params: { type: "accountActivityAfterInactivity", months: 6 },
-    },
-    {
-      id: "beh-6",
-      category: "Поведение клиента",
-      condition: "Много переводов от разных физлиц на один счёт за месяц",
-      enabled: true,
-      params: { type: "manyTransfersFromDifferentPersons", persons: 10 },
-    },
-  ];
 }
