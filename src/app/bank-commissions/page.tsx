@@ -617,12 +617,12 @@ export default function BankCommissionsPage() {
           fields={
             <>
               {renderManagedField({
-                label: "Спецсчёт SOM ЦБ",
+                label: "Счет СОМ ЦБ",
                 value: settings.central_bank_som_account,
                 slot: balances.central_bank.som_account,
                 fieldKey: "central_bank_som_account",
                 onChange: (value) => updateSetting("central_bank_som_account", value),
-                placeholder: "Введите номер спецсчёта",
+                placeholder: "Введите номер счета",
               })}
               {renderManagedField({
                 label: "Кошелёк SALAM",
@@ -650,12 +650,12 @@ export default function BankCommissionsPage() {
           fields={
             <>
               {renderManagedField({
-                label: "Спецсчёт SOM банка",
+                label: "Счет СОМ банка",
                 value: settings.bank_som_account,
                 slot: balances.bank.som_account,
                 fieldKey: "bank_som_account",
                 onChange: (value) => updateSetting("bank_som_account", value),
-                placeholder: "Введите номер спецсчёта",
+                placeholder: "Введите номер счета",
               })}
               {renderManagedField({
                 label: "Кошелёк SALAM",
@@ -679,16 +679,16 @@ export default function BankCommissionsPage() {
 
         <SectionCard
           title="Партнёры"
-          subtitle="Здесь хранится один набор реквизитов партнёра: спецсчёт SOM, кошелёк SALAM и кошелёк USDT TRC20."
+          subtitle="Здесь хранится один набор реквизитов партнёра: счет СОМ, кошелёк SALAM и кошелёк USDT TRC20."
         >
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
             {renderManagedField({
-              label: "Спецсчёт SOM партнёра",
+              label: "Счет СОМ партнёра",
               value: partner.som_account,
               slot: partnerBalance?.som_account || null,
               fieldKey: "partner_som_account",
               onChange: (value) => updatePartner({ som_account: value }),
-              placeholder: "Введите номер спецсчёта",
+              placeholder: "Введите номер счета",
             })}
             {renderManagedField({
               label: "Кошелёк SALAM",
