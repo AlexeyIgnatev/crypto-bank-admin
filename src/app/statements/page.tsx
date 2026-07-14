@@ -29,6 +29,7 @@ async function fetchAllByRole(params: {
 }): Promise<Transaction[]> {
   const items: Transaction[] = [];
   let offset = 0;
+
   while (true) {
     const res = await getTransactions({
       [params.role]: params.search,
@@ -38,19 +39,25 @@ async function fetchAllByRole(params: {
       sortDir: "desc",
       currencies: [params.asset],
     } as any);
+
     items.push(...res.items);
     if (res.items.length < EXPORT_PAGE_SIZE) break;
     offset += EXPORT_PAGE_SIZE;
     if (offset > 5000) break;
   }
+
   return items;
 }
 
 export default function StatementsPage() {
-  const [search, setSearch] = useState("");
+  const [fioSearch, setFioSearch] = useState("");
+  const [phoneSearch, setPhoneSearch] = useState("");
+  const [walletSearch, setWalletSearch] = useState("");
   const [asset, setAsset] = useState<string>("SALAM");
   const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState<"all-pdf" | "all-csv" | "all-txt" | "selected-pdf" | "selected-csv" | "selected-txt" | null>(null);
+  const [exporting, setExporting] = useState<
+    "all-pdf" | "all-csv" | "all-txt" | "selected-pdf" | "selected-csv" | "selected-txt" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Transaction[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -60,14 +67,24 @@ export default function StatementsPage() {
     [items, selectedIds],
   );
 
+  const searchSummary = useMemo(() => {
+    const parts = [
+      fioSearch.trim() ? `ФИО: ${fioSearch.trim()}` : "",
+      phoneSearch.trim() ? `Телефон: ${phoneSearch.trim()}` : "",
+      walletSearch.trim() ? `Кошелёк: ${walletSearch.trim()}` : "",
+    ].filter(Boolean);
+
+    return parts.length ? parts.join(" · ") : "Без фильтра";
+  }, [fioSearch, phoneSearch, walletSearch]);
+
   useEffect(() => {
     setSelectedIds(new Set());
   }, [items]);
 
   async function load() {
-    const term = search.trim();
-    if (!term) {
-      setError("Укажите фамилию, имя, телефон или кошелёк");
+    const terms = [fioSearch.trim(), phoneSearch.trim(), walletSearch.trim()].filter(Boolean);
+    if (!terms.length) {
+      setError("Заполни хотя бы одно поле: ФИО, телефон или кошелёк");
       setItems([]);
       setSelectedIds(new Set());
       return;
@@ -75,21 +92,27 @@ export default function StatementsPage() {
 
     setLoading(true);
     setError(null);
-    try {
-      const [sent, received] = await Promise.all([
-        fetchAllByRole({ search: term, asset, role: "sender" }),
-        fetchAllByRole({ search: term, asset, role: "receiver" }),
-      ]);
 
+    try {
       const uniq = new Map<string, Transaction>();
-      for (const tx of [...sent, ...received]) uniq.set(tx.id, tx);
+
+      for (const term of terms) {
+        const [sent, received] = await Promise.all([
+          fetchAllByRole({ search: term, asset, role: "sender" }),
+          fetchAllByRole({ search: term, asset, role: "receiver" }),
+        ]);
+
+        for (const tx of [...sent, ...received]) uniq.set(tx.id, tx);
+      }
+
       const sorted = Array.from(uniq.values()).sort(
         (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
       );
+
       setItems(sorted);
       setSelectedIds(new Set());
       if (!sorted.length) {
-        setError("По этому запросу ничего не найдено");
+        setError("По этим фильтрам ничего не найдено");
       }
     } catch {
       setError("Не удалось загрузить выписку");
@@ -122,11 +145,12 @@ export default function StatementsPage() {
     fileBaseName: string,
   ) {
     if (!rows.length) return;
+
     await exportRows({
       format,
       fileBaseName,
       title: "Выписка по операциям",
-      periodLabel: `Выборка: ${search.trim()} · ${asset}`,
+      periodLabel: `Выборка: ${searchSummary} · ${asset}`,
       columns: [
         { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
         { header: "Tx / ID", getValue: (row) => row.id },
@@ -169,26 +193,45 @@ export default function StatementsPage() {
     }
   }
 
+  const hasAnySearch = Boolean(fioSearch.trim() || phoneSearch.trim() || walletSearch.trim());
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <div className="card rounded-xl border border-soft p-4">
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.6fr_0.9fr_auto] md:items-end">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.1fr_1.1fr_1.1fr_0.9fr_auto] md:items-end">
           <label className="grid gap-1">
-            <div className="text-sm mb-1">Поиск по ФИО / телефону / кошельку</div>
+            <div className="text-sm mb-1">ФИО</div>
             <input
               className="ui-input w-full"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Например: Иванов, +996..., TRVh3..."
+              value={fioSearch}
+              onChange={(e) => setFioSearch(e.target.value)}
+              placeholder="Иванов Иван Иванович"
             />
           </label>
+
+          <label className="grid gap-1">
+            <div className="text-sm mb-1">Телефон</div>
+            <input
+              className="ui-input w-full"
+              value={phoneSearch}
+              onChange={(e) => setPhoneSearch(e.target.value)}
+              placeholder="+996..."
+            />
+          </label>
+
+          <label className="grid gap-1">
+            <div className="text-sm mb-1">Кошелёк</div>
+            <input
+              className="ui-input w-full"
+              value={walletSearch}
+              onChange={(e) => setWalletSearch(e.target.value)}
+              placeholder="TRVh3... / 0x..."
+            />
+          </label>
+
           <label className="grid gap-1">
             <div className="text-sm mb-1">Актив</div>
-            <select
-              className="ui-input w-full"
-              value={asset}
-              onChange={(e) => setAsset(e.target.value)}
-            >
+            <select className="ui-input w-full" value={asset} onChange={(e) => setAsset(e.target.value)}>
               {ASSET_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -196,10 +239,14 @@ export default function StatementsPage() {
               ))}
             </select>
           </label>
+
           <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
             {loading ? "Загрузка..." : "Показать выписку"}
           </button>
         </div>
+
+        <div className="mt-3 text-xs text-muted">Фильтр ищет отдельно по ФИО, телефону и кошельку, затем объединяет найденные операции.</div>
+
         {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
       </div>
 
@@ -207,29 +254,54 @@ export default function StatementsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft p-3 text-sm text-muted">
           <div>Операции: {items.length}</div>
           <div>Выбрано: {selectedItems.length}</div>
+          <div>{searchSummary}</div>
           <div className="flex flex-wrap gap-2">
             <button className="btn h-9 px-3" onClick={toggleAllVisible} disabled={!items.length}>
               {selectedIds.size === items.length && items.length ? "Снять выбор" : "Выбрать все"}
             </button>
             <div className="flex flex-wrap gap-2">
-              <button className="btn h-9 px-3" onClick={() => exportAll("pdf")} disabled={!items.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportAll("pdf")}
+                disabled={!items.length || exporting !== null}
+              >
                 {exporting === "all-pdf" ? "PDF..." : "Экспорт выборки PDF"}
               </button>
-              <button className="btn h-9 px-3" onClick={() => exportAll("csv")} disabled={!items.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportAll("csv")}
+                disabled={!items.length || exporting !== null}
+              >
                 {exporting === "all-csv" ? "CSV..." : "Экспорт выборки CSV"}
               </button>
-              <button className="btn h-9 px-3" onClick={() => exportAll("txt")} disabled={!items.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportAll("txt")}
+                disabled={!items.length || exporting !== null}
+              >
                 {exporting === "all-txt" ? "TXT..." : "Экспорт выборки TXT"}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="btn h-9 px-3" onClick={() => exportSelected("pdf")} disabled={!selectedItems.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportSelected("pdf")}
+                disabled={!selectedItems.length || exporting !== null}
+              >
                 {exporting === "selected-pdf" ? "PDF..." : "Выбранные PDF"}
               </button>
-              <button className="btn h-9 px-3" onClick={() => exportSelected("csv")} disabled={!selectedItems.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportSelected("csv")}
+                disabled={!selectedItems.length || exporting !== null}
+              >
                 {exporting === "selected-csv" ? "CSV..." : "Выбранные CSV"}
               </button>
-              <button className="btn h-9 px-3" onClick={() => exportSelected("txt")} disabled={!selectedItems.length || exporting !== null}>
+              <button
+                className="btn h-9 px-3"
+                onClick={() => exportSelected("txt")}
+                disabled={!selectedItems.length || exporting !== null}
+              >
                 {exporting === "selected-txt" ? "TXT..." : "Выбранные TXT"}
               </button>
             </div>
@@ -292,7 +364,14 @@ export default function StatementsPage() {
                   </tr>
                 );
               })}
-              {!loading && items.length === 0 && (
+              {!loading && !hasAnySearch && items.length === 0 && (
+                <tr>
+                  <td className="px-3 py-8 text-center text-muted" colSpan={15}>
+                    Заполни фильтр и нажми «Показать выписку»
+                  </td>
+                </tr>
+              )}
+              {!loading && hasAnySearch && items.length === 0 && (
                 <tr>
                   <td className="px-3 py-8 text-center text-muted" colSpan={15}>
                     Нет данных
