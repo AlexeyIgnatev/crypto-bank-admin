@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import {
+  getAdminActionLogs,
   getAdminSettings,
   getTariffs,
   putAdminSettings,
   putTariffs,
+  type AdminActionLog,
   TariffOperation,
   TariffSetting,
 } from "@/lib/api";
+import { exportRows } from "@/lib/exporters";
 import { AdminSettings, CustomerResidency, TariffCategory } from "@/types";
 
 type TariffGridRow =
@@ -32,6 +35,13 @@ type ReasonMap = Record<string, string>;
 type PendingReasonItem = {
   key: string;
   label: string;
+};
+
+type RateHistoryRow = {
+  createdAt: string;
+  adminId: number;
+  comment: string;
+  changes: string;
 };
 
 const TARIFF_GRID_ROWS: TariffGridRow[] = [
@@ -67,8 +77,48 @@ const TARIFF_GRID_ROWS: TariffGridRow[] = [
   },
 ];
 
+const RATE_ROW_HINTS: Record<string, string> = {
+  SOM_TO_ESOM: "Здесь назначается комиссия за конвертацию SOM в SALAM.",
+  ESOM_TO_SOM: "Здесь назначается комиссия за конвертацию SALAM в SOM.",
+  WALLET_TRANSFER_ESOM:
+    "Здесь назначается комиссия за внутренний перевод банка между пользователями в валюте SALAM.",
+  ESOM_TO_USDT_TRC20:
+    "Здесь назначается комиссия за конвертацию SALAM в USDT TRC20.",
+  USDT_TRC20_TO_ESOM:
+    "Здесь назначается комиссия за конвертацию USDT TRC20 в SALAM.",
+  WALLET_TRANSFER_USDT_TRC20:
+    "Здесь назначается комиссия за внутренний перевод банка между пользователями в USDT TRC20.",
+  external_usdt:
+    "Здесь назначается комиссия за вывод USDT TRC20 внешнему пользователю.",
+  external_usdt_min:
+    "Здесь указывается минимальная сумма вывода USDT TRC20.",
+};
+
+const RATE_HISTORY_LABELS: Record<string, string> = {
+  "rate:usd_buy_rate": "Курс покупки USD",
+  "rate:usd_sell_rate": "Курс продажи USD",
+  "external:usdt_trade_fee_pct": "Комиссия внешнего перевода USDT TRC20",
+  "external:usdt_withdraw_fee_fixed": "Фикс. сумма комиссии внешнего вывода USDT TRC20",
+  "external:min_withdraw_usdt_trc20": "Минимум вывода USDT TRC20",
+};
+
+function rateHistoryLabelForKey(key: string): string {
+  if (RATE_HISTORY_LABELS[key]) return RATE_HISTORY_LABELS[key];
+  if (key.startsWith("tariff:")) {
+    const operation = key.slice("tariff:".length) as TariffOperation;
+    return (
+      TARIFF_GRID_ROWS.find(
+        (row) => row.kind === "tariff" && row.operation === operation,
+      )?.label || key
+    );
+  }
+  return key;
+}
+
 const EMPTY_SETTINGS: AdminSettings = {
   esom_per_usd: "0",
+  usd_buy_rate: "0",
+  usd_sell_rate: "0",
   esom_som_conversion_fee_pct: "0",
   esom_som_conversion_fee_min: "0",
   usdt_trade_fee_pct: "0",
@@ -115,6 +165,77 @@ function parseReasons(raw: string): ReasonMap {
   }
 }
 
+function parseActionDetails(details: unknown): Record<string, any> | null {
+  if (!details) return null;
+  if (typeof details === "object") return details as Record<string, any>;
+  if (typeof details !== "string") return null;
+  try {
+    const parsed = JSON.parse(details);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
+  return logs
+    .map((log) => {
+      const details = parseActionDetails(log.details);
+      const body = (details?.body && typeof details.body === "object"
+        ? details.body
+        : {}) as Record<string, any>;
+      const reasons = parseReasons(
+        typeof body.rates_change_reasons_json === "string"
+          ? body.rates_change_reasons_json
+          : "",
+      );
+      const reasonEntries = Object.entries(reasons).filter(([, value]) =>
+        String(value).trim(),
+      );
+      const comment = reasonEntries
+        .map(([key, value]) => `${rateHistoryLabelForKey(key)}: ${String(value).trim()}`)
+        .join(" | ");
+
+      const changes = reasonEntries.length
+        ? reasonEntries
+            .map(([key]) => rateHistoryLabelForKey(key))
+            .join(" | ")
+        : [
+            body.usd_buy_rate != null || body.esom_per_usd != null
+              ? `Курс покупки USD: ${String(body.usd_buy_rate ?? body.esom_per_usd)}`
+              : null,
+            body.usd_sell_rate != null || body.esom_per_usd != null
+              ? `Курс продажи USD: ${String(body.usd_sell_rate ?? body.esom_per_usd)}`
+              : null,
+            body.usdt_trade_fee_pct != null
+              ? `Комиссия внешнего перевода USDT TRC20: ${String(body.usdt_trade_fee_pct)}`
+              : null,
+            body.usdt_withdraw_fee_fixed != null
+              ? `Фикс. сумма комиссии внешнего вывода USDT TRC20: ${String(body.usdt_withdraw_fee_fixed)}`
+              : null,
+            body.min_withdraw_usdt_trc20 != null
+              ? `Минимум вывода USDT TRC20: ${String(body.min_withdraw_usdt_trc20)}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" | ");
+
+      if (!changes && !comment) return null;
+
+      return {
+        createdAt: log.createdAt,
+        adminId: log.admin_id,
+        comment,
+        changes,
+      };
+    })
+    .filter((row): row is RateHistoryRow => Boolean(row))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+}
+
 function InfoHint({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex">
@@ -124,6 +245,15 @@ function InfoHint({ text }: { text: string }) {
       <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-xs leading-5 text-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
         {text || "Причина изменения пока не указана."}
       </span>
+    </span>
+  );
+}
+
+function TitleHint({ label, hint }: { label: string; hint?: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span>{label}</span>
+      {hint ? <InfoHint text={hint} /> : null}
     </span>
   );
 }
@@ -156,34 +286,33 @@ function GridValue({
   label,
   value,
   onChange,
+  comment,
+  onCommentChange,
+  commentLabel = "Комментарий",
+  commentPlaceholder = "Почему меняется значение",
   suffix,
   placeholder = "0",
   disabled = false,
   muted = false,
-  reason,
-  showReason = false,
+  showComment = true,
 }: {
   label: string;
   value: string;
   onChange?: (value: string) => void;
+  comment?: string;
+  onCommentChange?: (value: string) => void;
+  commentLabel?: string;
+  commentPlaceholder?: string;
   suffix?: string;
   placeholder?: string;
   disabled?: boolean;
   muted?: boolean;
-  reason?: string;
-  showReason?: boolean;
+  showComment?: boolean;
 }) {
-  const labelNode = (
-    <span className="flex items-center gap-2 text-xs text-muted">
-      {showReason ? <InfoHint text={reason || "Причина изменения пока не указана."} /> : null}
-      <span>{label}</span>
-    </span>
-  );
-
   if (disabled) {
     return (
       <div className="grid gap-1">
-        {labelNode}
+        <span className="text-xs text-muted">{label}</span>
         <div
           className={`flex h-[42px] items-center rounded-lg border border-dashed border-soft px-3 text-sm ${
             muted ? "text-muted" : "text-fg"
@@ -197,7 +326,7 @@ function GridValue({
 
   return (
     <label className="grid gap-1">
-      {labelNode}
+      <span className="text-xs text-muted">{label}</span>
       <div className="flex items-center gap-2">
         <input
           className="ui-input"
@@ -208,18 +337,32 @@ function GridValue({
         />
         {suffix ? <span className="shrink-0 text-sm text-muted">{suffix}</span> : null}
       </div>
+      {showComment ? (
+        <div className="grid gap-1 pt-1">
+          <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
+            {commentLabel}
+          </span>
+          <textarea
+            className="ui-input min-h-[72px] resize-y"
+            value={comment || ""}
+            onChange={(e) => onCommentChange?.(e.target.value)}
+            placeholder={commentPlaceholder}
+          />
+        </div>
+      ) : null}
     </label>
   );
 }
 
 function TariffGridRowCard({
   label,
+  hint,
   percent,
   fixed,
-  percentReason,
-  fixedReason,
+  comment,
   onPercentChange,
   onFixedChange,
+  onCommentChange,
   percentDisabled = false,
   fixedDisabled = false,
   percentLabel = "Процент",
@@ -228,12 +371,13 @@ function TariffGridRowCard({
   showFixed = true,
 }: {
   label: string;
+  hint?: string;
   percent: string;
   fixed: string;
-  percentReason?: string;
-  fixedReason?: string;
+  comment?: string;
   onPercentChange?: (value: string) => void;
   onFixedChange: (value: string) => void;
+  onCommentChange?: (value: string) => void;
   percentDisabled?: boolean;
   fixedDisabled?: boolean;
   percentLabel?: string;
@@ -244,13 +388,16 @@ function TariffGridRowCard({
   const gridClassName = showFixed
     ? "xl:grid-cols-[1.8fr_0.7fr_0.9fr]"
     : "xl:grid-cols-[1.8fr_1fr]";
+  const commentSpanClass = showFixed ? "xl:col-span-3" : "xl:col-span-2";
 
   return (
     <div
       className={`grid grid-cols-1 gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 ${gridClassName} xl:items-center`}
     >
       <div className="min-w-0">
-        <div className="text-sm font-semibold">{label}</div>
+        <div className="text-sm font-semibold">
+          <TitleHint label={label} hint={hint} />
+        </div>
       </div>
       <GridValue
         label={percentLabel}
@@ -258,8 +405,7 @@ function TariffGridRowCard({
         onChange={onPercentChange}
         disabled={percentDisabled || !showPercent}
         muted={percentDisabled || !showPercent}
-        reason={percentReason}
-        showReason={showPercent && !percentDisabled}
+        showComment={false}
       />
       {showFixed ? (
         <GridValue
@@ -268,10 +414,20 @@ function TariffGridRowCard({
           onChange={onFixedChange}
           disabled={fixedDisabled}
           muted={fixedDisabled}
-          reason={fixedReason}
-          showReason={true}
+          showComment={false}
         />
       ) : null}
+      <div className={`grid gap-1 ${commentSpanClass}`}>
+        <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
+          Комментарий к изменению
+        </span>
+        <textarea
+          className="ui-input min-h-[72px] resize-y"
+          value={comment || ""}
+          onChange={(e) => onCommentChange?.(e.target.value)}
+          placeholder="Почему меняется тариф"
+        />
+      </div>
     </div>
   );
 }
@@ -288,11 +444,22 @@ export default function RatesPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [reasons, setReasons] = useState<ReasonMap>({});
-  const [pendingReasonItems, setPendingReasonItems] = useState<PendingReasonItem[]>([]);
-  const [pendingReasonInputs, setPendingReasonInputs] = useState<ReasonMap>({});
-  const [showReasonNotice, setShowReasonNotice] = useState(false);
-  const [showReasonModal, setShowReasonModal] = useState(false);
-  const noticeShownRef = useRef(false);
+  const [reasonDrafts, setReasonDrafts] = useState<ReasonMap>({});
+  const [rateHistoryRows, setRateHistoryRows] = useState<RateHistoryRow[]>([]);
+  const [currencyHistoryLoading, setCurrencyHistoryLoading] = useState(false);
+
+  function normalizeLoadedSettings(input: AdminSettings): AdminSettings {
+    const buyRate =
+      input.usd_buy_rate?.trim() || input.esom_per_usd?.trim() || "0";
+    const sellRate =
+      input.usd_sell_rate?.trim() || input.esom_per_usd?.trim() || buyRate;
+    return {
+      ...input,
+      usd_buy_rate: buyRate,
+      usd_sell_rate: sellRate,
+      esom_per_usd: input.esom_per_usd?.trim() || buyRate,
+    };
+  }
 
   useEffect(() => {
     let alive = true;
@@ -303,16 +470,46 @@ export default function RatesPage() {
           getTariffs(),
         ]);
         if (!alive) return;
-        setSettings(settingsData);
-        setOriginalSettings(settingsData);
+        const normalizedSettings = normalizeLoadedSettings(settingsData);
+        setSettings(normalizedSettings);
+        setOriginalSettings(normalizedSettings);
         setTariffs(tariffsData);
         setOriginalTariffs(tariffsData);
-        setReasons(parseReasons(settingsData.rates_change_reasons_json || ""));
+        const loadedReasons = parseReasons(
+          normalizedSettings.rates_change_reasons_json || "",
+        );
+        setReasons(loadedReasons);
+        setReasonDrafts(loadedReasons);
       } catch (err: unknown) {
         if (!alive) return;
         setError(getErrorMessage(err, "Не удалось загрузить проценты"));
       } finally {
         if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setCurrencyHistoryLoading(true);
+      try {
+        const logs = await getAdminActionLogs({
+          actionQuery: "PUT /blockchain-config/admin-settings",
+          limit: 200,
+          sortBy: "createdAt",
+          sortDir: "desc",
+        });
+        if (!alive) return;
+        setRateHistoryRows(extractRateHistory(logs.items));
+      } catch {
+        if (!alive) return;
+        setRateHistoryRows([]);
+      } finally {
+        if (alive) setCurrencyHistoryLoading(false);
       }
     })();
     return () => {
@@ -369,18 +566,24 @@ export default function RatesPage() {
   const changedReasonItems = useMemo(() => {
     const items: PendingReasonItem[] = [];
     if (
-      normalizeDecimalInput(settings.esom_per_usd) !==
-      normalizeDecimalInput(originalSettings.esom_per_usd)
+      normalizeDecimalInput(settings.usd_buy_rate) !==
+      normalizeDecimalInput(originalSettings.usd_buy_rate)
     ) {
-      items.push({
-        key: "rate:esom_per_usd",
-        label: "Курс USD к СОМ",
-      });
+      items.push({ key: "rate:usd_buy_rate", label: "Курс покупки USD" });
+    }
+
+    if (
+      normalizeDecimalInput(settings.usd_sell_rate) !==
+      normalizeDecimalInput(originalSettings.usd_sell_rate)
+    ) {
+      items.push({ key: "rate:usd_sell_rate", label: "Курс продажи USD" });
     }
 
     if (
       normalizeDecimalInput(settings.usdt_trade_fee_pct) !==
-      normalizeDecimalInput(originalSettings.usdt_trade_fee_pct)
+        normalizeDecimalInput(originalSettings.usdt_trade_fee_pct) ||
+      normalizeDecimalInput(settings.usdt_withdraw_fee_fixed) !==
+        normalizeDecimalInput(originalSettings.usdt_withdraw_fee_fixed)
     ) {
       items.push({
         key: "external:usdt_trade_fee_pct",
@@ -401,7 +604,8 @@ export default function RatesPage() {
 
       if (percentChanged || fixedChanged) {
         const row = TARIFF_GRID_ROWS.find(
-          (candidate) => candidate.kind === "tariff" && candidate.operation === item.operation,
+          (candidate) =>
+            candidate.kind === "tariff" && candidate.operation === item.operation,
         );
         items.push({
           key: `tariff:${item.operation}`,
@@ -409,16 +613,6 @@ export default function RatesPage() {
         });
       }
     });
-
-    if (
-      normalizeDecimalInput(settings.usdt_withdraw_fee_fixed) !==
-      normalizeDecimalInput(originalSettings.usdt_withdraw_fee_fixed)
-    ) {
-      items.push({
-        key: "external:usdt_withdraw_fee_fixed",
-        label: "Фикс сумма комиссии перевода USDT TRC20 внешним пользователям",
-      });
-    }
 
     if (
       normalizeDecimalInput(settings.min_withdraw_usdt_trc20) !==
@@ -433,18 +627,100 @@ export default function RatesPage() {
     return items;
   }, [currentTariffs, originalCurrentTariffs, originalSettings, settings]);
 
-  useEffect(() => {
-    if (!loading && changedReasonItems.length > 0 && !noticeShownRef.current) {
-      setShowReasonNotice(true);
-      noticeShownRef.current = true;
+  const rateCommentKeys = useMemo(() => {
+    const keys: string[] = [];
+    if (normalizeDecimalInput(settings.usd_buy_rate) !== normalizeDecimalInput(originalSettings.usd_buy_rate)) {
+      keys.push("rate:usd_buy_rate");
     }
-    if (changedReasonItems.length === 0) {
-      noticeShownRef.current = false;
+    if (normalizeDecimalInput(settings.usd_sell_rate) !== normalizeDecimalInput(originalSettings.usd_sell_rate)) {
+      keys.push("rate:usd_sell_rate");
     }
-  }, [changedReasonItems.length, loading]);
+    if (
+      normalizeDecimalInput(settings.usdt_trade_fee_pct) !==
+        normalizeDecimalInput(originalSettings.usdt_trade_fee_pct) ||
+      normalizeDecimalInput(settings.usdt_withdraw_fee_fixed) !==
+        normalizeDecimalInput(originalSettings.usdt_withdraw_fee_fixed)
+    ) {
+      keys.push("external:usdt_trade_fee_pct");
+    }
+    if (normalizeDecimalInput(settings.min_withdraw_usdt_trc20) !== normalizeDecimalInput(originalSettings.min_withdraw_usdt_trc20)) {
+      keys.push("external:min_withdraw_usdt_trc20");
+    }
+    currentTariffs.forEach((item) => {
+      const originalItem = originalCurrentTariffs.find((candidate) => candidate.operation === item.operation);
+      const percentChanged =
+        normalizeDecimalInput(item.percent_fee) !== normalizeDecimalInput(originalItem?.percent_fee ?? "0");
+      const fixedChanged =
+        normalizeDecimalInput(item.fixed_fee) !== normalizeDecimalInput(originalItem?.fixed_fee ?? "0");
+      if (percentChanged || fixedChanged) keys.push(`tariff:${item.operation}`);
+    });
+    return keys;
+  }, [currentTariffs, originalCurrentTariffs, originalSettings, settings]);
+
+  const currencyRateChanged = useMemo(() => {
+    return (
+      normalizeDecimalInput(settings.usd_buy_rate) !==
+        normalizeDecimalInput(originalSettings.usd_buy_rate) ||
+      normalizeDecimalInput(settings.usd_sell_rate) !==
+        normalizeDecimalInput(originalSettings.usd_sell_rate)
+    );
+  }, [
+    originalSettings.usd_buy_rate,
+    originalSettings.usd_sell_rate,
+    settings.usd_buy_rate,
+    settings.usd_sell_rate,
+  ]);
+
+  const syncReasonDraft = useMemo(
+    () => (key: string) => reasonDrafts[key] ?? reasons[key] ?? "",
+    [reasonDrafts, reasons],
+  );
+
+  function getRateReason(key: string) {
+    return syncReasonDraft(key);
+  }
+
+  function clearReasonDraft(key: string) {
+    setReasonDrafts((prev) => ({ ...prev, [key]: "" }));
+  }
 
   function updateSetting<K extends keyof AdminSettings>(key: K, value: AdminSettings[K]) {
     setSettings((prev) => ({ ...prev, [key]: value }));
+    if (
+      key === "usd_buy_rate" &&
+      normalizeDecimalInput(String(value)) !==
+        normalizeDecimalInput(originalSettings.usd_buy_rate)
+    ) {
+      clearReasonDraft("rate:usd_buy_rate");
+    }
+    if (
+      key === "usd_sell_rate" &&
+      normalizeDecimalInput(String(value)) !==
+        normalizeDecimalInput(originalSettings.usd_sell_rate)
+    ) {
+      clearReasonDraft("rate:usd_sell_rate");
+    }
+    if (
+      key === "usdt_trade_fee_pct" &&
+      normalizeDecimalInput(String(value)) !==
+        normalizeDecimalInput(originalSettings.usdt_trade_fee_pct)
+    ) {
+      clearReasonDraft("external:usdt_trade_fee_pct");
+    }
+    if (
+      key === "usdt_withdraw_fee_fixed" &&
+      normalizeDecimalInput(String(value)) !==
+        normalizeDecimalInput(originalSettings.usdt_withdraw_fee_fixed)
+    ) {
+      clearReasonDraft("external:usdt_trade_fee_pct");
+    }
+    if (
+      key === "min_withdraw_usdt_trc20" &&
+      normalizeDecimalInput(String(value)) !==
+        normalizeDecimalInput(originalSettings.min_withdraw_usdt_trc20)
+    ) {
+      clearReasonDraft("external:min_withdraw_usdt_trc20");
+    }
   }
 
   function updateTariff(operation: TariffOperation, patch: Partial<TariffSetting>) {
@@ -473,19 +749,14 @@ export default function RatesPage() {
       next[idx] = { ...next[idx], ...patch };
       return next;
     });
+    clearReasonDraft(`tariff:${operation}`);
   }
 
-  function openReasonModal() {
-    setPendingReasonItems(changedReasonItems);
-    setPendingReasonInputs(
-      Object.fromEntries(
-        changedReasonItems.map((item) => [item.key, ""]),
-      ) as ReasonMap,
-    );
-    setShowReasonModal(true);
+  function updateReasonDraft(key: string, value: string) {
+    setReasonDrafts((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function persistRates(reasonOverrides?: ReasonMap) {
+  async function persistRates() {
     setError(null);
     setSuccess(null);
     setSaving(true);
@@ -493,11 +764,13 @@ export default function RatesPage() {
     try {
       const nextReasons = {
         ...reasons,
-        ...(reasonOverrides || {}),
+        ...reasonDrafts,
       };
 
       const settingsPayload: Partial<AdminSettings> = {
-        esom_per_usd: normalizeDecimalInput(settings.esom_per_usd),
+        esom_per_usd: normalizeDecimalInput(settings.usd_buy_rate),
+        usd_buy_rate: normalizeDecimalInput(settings.usd_buy_rate),
+        usd_sell_rate: normalizeDecimalInput(settings.usd_sell_rate),
         usdt_trade_fee_pct: normalizeDecimalInput(settings.usdt_trade_fee_pct),
         usdt_withdraw_fee_fixed: normalizeDecimalInput(
           settings.usdt_withdraw_fee_fixed,
@@ -554,10 +827,15 @@ export default function RatesPage() {
         return Array.from(merged.values());
       });
       setReasons(nextReasons);
-      setPendingReasonItems([]);
-      setPendingReasonInputs({});
-      setShowReasonModal(false);
+      setReasonDrafts(nextReasons);
       setSuccess("Тарифная сетка сохранена");
+      const logs = await getAdminActionLogs({
+        actionQuery: "PUT /blockchain-config/admin-settings",
+        limit: 200,
+        sortBy: "createdAt",
+        sortDir: "desc",
+      });
+      setRateHistoryRows(extractRateHistory(logs.items));
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Не удалось сохранить тарифную сетку"));
     } finally {
@@ -565,28 +843,55 @@ export default function RatesPage() {
     }
   }
 
-  async function saveRates() {
-    if (changedReasonItems.length > 0) {
-      openReasonModal();
+  async function saveCurrencyRates() {
+    if (!currencyRateChanged) {
+      setSuccess("Курсы валют уже актуальны");
+      return;
+    }
+    const missing = rateCommentKeys.find((key) => !getRateReason(key).trim());
+    if (missing) {
+      setError(`Укажите комментарий для поля: ${RATE_HISTORY_LABELS[missing] || missing}`);
       return;
     }
     await persistRates();
   }
 
-  async function confirmReasonsAndSave() {
-    const missingItem = pendingReasonItems.find(
-      (item) => !pendingReasonInputs[item.key]?.trim(),
+  async function exportCurrencyHistoryCsv() {
+    await exportRows({
+      format: "csv",
+      fileBaseName: "rates_comments_history",
+      title: "История комментариев и изменений тарифов",
+      columns: [
+        {
+          header: "Дата",
+          getValue: (row: RateHistoryRow) => formatDateTime(row.createdAt),
+        },
+        {
+          header: "Админ ID",
+          getValue: (row: RateHistoryRow) => row.adminId,
+        },
+        {
+          header: "Изменения",
+          getValue: (row: RateHistoryRow) => row.changes,
+        },
+        {
+          header: "Комментарий",
+          getValue: (row: RateHistoryRow) => row.comment,
+        },
+      ],
+      rows: rateHistoryRows,
+    });
+  }
+
+  async function saveRates() {
+    const missingItem = changedReasonItems.find(
+      (item) => !getRateReason(item.key).trim(),
     );
     if (missingItem) {
-      setError(`Укажите причину для поля: ${missingItem.label}`);
+      setError(`Укажите комментарий для поля: ${missingItem.label}`);
       return;
     }
-
-    const reasonOverrides = Object.fromEntries(
-      pendingReasonItems.map((item) => [item.key, pendingReasonInputs[item.key].trim()]),
-    ) as ReasonMap;
-
-    await persistRates(reasonOverrides);
+    await persistRates();
   }
 
   if (loading) {
@@ -617,7 +922,7 @@ export default function RatesPage() {
             title="Тарифная сетка клиентов"
             subtitle="Для курса и комиссий теперь обязательно указывается причина изменений, а минимум вывода USDT TRC20 вынесен отдельной строкой под внешними переводами."
           >
-            <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="grid gap-1">
                 <span className="text-xs text-muted">Категория</span>
                 <select
@@ -645,24 +950,48 @@ export default function RatesPage() {
                   <option value="NON_RESIDENT">Нерезидент</option>
                 </select>
               </label>
-              <label className="grid gap-1">
-                <span className="flex items-center gap-2 text-xs text-muted">
-                  <InfoHint
-                    text={
-                      reasons["rate:esom_per_usd"] ||
-                      "Причина изменения курса пока не указана."
+            </div>
+
+            <div className="mb-6 grid gap-4 xl:grid-cols-[360px_1fr]">
+              <section className="rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
+                <div className="text-base font-semibold">Курсы валют</div>
+                <div className="mt-1 text-sm text-muted">
+                  Любое изменение требует комментарий рядом с полем перед сохранением.
+                </div>
+                <div className="mt-4 grid gap-4">
+                  <GridValue
+                    label="Курс покупки USD"
+                    value={settings.usd_buy_rate}
+                    onChange={(value) => updateSetting("usd_buy_rate", value)}
+                    comment={getRateReason("rate:usd_buy_rate")}
+                    onCommentChange={(value) =>
+                      updateReasonDraft("rate:usd_buy_rate", value)
                     }
+                    placeholder="0"
+                    commentPlaceholder="Например: изменение курса по распоряжению финансового отдела"
                   />
-                  <span>Курс USD к СОМ</span>
-                </span>
-                <input
-                  className="ui-input"
-                  value={settings.esom_per_usd}
-                  onChange={(e) => updateSetting("esom_per_usd", e.target.value)}
-                  inputMode="decimal"
-                  placeholder="0"
-                />
-              </label>
+                  <GridValue
+                    label="Курс продажи USD"
+                    value={settings.usd_sell_rate}
+                    onChange={(value) => updateSetting("usd_sell_rate", value)}
+                    comment={getRateReason("rate:usd_sell_rate")}
+                    onCommentChange={(value) =>
+                      updateReasonDraft("rate:usd_sell_rate", value)
+                    }
+                    placeholder="0"
+                    commentPlaceholder="Например: изменение курса продажи после пересчёта"
+                  />
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <button
+                    className="btn btn-primary h-10 px-4"
+                    onClick={saveCurrencyRates}
+                    disabled={saving}
+                  >
+                    {saving ? "Сохранение..." : "Сохранить курсы"}
+                  </button>
+                </div>
+              </section>
             </div>
 
             <div className="mb-3 hidden xl:grid xl:grid-cols-[1.8fr_0.7fr_0.9fr] xl:gap-3 xl:px-1">
@@ -684,21 +1013,18 @@ export default function RatesPage() {
                     <TariffGridRowCard
                       key={row.label}
                       label={row.label}
+                      hint={RATE_ROW_HINTS.external_usdt}
                       percent={settings.usdt_trade_fee_pct}
                       fixed={settings.usdt_withdraw_fee_fixed}
-                      percentReason={
-                        reasons["external:usdt_trade_fee_pct"] ||
-                        "Причина изменения процента пока не указана."
-                      }
-                      fixedReason={
-                        reasons["external:usdt_withdraw_fee_fixed"] ||
-                        "Причина изменения комиссии пока не указана."
-                      }
+                      comment={getRateReason("external:usdt_trade_fee_pct")}
                       onPercentChange={(value) =>
                         updateSetting("usdt_trade_fee_pct", value)
                       }
                       onFixedChange={(value) =>
                         updateSetting("usdt_withdraw_fee_fixed", value)
+                      }
+                      onCommentChange={(value) =>
+                        updateReasonDraft("external:usdt_trade_fee_pct", value)
                       }
                     />
                   );
@@ -709,15 +1035,16 @@ export default function RatesPage() {
                     <TariffGridRowCard
                       key={row.label}
                       label={row.label}
+                      hint={RATE_ROW_HINTS.external_usdt_min}
                       percent={settings.min_withdraw_usdt_trc20}
                       fixed="—"
                       percentLabel="Минимум вывода"
-                      percentReason={
-                        reasons["external:min_withdraw_usdt_trc20"] ||
-                        "Причина изменения минимума вывода пока не указана."
-                      }
+                      comment={getRateReason("external:min_withdraw_usdt_trc20")}
                       onPercentChange={(value) =>
                         updateSetting("min_withdraw_usdt_trc20", value)
+                      }
+                      onCommentChange={(value) =>
+                        updateReasonDraft("external:min_withdraw_usdt_trc20", value)
                       }
                       showPercent
                       showFixed={false}
@@ -733,25 +1060,85 @@ export default function RatesPage() {
                   <TariffGridRowCard
                     key={row.operation}
                     label={row.label}
+                    hint={RATE_ROW_HINTS[row.operation]}
                     percent={item?.percent_fee ?? "0"}
                     fixed={item?.fixed_fee ?? "0"}
-                    percentReason={
-                      reasons[`tariff:${row.operation}`] ||
-                      "Причина изменения комиссии пока не указана."
-                    }
-                    fixedReason={
-                      reasons[`tariff:${row.operation}`] ||
-                      "Причина изменения комиссии пока не указана."
-                    }
+                    comment={getRateReason(`tariff:${row.operation}`)}
                     onPercentChange={(value) =>
                       updateTariff(row.operation, { percent_fee: value })
                     }
                     onFixedChange={(value) =>
                       updateTariff(row.operation, { fixed_fee: value })
                     }
+                    onCommentChange={(value) =>
+                      updateReasonDraft(`tariff:${row.operation}`, value)
+                    }
                   />
                 );
               })}
+            </div>
+
+            <div className="mt-8 rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-base font-semibold">История комментариев</div>
+                  <div className="mt-1 text-sm text-muted">
+                    Дата, админ, какие поля менялись и какой комментарий был указан.
+                  </div>
+                </div>
+                <button
+                  className="btn h-9 px-3"
+                  type="button"
+                  onClick={exportCurrencyHistoryCsv}
+                  disabled={!rateHistoryRows.length}
+                >
+                  CSV
+                </button>
+              </div>
+              <div className="mt-4 max-h-[320px] overflow-auto rounded-2xl border border-soft bg-white/70">
+                <table className="min-w-full text-left text-sm">
+                  <thead className="sticky top-0 bg-white">
+                    <tr className="text-xs uppercase tracking-wide text-muted">
+                      <th className="px-4 py-3">Дата</th>
+                      <th className="px-4 py-3">Админ</th>
+                      <th className="px-4 py-3">Изменения</th>
+                      <th className="px-4 py-3">Комментарий</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currencyHistoryLoading ? (
+                      <tr>
+                        <td className="px-4 py-6 text-muted" colSpan={4}>
+                          Загрузка истории...
+                        </td>
+                      </tr>
+                    ) : rateHistoryRows.length ? (
+                      rateHistoryRows.map((row) => (
+                        <tr key={`${row.createdAt}-${row.adminId}`} className="border-t border-soft">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {formatDateTime(row.createdAt)}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">#{row.adminId}</td>
+                          <td className="px-4 py-3">
+                            <div className="max-w-[28rem] break-words text-muted">
+                              {row.changes}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 max-w-[18rem] break-words text-muted">
+                            {row.comment || "—"}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="px-4 py-6 text-muted" colSpan={4}>
+                          История пока пустая.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
@@ -767,69 +1154,6 @@ export default function RatesPage() {
         </div>
       </div>
 
-      <Modal
-        open={showReasonNotice}
-        onClose={() => setShowReasonNotice(false)}
-        title="Нужна причина изменения"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-muted">
-            Вы изменили курс или комиссию. Перед сохранением нужно будет указать
-            короткую причину изменения.
-          </p>
-          <div className="flex justify-end">
-            <button
-              className="btn btn-primary h-10 px-4"
-              onClick={() => setShowReasonNotice(false)}
-            >
-              Понятно
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        open={showReasonModal}
-        onClose={() => setShowReasonModal(false)}
-        title="Укажите причины изменений"
-      >
-        <div className="space-y-4">
-          <div className="text-sm text-muted">
-            Для каждого измененного курса или комиссии укажите короткую причину,
-            например номер приказа или пояснение по изменению.
-          </div>
-
-          {pendingReasonItems.map((item) => (
-            <label key={item.key} className="grid gap-1">
-              <span className="text-sm font-medium">{item.label}</span>
-              <textarea
-                className="ui-input min-h-24 resize-y"
-                value={pendingReasonInputs[item.key] ?? ""}
-                onChange={(e) =>
-                  setPendingReasonInputs((prev) => ({
-                    ...prev,
-                    [item.key]: e.target.value,
-                  }))
-                }
-                placeholder="Например: приказ №12 от 09.07.2026"
-              />
-            </label>
-          ))}
-
-          <div className="flex justify-end gap-3">
-            <button className="btn h-10 px-4" onClick={() => setShowReasonModal(false)}>
-              Отмена
-            </button>
-            <button
-              className="btn btn-primary h-10 px-4"
-              onClick={confirmReasonsAndSave}
-              disabled={saving}
-            >
-              {saving ? "Сохранение..." : "Сохранить с причинами"}
-            </button>
-          </div>
-        </div>
-      </Modal>
     </>
   );
 }

@@ -103,6 +103,7 @@ export default function ControlCasesPage() {
             />
             <Row label="Отправитель" value={selected.sender} />
             <Row label="Получатель" value={selected.recipient} />
+            <Row label="Причина" value={selected.reason || "—"} />
             {selected.status === "OPEN" && (
               <div className="pt-2 grid grid-cols-2 gap-2">
                 <button

@@ -93,6 +93,8 @@ export interface TreasuryReserves {
 
 export interface AdminSettings {
   esom_per_usd: string;
+  usd_buy_rate: string;
+  usd_sell_rate: string;
   esom_som_conversion_fee_pct: string;
   esom_som_conversion_fee_min: string;
   usdt_trade_fee_pct: string;
@@ -106,6 +108,10 @@ export interface AdminSettings {
   bank_commission_central_bank_pct: string;
   bank_commission_bank_pct: string;
   bank_commission_partners_pct: string;
+  bank_commission_distribution_mode: string;
+  bank_commission_central_bank_fixed: string;
+  bank_commission_bank_fixed: string;
+  bank_commission_partners_fixed: string;
   bank_som_account: string;
   bank_salam_wallet: string;
   bank_usdt_wallet: string;

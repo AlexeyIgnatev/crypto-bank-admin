@@ -99,7 +99,7 @@ function ApiRulesManager() {
   );
 }
 
-type Rule = RuleBase & { params: RuleParams };
+type Rule = RuleBase & { enabled: boolean; params: RuleParams };
 
 type EditState = { open: boolean; rule: Rule | null };
 
@@ -116,6 +116,8 @@ export default function ControlPage() {
   }, []);
 
   const [edit, setEdit] = useState<EditState>({ open: false, rule: null });
+  const [selectedCategory, setSelectedCategory] =
+    useState<Category>("Обязательный контроль");
 
   const groups = useMemo(
     () => ({
@@ -125,8 +127,51 @@ export default function ControlPage() {
     [rules],
   );
 
+  const visibleRules =
+    selectedCategory === "Обязательный контроль"
+      ? groups.required
+      : groups.behavior;
+
   const openEdit = (rule: Rule) => setEdit({ open: true, rule: clone(rule) });
   const closeEdit = () => setEdit({ open: false, rule: null });
+
+  function isEnabled(rule: Rule) {
+    return rule.enabled;
+  }
+
+  async function toggleRule(rule: Rule) {
+    setRules((prev) =>
+      prev.map((item) =>
+        item.id === rule.id ? { ...item, enabled: !item.enabled } : item,
+      ),
+    );
+    try {
+      const key = KEY_MAP[rule.id];
+      const next = await updateAntifraudRule(key, {
+        enabled: !rule.enabled,
+      });
+      setRules((prev) =>
+        prev.map((item) =>
+          item.id === rule.id
+            ? {
+                ...item,
+                enabled: next.enabled,
+                period_days: next.period_days,
+                threshold_som: next.threshold_som,
+                min_count: next.min_count,
+                percent_threshold: next.percent_threshold,
+              }
+            : item,
+        ),
+      );
+    } catch {
+      setRules((prev) =>
+        prev.map((item) =>
+          item.id === rule.id ? { ...item, enabled: rule.enabled } : item,
+        ),
+      );
+    }
+  }
 
   const KEY_MAP: Record<string, string> = {
     "req-1": "FIAT_ANY_GE_1M",
@@ -219,7 +264,11 @@ export default function ControlPage() {
           p.persons = Number((br as any).min_count ?? p.persons) || p.persons;
           break;
       }
-      return { ...r, params: { ...p } } as Rule;
+      return {
+        ...r,
+        enabled: br?.enabled ?? r.enabled,
+        params: { ...p },
+      } as Rule;
     });
   }
 
@@ -243,27 +292,62 @@ export default function ControlPage() {
   return (
     <div className="flex-1 min-h-0 flex">
       <div className="m-auto w-full max-w-5xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Section title="Обязательный контроль">
-            {groups.required.map((rule) => (
-              <RuleRow
+        <div className="rounded-xl border border-soft shadow-sm overflow-hidden card">
+          <div className="border-b border-soft p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-lg font-semibold">Фин контроль</div>
+                <div className="mt-1 text-sm text-muted">
+                  Выберите категорию и включите нужные правила галочками.
+                </div>
+              </div>
+              <div className="flex rounded-full border border-soft bg-[var(--bg-soft)] p-1">
+                {(["Обязательный контроль", "Поведение клиента"] as Category[]).map(
+                  (category) => (
+                    <button
+                      key={category}
+                      className={`rounded-full px-4 py-2 text-sm transition ${
+                        selectedCategory === category
+                          ? "bg-[var(--primary)] text-white"
+                          : "text-muted hover:text-fg"
+                      }`}
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      {category}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="p-4 space-y-3">
+            {visibleRules.map((rule) => (
+              <div
                 key={rule.id}
-                label={rule.condition}
-                value={formatSummary(rule.params)}
-                onEdit={() => openEdit(rule)}
-              />
+                className="flex flex-col gap-3 rounded-xl border border-soft bg-[var(--bg-soft)] p-4 lg:flex-row lg:items-center lg:justify-between"
+              >
+                <label className="flex min-w-0 items-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4"
+                    checked={isEnabled(rule)}
+                    onChange={() => toggleRule(rule)}
+                  />
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold">{rule.condition}</div>
+                    <div className="mt-1 text-sm text-muted">
+                      {formatSummary(rule.params)}
+                    </div>
+                  </div>
+                </label>
+                <div className="flex gap-2 lg:shrink-0">
+                  <button className="btn h-8" onClick={() => openEdit(rule)}>
+                    Изменить
+                  </button>
+                </div>
+              </div>
             ))}
-          </Section>
-          <Section title="Поведение клиента">
-            {groups.behavior.map((rule) => (
-              <RuleRow
-                key={rule.id}
-                label={rule.condition}
-                value={formatSummary(rule.params)}
-                onEdit={() => openEdit(rule)}
-              />
-            ))}
-          </Section>
+          </div>
         </div>
       </div>
 
@@ -639,12 +723,14 @@ function initialRules(): Rule[] {
       id: "req-1",
       category: "Обязательный контроль",
       condition: "(внесение, снятие, обмен) с фиата",
+      enabled: true,
       params: { type: "fiatOpsThreshold", amountSom: 1_000_000 },
     },
     {
       id: "req-2",
       category: "Обязательный контроль",
       condition: "Разовая сделка",
+      enabled: true,
       params: { type: "singleDeal", amountSom: 2_800_000 },
     },
 
@@ -652,12 +738,14 @@ function initialRules(): Rule[] {
       id: "beh-1",
       category: "Поведение клиента",
       condition: "Частые внесения/снятия",
+      enabled: true,
       params: { type: "frequentOps", count: 3, days: 30, perOpMinSom: 100_000 },
     },
     {
       id: "beh-2",
       category: "Поведение клиента",
       condition: "Вывод в фиат после крупного поступления",
+      enabled: true,
       params: {
         type: "withdrawAfterLargeIncome",
         percent: 50,
@@ -669,12 +757,14 @@ function initialRules(): Rule[] {
       id: "beh-3",
       category: "Поведение клиента",
       condition: "Дробление сумм перевода с фиата",
+      enabled: true,
       params: { type: "splitFiatAmounts", amountSom: 1_000_000, days: 14 },
     },
     {
       id: "beh-4",
       category: "Поведение клиента",
       condition: "Внесение третьими лицами на кошелёк",
+      enabled: true,
       params: {
         type: "thirdPartyDeposits",
         count: 3,
@@ -686,12 +776,14 @@ function initialRules(): Rule[] {
       id: "beh-5",
       category: "Поведение клиента",
       condition: "Активность счёта",
+      enabled: true,
       params: { type: "accountActivityAfterInactivity", months: 6 },
     },
     {
       id: "beh-6",
       category: "Поведение клиента",
       condition: "Много переводов от разных физлиц на один счёт за месяц",
+      enabled: true,
       params: { type: "manyTransfersFromDifferentPersons", persons: 10 },
     },
   ];

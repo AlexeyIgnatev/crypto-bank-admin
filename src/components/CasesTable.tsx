@@ -228,6 +228,7 @@ export default function CasesTable({
             <col className="w-[120px]" />
             <col />
             <col />
+            <col />
           </colgroup>
           <thead className="text-white">
             <tr>
@@ -364,6 +365,9 @@ export default function CasesTable({
                   </button>
                 </div>
               </Th>
+              <Th>
+                <span className="px-1">Причина</span>
+              </Th>
             </tr>
           </thead>
         </table>
@@ -390,6 +394,7 @@ export default function CasesTable({
             <col className="w-[120px]" />
             <col />
             <col />
+            <col />
           </colgroup>
           <tbody>
             {(() => {
@@ -402,7 +407,7 @@ export default function CasesTable({
                 <>
                   {paddingTop > 0 && (
                     <tr aria-hidden="true">
-                      <td colSpan={8} style={{ height: paddingTop }} />
+                      <td colSpan={9} style={{ height: paddingTop }} />
                     </tr>
                   )}
 
@@ -446,13 +451,16 @@ export default function CasesTable({
                         >
                           {item.recipient}
                         </td>
+                        <td className="px-4 py-3 truncate" title={item.reason || ""}>
+                          {item.reason || "—"}
+                        </td>
                       </tr>
                     );
                   })}
 
                   {paddingBottom > 0 && (
                     <tr aria-hidden="true">
-                      <td colSpan={8} style={{ height: paddingBottom }} />
+                      <td colSpan={9} style={{ height: paddingBottom }} />
                     </tr>
                   )}
                 </>
@@ -467,7 +475,7 @@ export default function CasesTable({
         <DropdownPanel state={idDD} title="ID/tx_hash">
           <input
             className="ui-input w-full"
-            placeholder="Поиск по id/tx_hash"
+            placeholder="Поиск по tx_hash"
             value={idQuery}
             onChange={(e) => setIdQuery(e.target.value)}
           />

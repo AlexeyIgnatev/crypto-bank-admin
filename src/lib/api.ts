@@ -721,7 +721,7 @@ export async function getAdminSettings(): Promise<AdminSettings> {
 }
 
 export async function putAdminSettings(
-  payload: Partial<AdminSettings>,
+  payload: Partial<AdminSettings> & { comment?: string },
 ): Promise<AdminSettings> {
   const res = await fetch(`/api/blockchain-config/admin-settings`, {
     method: "PUT",
@@ -816,6 +816,7 @@ export type AntiFraudRuleUpdate = Partial<{
   threshold_som: any;
   min_count: any;
   percent_threshold: any;
+  comment: string;
 }>;
 
 export async function getAntifraudRules(): Promise<AntiFraudRule[]> {
@@ -1068,6 +1069,57 @@ export async function getTariffs(): Promise<TariffSetting[]> {
     );
   }
   return res.json();
+}
+
+export type AdminActionLog = {
+  id: number;
+  admin_id: number;
+  ip: string;
+  action: string;
+  details: any | null;
+  createdAt: string;
+};
+
+export async function getAdminActionLogs(params: {
+  offset?: number;
+  limit?: number;
+  adminId?: number | string;
+  actionQuery?: string;
+  sortBy?: "createdAt" | "admin_id" | "action";
+  sortDir?: "asc" | "desc";
+  createdFrom?: string;
+  createdTo?: string;
+}): Promise<{ items: AdminActionLog[]; total: number; offset: number; limit: number }> {
+  const q = new URLSearchParams();
+  if (params.offset != null) q.set("offset", String(params.offset));
+  if (params.limit != null) q.set("limit", String(params.limit));
+  if (params.adminId != null && String(params.adminId).trim())
+    q.set("admin_id", String(params.adminId).trim());
+  if (params.actionQuery) q.set("action_query", params.actionQuery);
+  if (params.sortBy) q.set("sort_by", params.sortBy);
+  if (params.sortDir) q.set("sort_dir", params.sortDir);
+  if (params.createdFrom) q.set("created_from", params.createdFrom);
+  if (params.createdTo) q.set("created_to", params.createdTo);
+
+  const res = await fetch(`/api/audit/admin-actions?${q.toString()}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to load admin action logs");
+  const data = await res.json();
+  const items: AdminActionLog[] = (data.items || []).map((x: any) => ({
+    id: Number(x.id),
+    admin_id: Number(x.admin_id),
+    ip: String(x.ip || ""),
+    action: String(x.action || ""),
+    details: x.details ?? null,
+    createdAt: String(x.createdAt || new Date().toISOString()),
+  }));
+  return {
+    items,
+    total: Number(data.total ?? items.length),
+    offset: Number(data.offset ?? 0),
+    limit: Number(data.limit ?? items.length),
+  };
 }
 
 export async function putTariffs(

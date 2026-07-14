@@ -1,4 +1,4 @@
-﻿export type ExportFormat = "excel" | "pdf" | "txt";
+export type ExportFormat = "excel" | "pdf" | "txt" | "csv";
 
 export type ExportColumn<T> = {
   header: string;
@@ -51,6 +51,11 @@ function downloadText(
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+function csvEscape(value: string): string {
+  if (/[",\n\r;]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
+
 async function exportTxt<T>(opts: ExportOptions<T>): Promise<void> {
   const lines: string[] = [];
   lines.push(opts.title);
@@ -70,6 +75,41 @@ async function exportTxt<T>(opts: ExportOptions<T>): Promise<void> {
     lines.push(cells.join("\t"));
   });
   downloadText(lines.join("\n"), stampFileName(opts.fileBaseName, "txt"));
+}
+
+async function exportCsv<T>(opts: ExportOptions<T>): Promise<void> {
+  const lines: string[] = [];
+
+  if (opts.periodLabel || (opts.summary && opts.summary.length)) {
+    lines.push("Summary");
+    if (opts.periodLabel) {
+      lines.push(
+        ["Period", opts.periodLabel].map((cell) => csvEscape(cell)).join(";"),
+      );
+    }
+    for (const item of opts.summary || []) {
+      lines.push(
+        [item.label, String(item.value)]
+          .map((cell) => csvEscape(cell))
+          .join(";"),
+      );
+    }
+    lines.push("");
+  }
+
+  lines.push(opts.columns.map((c) => csvEscape(c.header)).join(";"));
+  opts.rows.forEach((row, index) => {
+    const cells = opts.columns.map((c) =>
+      csvEscape(String(normalizeCell(c.getValue(row, index)))),
+    );
+    lines.push(cells.join(";"));
+  });
+
+  downloadText(
+    "\uFEFF" + lines.join("\n"),
+    stampFileName(opts.fileBaseName, "csv"),
+    "text/csv;charset=utf-8",
+  );
 }
 
 async function exportExcel<T>(opts: ExportOptions<T>): Promise<void> {
@@ -112,7 +152,7 @@ async function exportPdf<T>(opts: ExportOptions<T>): Promise<void> {
   body.push(opts.columns.map((c) => ({ text: c.header, bold: true })));
   opts.rows.forEach((row, index) => {
     body.push(
-      opts.columns.map((c) => String(normalizeCell(c.getValue(row, index)))),
+      opts.columns.map((c) => String(normalizeCell(c.getValue(row, index)))) ,
     );
   });
 
@@ -153,6 +193,10 @@ async function exportPdf<T>(opts: ExportOptions<T>): Promise<void> {
 export async function exportRows<T>(opts: ExportOptions<T>): Promise<void> {
   if (opts.format === "txt") {
     await exportTxt(opts);
+    return;
+  }
+  if (opts.format === "csv") {
+    await exportCsv(opts);
     return;
   }
   if (opts.format === "excel") {

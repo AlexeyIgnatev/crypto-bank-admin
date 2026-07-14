@@ -5,7 +5,15 @@ import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import UserDetailsCard from "../../components/UserDetails";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
-import { createUser, deleteUser, getUsers, updateUser } from "@/lib/api";
+import {
+  createUser,
+  deleteUser,
+  getAdminActionLogs,
+  getAdmins,
+  getUsers,
+  updateUser,
+  type AdminActionLog,
+} from "@/lib/api";
 import {
   CustomerResidency,
   TariffCategory,
@@ -372,6 +380,63 @@ function CreateUserForm({
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>
       </div>
+
+      <div className="mt-6 rounded-2xl border border-soft bg-[var(--bg-soft)]">
+        <div className="flex items-center justify-between gap-3 border-b border-soft px-4 py-3">
+          <div>
+            <div className="text-sm font-semibold">
+              История комментариев по статусу
+            </div>
+            <div className="text-xs text-muted">
+              Последние изменения статуса и комментарии к ним.
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn h-9"
+            disabled={
+              !statusHistoryRows.length || statusHistoryExporting === "csv"
+            }
+            onClick={exportStatusHistoryCsv}
+          >
+            {statusHistoryExporting === "csv" ? "CSV..." : "Скачать CSV"}
+          </button>
+        </div>
+        <div className="max-h-64 overflow-auto px-4 py-3">
+          {statusHistoryLoading ? (
+            <div className="text-sm text-muted">Загрузка истории...</div>
+          ) : statusHistoryError ? (
+            <div className="text-sm text-red-500">{statusHistoryError}</div>
+          ) : statusHistoryRows.length ? (
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-[var(--bg-soft)] text-left text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th className="py-2 pr-3">Дата</th>
+                  <th className="py-2 pr-3">Админ</th>
+                  <th className="py-2 pr-3">Статус</th>
+                  <th className="py-2 pr-3">Комментарий</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statusHistoryRows.map((item, index) => (
+                  <tr key={`${item.date}-${index}`} className="border-t border-soft">
+                    <td className="py-2 pr-3 whitespace-nowrap text-muted">
+                      {new Date(item.date).toLocaleString()}
+                    </td>
+                    <td className="py-2 pr-3">{item.admin}</td>
+                    <td className="py-2 pr-3">{item.status}</td>
+                    <td className="py-2 pr-3 break-words">{item.comment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-sm text-muted">
+              Пока нет истории изменений статуса.
+            </div>
+          )}
+        </div>
+      </div>
     </form>
   );
 }
@@ -416,6 +481,14 @@ function EditUserForm({
   const [err, setErr] = useState<string | null>(null);
   const statusChanged = status !== user.status;
   const trimmedStatusComment = statusComment.trim();
+  const [statusHistory, setStatusHistory] = useState<AdminActionLog[]>([]);
+  const [statusHistoryLoading, setStatusHistoryLoading] = useState(true);
+  const [statusHistoryError, setStatusHistoryError] = useState<string | null>(
+    null,
+  );
+  const [statusHistoryExporting, setStatusHistoryExporting] =
+    useState<ExportFormat | null>(null);
+  const [admins, setAdmins] = useState<Record<string, string>>({});
 
   const handleStatusChange = (nextStatus: UserStatus) => {
     setStatus(nextStatus);
@@ -433,6 +506,109 @@ function EditUserForm({
       setErr(null);
     }
   };
+
+  useEffect(() => {
+    let active = true;
+    async function loadHistory() {
+      setStatusHistoryLoading(true);
+      setStatusHistoryError(null);
+      try {
+        const [logs, adminList] = await Promise.all([
+          getAdminActionLogs({
+            offset: 0,
+            limit: 100,
+            sortBy: "createdAt",
+            sortDir: "desc",
+            actionQuery: "PUT /user-management",
+          }),
+          getAdmins({ offset: 0, limit: 500 }),
+        ]);
+        if (!active) return;
+
+        const adminMap: Record<string, string> = {};
+        for (const admin of adminList.items) {
+          adminMap[admin.id] =
+            [admin.firstName, admin.lastName].filter(Boolean).join(" ") ||
+            admin.login ||
+            `#${admin.id}`;
+        }
+        setAdmins(adminMap);
+        setStatusHistory(
+          logs.items.filter((item) => {
+            const details = parseAdminActionDetails(item.details);
+            const body = details?.body ?? details?.data ?? details;
+            const params = details?.params ?? {};
+            const targetId = String(params?.id ?? body?.id ?? "");
+            if (targetId !== String(user.id)) return false;
+            return (
+              body?.status !== undefined ||
+              body?.status_comment !== undefined ||
+              body?.statusComment !== undefined
+            );
+          }),
+        );
+      } catch (e) {
+        if (!active) return;
+        setStatusHistoryError(
+          e instanceof Error
+            ? e.message
+            : "Не удалось загрузить историю статуса",
+        );
+        setStatusHistory([]);
+      } finally {
+        if (active) setStatusHistoryLoading(false);
+      }
+    }
+    void loadHistory();
+    return () => {
+      active = false;
+    };
+  }, [user.id]);
+
+  const statusHistoryRows = statusHistory.map((item) => {
+    const details = parseAdminActionDetails(item.details);
+    const body = details?.body ?? details?.data ?? details;
+    return {
+      date: item.createdAt,
+      admin: admins[String(item.admin_id)] || `Админ #${item.admin_id}`,
+      status: statusLabelForLog(body?.status ?? body?.status_comment),
+      comment:
+        String(
+          body?.status_comment ??
+            body?.statusComment ??
+            body?.comment ??
+            "—",
+        ) || "—",
+      action: item.action,
+      ip: item.ip,
+    };
+  });
+
+  async function exportStatusHistoryCsv() {
+    if (!statusHistoryRows.length || statusHistoryExporting) return;
+    setStatusHistoryExporting("csv");
+    try {
+      await exportRows({
+        format: "csv",
+        fileBaseName: `user_status_history_${user.id}`,
+        title: `История статуса пользователя ${user.fullName}`,
+        columns: [
+          {
+            header: "Дата",
+            getValue: (row) => new Date(row.date).toLocaleString(),
+          },
+          { header: "Админ", getValue: (row) => row.admin },
+          { header: "Статус", getValue: (row) => row.status },
+          { header: "Комментарий", getValue: (row) => row.comment },
+          { header: "Действие", getValue: (row) => row.action },
+          { header: "IP", getValue: (row) => row.ip },
+        ],
+        rows: statusHistoryRows,
+      });
+    } finally {
+      setStatusHistoryExporting(null);
+    }
+  }
 
   return (
     <form
@@ -720,4 +896,23 @@ function DeleteUserConfirm({
       </div>
     </div>
   );
+}
+
+function parseAdminActionDetails(value: any): any {
+  if (value == null) return null;
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+}
+
+function statusLabelForLog(value: unknown): string {
+  const text = String(value ?? "").trim();
+  if (!text) return "—";
+  if (text === "ACTIVE" || text === "Активен") return "Активен";
+  if (text === "BLOCKED" || text === "Заблокирован") return "Заблокирован";
+  if (text === "FRAUD" || text === "Фин контроль") return "Фин контроль";
+  return text;
 }
