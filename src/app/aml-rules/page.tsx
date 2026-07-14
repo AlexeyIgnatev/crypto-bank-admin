@@ -271,54 +271,34 @@ function validateDraft(rule: AntiFraudRule, draft: RuleDraft): string | null {
 }
 
 export default function AmlRulesPage() {
-  const [rules, setRules] = useState<AntiFraudRule[]>([]);
-  const [drafts, setDrafts] = useState<Record<string, RuleDraft>>({});
-  const [loadingRules, setLoadingRules] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
-  const [sourceDraft, setSourceDraft] = useState("");
-  const [savedSourceDraft, setSavedSourceDraft] = useState("");
-  const [sourcesReady, setSourcesReady] = useState(false);
-
+  const [apiDraft, setApiDraft] = useState("");
+  const [urlDraft, setUrlDraft] = useState("");
+  const [fileName, setFileName] = useState("");
   const [admins, setAdmins] = useState<AdminOption[]>([]);
   const [history, setHistory] = useState<AdminActionLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [historyExporting, setHistoryExporting] =
     useState<ExportFormat | null>(null);
-
-  const [commentOpen, setCommentOpen] = useState(false);
-  const [commentDraft, setCommentDraft] = useState("");
-  const [commentError, setCommentError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(SOURCES_STORAGE_KEY) || "";
-    setSourceDraft(raw);
-    setSavedSourceDraft(raw);
-    setSourcesReady(true);
-  }, []);
-
-  async function loadRules() {
-    setLoadingRules(true);
     try {
-      const list = await getAntifraudRules();
-      setRules(list);
-      const nextDrafts: Record<string, RuleDraft> = {};
-      for (const rule of list) nextDrafts[rule.key] = createDraft(rule);
-      setDrafts(nextDrafts);
-      setError(null);
-    } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Не удалось загрузить AML-правила",
-      );
-    } finally {
-      setLoadingRules(false);
+      const raw = window.localStorage.getItem("aml-rules:stubs:v1") || "";
+      if (raw) {
+        const parsed = JSON.parse(raw) as Record<string, unknown>;
+        setApiDraft(String(parsed.api ?? ""));
+        setUrlDraft(String(parsed.urls ?? ""));
+        setFileName(String(parsed.fileName ?? ""));
+      }
+    } catch {
+      // Keep empty defaults when local storage is unavailable.
     }
-  }
+    void loadAdmins();
+    void loadHistory();
+  }, []);
 
   async function loadAdmins() {
     try {
@@ -360,43 +340,13 @@ export default function AmlRulesPage() {
     }
   }
 
-  useEffect(() => {
-    void loadRules();
-    void loadAdmins();
-    void loadHistory();
-  }, []);
-
-  const activeRules = useMemo(
-    () => rules.filter((rule) => Boolean(rule.enabled)).length,
-    [rules],
-  );
-  const totalRules = rules.length;
-  const sourceLines = useMemo(() => normalizeSources(sourceDraft), [sourceDraft]);
-  const savedSourceLines = useMemo(
-    () => normalizeSources(savedSourceDraft),
-    [savedSourceDraft],
-  );
-  const sourceDirty =
-    sourceLines.join("\n") !== savedSourceLines.join("\n");
-  const dirtyKeys = useMemo(() => {
-    const keys: string[] = [];
-    for (const rule of rules) {
-      const draft = drafts[rule.key];
-      if (!draft) continue;
-      if (isRuleDirty(rule, draft)) {
-        keys.push(rule.key);
-      }
-    }
-    return keys;
-  }, [drafts, rules]);
-  const hasChanges = dirtyKeys.length > 0 || sourceDirty;
-  const lastChange = history[0];
-
   const adminLookup = useMemo(() => {
     const map = new Map<string, string>();
     for (const admin of admins) map.set(admin.id, admin.label);
     return map;
   }, [admins]);
+
+  const urlLines = useMemo(() => normalizeSources(urlDraft), [urlDraft]);
 
   const historyExportRows = useMemo(
     () =>
@@ -405,7 +355,8 @@ export default function AmlRulesPage() {
         return {
           date: item.createdAt,
           user:
-            adminLookup.get(String(item.admin_id)) || `Админ #${item.admin_id}`,
+            adminLookup.get(String(item.admin_id)) ||
+            (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`),
           action: item.action,
           changed: formatChangedFields(details),
           comment: extractComment(details),
@@ -415,65 +366,51 @@ export default function AmlRulesPage() {
     [adminLookup, history],
   );
 
-  async function persistChanges(comment?: string) {
-    if (!hasChanges) {
-      setSaveMessage("Изменений нет");
-      return;
-    }
-    const invalidRule = dirtyRules.find((rule) => {
-      const draft = drafts[rule.key];
-      if (!draft) return false;
-      return Boolean(validateDraft(rule, draft));
-    });
-    if (invalidRule) {
-      setError(
-        `Проверьте правило "${getRuleLabel(invalidRule.key)}" перед сохранением`,
-      );
-      return;
-    }
+  async function saveStubSettings() {
     setSaving(true);
     setError(null);
-    setSaveMessage(null);
+    setSuccess(null);
     try {
-      const commentText = comment?.trim() || "";
-      for (const rule of rules) {
-        const draft = drafts[rule.key];
-        if (!draft) continue;
-        const payload = buildUpdatePayload(rule, draft);
-        const changed = Object.keys(payload).length > 0;
-        if (!changed) continue;
-        await updateAntifraudRule(rule.key, {
-          ...payload,
-          comment: commentText,
-        });
-      }
+      const payload = {
+        api: apiDraft.trim(),
+        urls: urlLines,
+        fileName: fileName.trim(),
+      };
+      window.localStorage.setItem("aml-rules:stubs:v1", JSON.stringify(payload));
+      const summary = [
+        apiDraft.trim() ? `API: ${apiDraft.trim()}` : "",
+        urlLines.length ? `URL: ${urlLines.length}` : "",
+        fileName.trim() ? `FILE: ${fileName.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join(" | ") || "Заглушки AML обновлены";
 
-      if (sourceDirty && sourcesReady) {
-        const normalized = sourceLines.join("\n");
-        window.localStorage.setItem(SOURCES_STORAGE_KEY, normalized);
-        setSavedSourceDraft(normalized);
-        setSourceDraft(normalized);
-      }
+      const synthetic: AdminActionLog = {
+        id: Date.now(),
+        admin_id: 0,
+        ip: "local",
+        action: "AML stubs updated",
+        details: JSON.stringify({
+          body: {
+            api: apiDraft.trim(),
+            urls: urlLines,
+            fileName: fileName.trim(),
+            comment: summary,
+          },
+        }),
+        createdAt: new Date().toISOString(),
+      };
 
-      await loadRules();
-      await loadHistory();
-      setSaveMessage("AML-правила сохранены");
-      setCommentOpen(false);
-      setCommentDraft("");
-      setCommentError(null);
+      setHistory((prev) => [synthetic, ...prev]);
+      setSuccess("Заглушки AML сохранены");
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Не удалось сохранить AML-правила",
+        e instanceof Error ? e.message : "Не удалось сохранить AML-заглушки",
       );
     } finally {
       setSaving(false);
     }
   }
-
-  const dirtyRules = useMemo(
-    () => rules.filter((rule) => dirtyKeys.includes(rule.key)),
-    [dirtyKeys, rules],
-  );
 
   async function exportHistoryCsv() {
     if (!historyExportRows.length || historyExporting) return;
@@ -482,7 +419,7 @@ export default function AmlRulesPage() {
       await exportRows({
         format: "csv",
         fileBaseName: "aml_history",
-        title: "AML история изменений",
+        title: "AML история",
         columns: [
           { header: "Дата", getValue: (row) => formatDate(row.date) },
           { header: "Пользователь", getValue: (row) => row.user },
@@ -509,420 +446,200 @@ export default function AmlRulesPage() {
                   AML
                 </span>
                 <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
-                  Вкладка управления правилами
+                  Заглушки: API, URL-список и файл
                 </span>
               </div>
               <h1 className="mt-3 text-2xl font-semibold">
-                AML-правила и история изменений
+                AML-заглушки
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-                Здесь включаются и настраиваются текущие AML-правила, добавляются
-                источники, а все изменения фиксируются с обязательным
-                комментариям-основанием.
+                Пока здесь три поля заглушек: API, URL-список и файл. После сохранения ниже обновится история.
               </p>
             </div>
 
             <div className="flex flex-col gap-3 lg:items-end">
               <button
                 className="btn btn-primary h-11 w-full lg:w-auto"
-                disabled={!hasChanges || saving}
+                disabled={saving}
                 onClick={() => {
-                  if (!dirtyRules.length) {
-                    void persistChanges();
-                    return;
-                  }
-                  const invalid = dirtyRules.find((rule) => {
-                    const draft = drafts[rule.key];
-                    return draft ? Boolean(validateDraft(rule, draft)) : false;
-                  });
-                  if (invalid) {
-                    setError(
-                      `Проверьте правило "${getRuleLabel(invalid.key)}" перед сохранением`,
-                    );
-                    return;
-                  }
-                  setCommentOpen(true);
+                  void saveStubSettings();
                 }}
               >
-                {saving ? "Сохранение..." : "Сохранить изменения"}
+                {saving ? "Сохранение..." : "Сохранить"}
               </button>
-              <div className="flex flex-wrap justify-end gap-2 text-xs">
-                <span className="rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-muted">
-                  Всего правил: {totalRules}
-                </span>
-                <span className="rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-muted">
-                  Активно: {activeRules}
-                </span>
-                <span className="rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-muted">
-                  Источников: {sourceLines.length}
-                </span>
-                <span className="rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-muted">
-                  Последнее изменение: {lastChange ? formatDate(lastChange.createdAt) : "—"}
-                </span>
-              </div>
             </div>
           </div>
 
-          {(error || saveMessage) && (
+          {(error || success) && (
             <div className="border-b border-soft px-5 py-3">
               {error ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
                   {error}
                 </div>
               ) : null}
-              {!error && saveMessage ? (
+              {!error && success ? (
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-                  {saveMessage}
+                  {success}
                 </div>
               ) : null}
             </div>
           )}
         </section>
 
-        <div className="flex flex-col gap-5">
-          <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
-              <div>
-                <div className="text-lg font-semibold">Текущие AML-правила</div>
-                <div className="text-sm text-muted">
-                  Выберите, какие правила используются сейчас, и настройте их
-                  параметры.
-                </div>
+        <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
+          <div className="grid gap-4 border-b border-soft px-5 py-4">
+            <div className="text-lg font-semibold">
+              Поля заглушек AML
+            </div>
+            <div className="text-sm text-muted">
+              Здесь пока только тестовые поля. Логику правил из control пока не трогаем.
+            </div>
+          </div>
+          <div className="grid gap-4 p-5">
+            <label className="grid gap-1">
+              <span className="text-xs text-muted">
+                Вставить API
+              </span>
+              <input
+                className="ui-input"
+                value={apiDraft}
+                onChange={(e) => setApiDraft(e.target.value)}
+                placeholder="https://api.example.com/aml"
+              />
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-xs text-muted">
+                Вставить URL-ы
+              </span>
+              <textarea
+                className="ui-input min-h-36 resize-y leading-6"
+                value={urlDraft}
+                onChange={(e) => setUrlDraft(e.target.value)}
+                placeholder={[
+                  "https://example.com/aml-source-1",
+                  "https://example.com/aml-source-2",
+                ].join("\n")}
+              />
+              <div className="text-xs text-muted">
+                {urlLines.length
+                  ? `Всего URL: ${urlLines.length}`
+                  : "Список URL пока пуст"}
               </div>
-              <div className="rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
-                Изменено: {dirtyRules.length}
+            </label>
+
+            <label className="grid gap-1">
+              <span className="text-xs text-muted">
+                Вставить файл
+              </span>
+              <input
+                className="ui-input"
+                type="file"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  setFileName(file ? file.name : "");
+                }}
+              />
+              <div className="text-xs text-muted">
+                {fileName ? `${"Выбрано"}: ${fileName}` : "Файл пока не выбран"}
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
+            <div>
+              <div className="text-lg font-semibold">
+                История AML
+              </div>
+              <div className="mt-1 text-sm text-muted">
+                Дата, кто изменил, что поменял и комментарий.
               </div>
             </div>
-
-            <div className="max-h-[960px] overflow-auto p-4">
-              {loadingRules ? (
-                <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-6 text-sm text-muted">
-                  Загрузка правил...
-                </div>
-              ) : rules.length ? (
-                <div className="grid gap-4">
-                  {rules.map((rule) => {
-                    const draft = drafts[rule.key] || createDraft(rule);
-                    const meta = RULE_META[rule.key] || {
-                      title: rule.key,
-                      description: "Правило антифрода.",
-                      fields: [] as RuleMeta["fields"],
-                    };
-                    const fieldError = validateDraft(rule, draft);
-                    const changed = dirtyKeys.includes(rule.key);
+            <button
+              className="btn h-10 px-3"
+              type="button"
+              onClick={exportHistoryCsv}
+              disabled={!historyExportRows.length || historyExporting === "csv"}
+            >
+              {historyExporting === "csv" ? "CSV..." : "CSV"}
+            </button>
+          </div>
+          <div className="max-h-[560px] overflow-auto">
+            {historyLoading ? (
+              <div className="p-5 text-sm text-muted">
+                Загрузка истории...
+              </div>
+            ) : historyError ? (
+              <div className="p-5 text-sm text-red-600">{historyError}</div>
+            ) : history.length ? (
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 z-[1] bg-[var(--card)] text-left text-xs font-semibold uppercase tracking-wide text-muted">
+                  <tr className="border-b border-soft">
+                    <th className="px-5 py-3">
+                      Дата
+                    </th>
+                    <th className="px-5 py-3">
+                      Пользователь
+                    </th>
+                    <th className="px-5 py-3">
+                      Что поменял
+                    </th>
+                    <th className="px-5 py-3">
+                      Комментарий
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((item) => {
+                    const adminLabel =
+                      adminLookup.get(String(item.admin_id)) ||
+                      (item.admin_id === 0
+                        ? "Локально"
+                        : `Админ #${item.admin_id}`);
+                    const details = parseDetails(item.details);
                     return (
-                      <article
-                        key={rule.key}
-                        className={`rounded-2xl border p-4 shadow-sm transition-colors ${
-                          changed
-                            ? "border-[color-mix(in_srgb,var(--primary)_35%,var(--border-color))] bg-[color-mix(in_srgb,var(--primary)_4%,var(--card))]"
-                            : "border-soft bg-[var(--card)]"
-                        }`}
+                      <tr
+                        key={item.id}
+                        className="border-b border-black/10 transition-colors last:border-b-0 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="text-base font-semibold">
-                                {meta.title}
-                              </h3>
-                              <span
-                                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                                  draft.enabled
-                                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
-                                    : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                                }`}
-                              >
-                                {draft.enabled ? "Активно" : "Неактивно"}
-                              </span>
-                              {changed && (
-                                <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_12%,transparent)] px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)]">
-                                  Изменено
-                                </span>
-                              )}
-                            </div>
-                            <div className="mt-1 text-sm leading-6 text-muted">
-                              {meta.description}
-                            </div>
+                        <td className="px-5 py-4 whitespace-nowrap text-muted">
+                          {formatDate(item.createdAt)}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="font-medium">{adminLabel}</div>
+                          <div className="text-xs text-muted">{item.action}</div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="max-w-[520px] break-words text-sm leading-6">
+                            {formatChangedFields(details)}
                           </div>
-
-                          <button
-                            type="button"
-                            className={`inline-flex h-9 items-center rounded-full border px-4 text-sm font-semibold transition-colors ${
-                              draft.enabled
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200"
-                                : "border-soft bg-[var(--bg-soft)] text-muted hover:bg-[color-mix(in_srgb,var(--primary)_5%,var(--bg-soft))]"
-                            }`}
-                            onClick={() =>
-                              setDrafts((prev) => ({
-                                ...prev,
-                                [rule.key]: {
-                                  ...draft,
-                                  enabled: !draft.enabled,
-                                },
-                              }))
-                            }
-                          >
-                            {draft.enabled ? "Активно" : "Выкл."}
-                          </button>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-1 gap-3">
-                          {meta.fields.map((field) => (
-                            <label key={field.key} className="block text-sm">
-                              <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-muted">
-                                {field.label}
-                              </span>
-                              <input
-                                className="ui-input w-full"
-                                type="number"
-                                inputMode="decimal"
-                                step={field.type === "percent" ? "0.1" : "1"}
-                                value={draft[field.key]}
-                                onChange={(e) =>
-                                  setDrafts((prev) => ({
-                                    ...prev,
-                                    [rule.key]: {
-                                      ...draft,
-                                      [field.key]: e.target.value,
-                                    },
-                                  }))
-                                }
-                              />
-                            </label>
-                          ))}
-                        </div>
-
-                        <div className="mt-3 flex items-center justify-between gap-3 text-xs text-muted">
-                          <span>Ключ: {rule.key}</span>
-                          <span>
-                            Обновлено: {formatDate(rule.updatedAt)}
-                          </span>
-                        </div>
-
-                        {fieldError && (
-                          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-                            {fieldError}
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="max-w-[360px] break-words text-sm leading-6 text-muted">
+                            {extractComment(details)}
                           </div>
-                        )}
-                      </article>
+                        </td>
+                      </tr>
                     );
                   })}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-6 text-sm text-muted">
-                  Нет доступных AML-правил.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <div className="flex flex-col gap-5">
-            <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
-              <div className="border-b border-soft px-5 py-4">
-                <div className="text-lg font-semibold">AML-источники</div>
-                <div className="mt-1 text-sm text-muted">
-                  Можно вставить несколько ссылок сразу: по одной на строку или
-                  через запятую.
-                </div>
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-5 text-sm text-muted">
+                Пока нет истории AML.
               </div>
-              <div className="space-y-4 p-5">
-                <label className="block text-sm">
-                  <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
-                    Список ссылок
-                  </span>
-                  <textarea
-                    className="ui-input min-h-44 w-full resize-y leading-6"
-                    value={sourceDraft}
-                    onChange={(e) => setSourceDraft(e.target.value)}
-                    placeholder={[
-                      "https://example.com/aml-source-1",
-                      "https://example.com/aml-source-2",
-                    ].join("\n")}
-                  />
-                </label>
-
-                <div className="flex flex-wrap gap-2">
-                  {sourceLines.length ? (
-                    sourceLines.map((item, index) => (
-                      <span
-                        key={`${item}-${index}`}
-                        className="inline-flex max-w-full items-center gap-2 rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted"
-                      >
-                        <span className="max-w-[280px] truncate">{item}</span>
-                        <button
-                          type="button"
-                          className="text-[11px] font-semibold text-[var(--primary)]"
-                          onClick={() =>
-                            setSourceDraft(
-                              normalizeSources(
-                                sourceLines
-                                  .filter((_, i) => i !== index)
-                                  .join("\n"),
-                              ).join("\n"),
-                            )
-                          }
-                        >
-                          удалить
-                        </button>
-                      </span>
-                    ))
-                  ) : (
-                    <div className="text-sm text-muted">
-                      Ссылки пока не добавлены.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </section>
-
-            <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
-              <div className="border-b border-soft px-5 py-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <div className="text-lg font-semibold">
-                      Последние изменения AML
-                    </div>
-                    <div className="mt-1 text-sm text-muted">
-                      Дата, кто изменил, что поменял и комментарий-основание.
-                    </div>
-                  </div>
-                  <button
-                    className="btn h-10"
-                    disabled={!historyExportRows.length || historyExporting === "csv"}
-                    onClick={exportHistoryCsv}
-                  >
-                    {historyExporting === "csv" ? "CSV..." : "Скачать CSV"}
-                  </button>
-                </div>
-              </div>
-              <div className="max-h-[560px] overflow-auto">
-                {historyLoading ? (
-                  <div className="p-5 text-sm text-muted">Загрузка истории...</div>
-                ) : historyError ? (
-                  <div className="p-5 text-sm text-red-600">{historyError}</div>
-                ) : history.length ? (
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 z-[1] bg-[var(--card)] text-left text-xs font-semibold uppercase tracking-wide text-muted">
-                      <tr className="border-b border-soft">
-                        <th className="px-5 py-3">Дата</th>
-                        <th className="px-5 py-3">Пользователь</th>
-                        <th className="px-5 py-3">Что поменял</th>
-                        <th className="px-5 py-3">Комментарий</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {history.map((item) => {
-                        const adminLabel =
-                          adminLookup.get(String(item.admin_id)) ||
-                          `Админ #${item.admin_id}`;
-                        const details = parseDetails(item.details);
-                        return (
-                          <tr
-                            key={item.id}
-                            className="border-b border-black/10 transition-colors last:border-b-0 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-                          >
-                            <td className="px-5 py-4 whitespace-nowrap text-muted">
-                              {formatDate(item.createdAt)}
-                            </td>
-                            <td className="px-5 py-4">
-                              <div className="font-medium">{adminLabel}</div>
-                              <div className="text-xs text-muted">
-                                {item.action}
-                              </div>
-                            </td>
-                            <td className="px-5 py-4">
-                              <div className="max-w-[520px] break-words text-sm leading-6">
-                                {formatChangedFields(details)}
-                              </div>
-                            </td>
-                            <td className="px-5 py-4">
-                              <div className="max-w-[360px] break-words text-sm leading-6 text-muted">
-                                {extractComment(details)}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                ) : (
-                  <div className="p-5 text-sm text-muted">
-                    Пока нет истории изменений AML.
-                  </div>
-                )}
-              </div>
-            </section>
+            )}
           </div>
-        </div>
+        </section>
       </div>
-
-      <Modal
-        open={commentOpen}
-        onClose={() => {
-          setCommentOpen(false);
-          setCommentError(null);
-          setCommentDraft("");
-        }}
-        title="Комментарий к изменению AML"
-      >
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
-            Комментарий обязателен, если вы меняете любые правила. Он попадёт в
-            историю изменений и в audit-log.
-          </div>
-
-          <label className="block text-sm">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
-              На каком основании меняются правила
-            </span>
-            <textarea
-              className="ui-input min-h-32 w-full resize-y leading-6"
-              value={commentDraft}
-              onChange={(e) => {
-                setCommentDraft(e.target.value);
-                if (commentError) setCommentError(null);
-              }}
-              placeholder="Например: обновление AML-политики по запросу комплаенса..."
-            />
-          </label>
-
-          {commentError && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
-              {commentError}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className="btn h-10"
-              onClick={() => {
-                setCommentOpen(false);
-                setCommentError(null);
-                setCommentDraft("");
-              }}
-            >
-              Отмена
-            </button>
-            <button
-              className="btn btn-primary h-10"
-              onClick={async () => {
-                if (!commentDraft.trim()) {
-                  setCommentError("Укажите комментарий, на каком основании меняются правила");
-                  return;
-                }
-                await persistChanges(commentDraft);
-              }}
-            >
-              Сохранить
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
 
 function parseDetails(value: any): any {
+
   if (value == null) return null;
   if (typeof value !== "string") return value;
   try {

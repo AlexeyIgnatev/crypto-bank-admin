@@ -86,10 +86,18 @@ function normalizeHistoryValue(value: unknown): string {
   return normalizeDecimalInput(String(value ?? ""));
 }
 
-function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
-  let previousValues: Record<string, string> | null = null;
+function currencyHistoryLabel(key: string): string {
+  return key === "usd_buy_rate"
+    ? "Курс покупки USD"
+    : "Курс продажи USD";
+}
 
-  return logs
+function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
+  return [...logs]
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    )
     .map((log) => {
       const details = parseActionDetails(log.details);
       const body = (details?.body && typeof details.body === "object"
@@ -98,40 +106,35 @@ function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       const currentValues = Object.fromEntries(
         CURRENCY_HISTORY_KEYS.map((key) => [key, normalizeHistoryValue(body[key])]),
       ) as Record<(typeof CURRENCY_HISTORY_KEYS)[number], string>;
-      const hasRelevantChange = CURRENCY_HISTORY_KEYS.some((key) => {
+
+      const changes = CURRENCY_HISTORY_KEYS.map((key) => {
         const current = currentValues[key];
-        const previous = previousValues?.[key] ?? "";
-        return current !== previous;
-      });
-      if (!hasRelevantChange) return null;
-      previousValues = currentValues;
+        if (!String(current).trim()) return null;
+        return `${currencyHistoryLabel(key)}: ${current}`;
+      })
+        .filter(Boolean)
+        .join(" | ");
+
+      if (!changes) return null;
 
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
           : "",
       );
-      const comment = CURRENCY_HISTORY_KEYS.map((key) => {
-        const label =
-          key === "usd_buy_rate" ? "Курс покупки USD" : "Курс продажи USD";
-        const reason = reasons[`rate:${key}`];
-        return reason && String(reason).trim() ? `${label}: ${String(reason).trim()}` : "";
-      })
-        .filter(Boolean)
-        .join(" | ");
-
-      const changes = CURRENCY_HISTORY_KEYS.map((key) => {
-        const current = currentValues[key];
-        const previous = previousValues?.[key] ?? "";
-        if (current === previous) return null;
-        const label =
-          key === "usd_buy_rate" ? "Курс покупки USD" : "Курс продажи USD";
-        return `${label}: ${current}`;
-      })
-        .filter(Boolean)
-        .join(" | ");
-
-      if (!changes) return null;
+      const comment =
+        [
+          typeof body.comment === "string" ? body.comment.trim() : "",
+          typeof body.reason === "string" ? body.reason.trim() : "",
+          ...CURRENCY_HISTORY_KEYS.map((key) => {
+            const reason = reasons[`rate:${key}`];
+            return reason && String(reason).trim()
+              ? `${currencyHistoryLabel(key)}: ${String(reason).trim()}`
+              : "";
+          }),
+        ]
+          .filter(Boolean)
+          .join(" | ") || "-";
 
       return {
         createdAt: log.createdAt,
@@ -355,6 +358,17 @@ export default function CurrencyRatesPage() {
       setReasons(nextReasons);
       setReasonDrafts(nextReasons);
       setSuccess("Курсы валют сохранены");
+      try {
+        const logs = await getAdminActionLogs({
+          actionQuery: "PUT /blockchain-config/admin-settings",
+          limit: 200,
+          sortBy: "createdAt",
+          sortDir: "desc",
+        });
+        setRateHistoryRows(extractCurrencyHistory(logs.items));
+      } catch {
+        setRateHistoryRows([]);
+      }
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Не удалось сохранить курсы"));
     } finally {

@@ -197,66 +197,71 @@ function normalizeHistoryValue(value: unknown): string {
 }
 
 function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
-  let previousValues: Record<string, string> | null = null;
-
-  return logs
+  return [...logs]
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    )
     .map((log) => {
       const details = parseActionDetails(log.details);
-      const body = (details?.body && typeof details.body === "object"
-        ? details.body
-        : {}) as Record<string, any>;
-      const currentValues = Object.fromEntries(
-        RATE_HISTORY_KEYS.map((key) => [key, normalizeHistoryValue(body[key])]),
-      ) as Record<(typeof RATE_HISTORY_KEYS)[number], string>;
-      const hasRelevantChange = RATE_HISTORY_KEYS.some((key) => {
-        const current = currentValues[key];
-        const previous = previousValues?.[key] ?? "";
-        return current !== previous;
-      });
-      if (!hasRelevantChange) return null;
-      previousValues = currentValues;
-
+      const rawBody = details?.body ?? details?.data ?? details;
+      const body =
+        rawBody && typeof rawBody === "object" && !Array.isArray(rawBody)
+          ? (rawBody as Record<string, any>)
+          : {};
+      const tariffItems = Array.isArray(rawBody)
+        ? rawBody
+        : Array.isArray(body.items)
+          ? body.items
+          : [];
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
           : "",
       );
-      const comment = [
-        {
-          label: "Комиссия внешнего перевода USDT TRC20",
-          value: reasons["external:usdt_trade_fee_pct"],
-        },
-        {
-          label: "Минимум вывода USDT TRC20",
-          value: reasons["external:min_withdraw_usdt_trc20"],
-        },
-      ]
-        .filter((item) => String(item.value).trim())
-        .map((item) => `${item.label}: ${String(item.value).trim()}`)
-        .join(" | ");
 
-      const changes = RATE_HISTORY_KEYS.map((key) => {
-        const current = currentValues[key];
-        const previous = previousValues?.[key] ?? "";
-        if (current === previous) return null;
-        if (key === "usdt_trade_fee_pct") {
-          return `Комиссия внешнего перевода USDT TRC20: ${current}`;
-        }
-        if (key === "usdt_withdraw_fee_fixed") {
-          return `Фикс. сумма комиссии внешнего вывода USDT TRC20: ${current}`;
-        }
-        return `Минимум вывода USDT TRC20: ${current}`;
-      })
-        .filter(Boolean)
-        .join(" | ");
+      const changes: string[] = [];
+      for (const key of RATE_HISTORY_KEYS) {
+        const value = normalizeHistoryValue(body[key]);
+        if (!String(value).trim()) continue;
+        changes.push(`${rateHistoryLabelForKey(`rate:${key}`)}: ${value}`);
+      }
 
-      if (!changes) return null;
+      for (const item of tariffItems) {
+        if (!item || typeof item !== "object") continue;
+        const operation = String((item as Record<string, any>).operation ?? "");
+        if (!operation) continue;
+        const label = rateHistoryLabelForKey(`tariff:${operation}`);
+        const percent = normalizeHistoryValue((item as Record<string, any>).percent_fee);
+        const fixed = normalizeHistoryValue((item as Record<string, any>).fixed_fee);
+        const parts = [
+          String(percent).trim() ? `% ${percent}` : "",
+          String(fixed).trim() ? `fixed ${fixed}` : "",
+        ].filter(Boolean);
+        if (parts.length) changes.push(`${label}: ${parts.join(", ")}`);
+      }
+
+      if (!changes.length) return null;
+
+      const comment =
+        [
+          typeof body.comment === "string" ? body.comment.trim() : "",
+          typeof body.reason === "string" ? body.reason.trim() : "",
+          typeof body.notes === "string" ? body.notes.trim() : "",
+          typeof body.message === "string" ? body.message.trim() : "",
+          ...Object.entries(reasons).map(([key, value]) => {
+            const text = String(value || "").trim();
+            return text ? `${rateHistoryLabelForKey(key)}: ${text}` : "";
+          }),
+        ]
+          .filter(Boolean)
+          .join(" | ") || "-";
 
       return {
         createdAt: log.createdAt,
         adminId: log.admin_id,
         comment,
-        changes,
+        changes: changes.join(" | "),
       };
     })
     .filter((row): row is RateHistoryRow => Boolean(row))
@@ -527,14 +532,24 @@ export default function RatesPage() {
     (async () => {
       setCurrencyHistoryLoading(true);
       try {
-        const logs = await getAdminActionLogs({
-          actionQuery: "PUT /blockchain-config/admin-settings",
-          limit: 200,
-          sortBy: "createdAt",
-          sortDir: "desc",
-        });
+        const [adminLogs, tariffLogs] = await Promise.all([
+          getAdminActionLogs({
+            actionQuery: "PUT /blockchain-config/admin-settings",
+            limit: 200,
+            sortBy: "createdAt",
+            sortDir: "desc",
+          }),
+          getAdminActionLogs({
+            actionQuery: "PUT /blockchain-config/tariffs",
+            limit: 200,
+            sortBy: "createdAt",
+            sortDir: "desc",
+          }),
+        ]);
         if (!alive) return;
-        setRateHistoryRows(extractRateHistory(logs.items));
+        setRateHistoryRows(
+          extractRateHistory([...adminLogs.items, ...tariffLogs.items]),
+        );
       } catch {
         if (!alive) return;
         setRateHistoryRows([]);
@@ -859,13 +874,23 @@ export default function RatesPage() {
       setReasons(nextReasons);
       setReasonDrafts(nextReasons);
       setSuccess("Тарифная сетка сохранена");
-      const logs = await getAdminActionLogs({
-        actionQuery: "PUT /blockchain-config/admin-settings",
-        limit: 200,
-        sortBy: "createdAt",
-        sortDir: "desc",
-      });
-      setRateHistoryRows(extractRateHistory(logs.items));
+      const [adminLogs, tariffLogs] = await Promise.all([
+        getAdminActionLogs({
+          actionQuery: "PUT /blockchain-config/admin-settings",
+          limit: 200,
+          sortBy: "createdAt",
+          sortDir: "desc",
+        }),
+        getAdminActionLogs({
+          actionQuery: "PUT /blockchain-config/tariffs",
+          limit: 200,
+          sortBy: "createdAt",
+          sortDir: "desc",
+        }),
+      ]);
+      setRateHistoryRows(
+        extractRateHistory([...adminLogs.items, ...tariffLogs.items]),
+      );
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Не удалось сохранить тарифную сетку"));
     } finally {
