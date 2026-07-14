@@ -274,6 +274,9 @@ export default function AmlRulesPage() {
   const [apiDraft, setApiDraft] = useState("");
   const [urlDraft, setUrlDraft] = useState("");
   const [fileName, setFileName] = useState("");
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [commentError, setCommentError] = useState<string | null>(null);
   const [admins, setAdmins] = useState<AdminOption[]>([]);
   const [history, setHistory] = useState<AdminActionLog[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -366,11 +369,16 @@ export default function AmlRulesPage() {
     [adminLookup, history],
   );
 
-  async function saveStubSettings() {
+  async function saveStubSettings(comment: string) {
     setSaving(true);
     setError(null);
     setSuccess(null);
+    setCommentError(null);
     try {
+      const commentText = comment.trim();
+      if (!commentText) {
+        throw new Error("Укажите комментарий, на каком основании меняются поля AML");
+      }
       const payload = {
         api: apiDraft.trim(),
         urls: urlLines,
@@ -383,30 +391,36 @@ export default function AmlRulesPage() {
         fileName.trim() ? `FILE: ${fileName.trim()}` : "",
       ]
         .filter(Boolean)
-        .join(" | ") || "Заглушки AML обновлены";
+        .join(" | ") || "AML обновлены";
 
       const synthetic: AdminActionLog = {
         id: Date.now(),
         admin_id: 0,
         ip: "local",
-        action: "AML stubs updated",
+        action: "AML settings updated",
         details: JSON.stringify({
           body: {
             api: apiDraft.trim(),
             urls: urlLines,
             fileName: fileName.trim(),
-            comment: summary,
+            comment: commentText,
+            summary,
           },
         }),
         createdAt: new Date().toISOString(),
       };
 
       setHistory((prev) => [synthetic, ...prev]);
-      setSuccess("Заглушки AML сохранены");
+      setSuccess("AML сохранены");
+      setCommentDraft("");
+      setCommentOpen(false);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Не удалось сохранить AML-заглушки",
+        e instanceof Error ? e.message : "Не удалось сохранить AML",
       );
+      if (e instanceof Error && !e.message.trim()) {
+        setCommentError("Укажите комментарий, на каком основании меняются поля AML");
+      }
     } finally {
       setSaving(false);
     }
@@ -446,14 +460,14 @@ export default function AmlRulesPage() {
                   AML
                 </span>
                 <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
-                  Заглушки: API, URL-список и файл
+                  Поля: API, URL-список и файл
                 </span>
               </div>
               <h1 className="mt-3 text-2xl font-semibold">
-                AML-заглушки
+                AML
               </h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-                Пока здесь три поля заглушек: API, URL-список и файл. После сохранения ниже обновится история.
+                Здесь пока три поля: API, URL-список и файл. После сохранения ниже обновится история.
               </p>
             </div>
 
@@ -462,7 +476,8 @@ export default function AmlRulesPage() {
                 className="btn btn-primary h-11 w-full lg:w-auto"
                 disabled={saving}
                 onClick={() => {
-                  void saveStubSettings();
+                  setCommentError(null);
+                  setCommentOpen(true);
                 }}
               >
                 {saving ? "Сохранение..." : "Сохранить"}
@@ -488,11 +503,9 @@ export default function AmlRulesPage() {
 
         <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
           <div className="grid gap-4 border-b border-soft px-5 py-4">
-            <div className="text-lg font-semibold">
-              Поля заглушек AML
-            </div>
+            <div className="text-lg font-semibold">Поля AML</div>
             <div className="text-sm text-muted">
-              Здесь пока только тестовые поля. Логику правил из control пока не трогаем.
+              Здесь пока только поля для ввода. Логику правил из control пока не трогаем.
             </div>
           </div>
           <div className="grid gap-4 p-5">
@@ -634,6 +647,68 @@ export default function AmlRulesPage() {
           </div>
         </section>
       </div>
+
+      <Modal
+        open={commentOpen}
+        onClose={() => {
+          setCommentOpen(false);
+          setCommentError(null);
+          setCommentDraft("");
+        }}
+        title="Комментарий к изменению AML"
+      >
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
+            Комментарий обязателен и попадёт в историю изменений.
+          </div>
+
+          <label className="block text-sm">
+            <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
+              На каком основании меняются поля
+            </span>
+            <textarea
+              className="ui-input min-h-32 w-full resize-y leading-6"
+              value={commentDraft}
+              onChange={(e) => {
+                setCommentDraft(e.target.value);
+                if (commentError) setCommentError(null);
+              }}
+              placeholder="Например: обновление AML-полей по требованию комплаенса"
+            />
+          </label>
+
+          {commentError ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+              {commentError}
+            </div>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              className="btn h-10"
+              onClick={() => {
+                setCommentOpen(false);
+                setCommentError(null);
+                setCommentDraft("");
+              }}
+            >
+              Отмена
+            </button>
+            <button
+              className="btn btn-primary h-10"
+              onClick={() => {
+                if (!commentDraft.trim()) {
+                  setCommentError("Укажите комментарий, на каком основании меняются поля AML");
+                  return;
+                }
+                void saveStubSettings(commentDraft);
+              }}
+            >
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
