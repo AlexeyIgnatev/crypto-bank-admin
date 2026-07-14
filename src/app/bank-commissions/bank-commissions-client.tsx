@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import {
   getAdminActionLogs,
+  getAdmins,
   getAdminSettings,
   getBankCommissionBalances,
   putAdminSettings,
@@ -41,14 +42,9 @@ type CommissionSplit = {
 type CommissionHistoryRow = {
   createdAt: string;
   adminId: number;
+  adminName: string;
   comment: string;
   mode: CommissionMode;
-  centralPercent: string;
-  bankPercent: string;
-  partnersPercent: string;
-  centralFixed: string;
-  bankFixed: string;
-  partnersFixed: string;
   changes: string;
 };
 
@@ -161,10 +157,62 @@ function parseActionDetails(details: unknown): Record<string, any> | null {
   }
 }
 
+function asText(value: unknown): string {
+  return String(value ?? "").trim();
+}
+
+function diffLabel(label: string, current: unknown, previous: unknown): string | null {
+  const next = asText(current);
+  const prev = asText(previous);
+  if (!next && !prev) return null;
+  if (next === prev) return null;
+  if (!prev) return `${label}: ${next}`;
+  if (!next) return `${label}: ${prev} ? ?`;
+  return `${label}: ${prev} ? ${next}`;
+}
+
+function buildBankCommissionChangeSummary(
+  current: Record<string, any>,
+  previous: Record<string, any> | null,
+): string {
+  const prev = previous || {};
+  const parts = [
+    diffLabel(
+      "?????",
+      current.bank_commission_distribution_mode ?? current.mode ?? current.distribution_mode,
+      prev.bank_commission_distribution_mode ?? prev.mode ?? prev.distribution_mode,
+    ),
+    diffLabel("?? %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
+    diffLabel("???? %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
+    diffLabel("???????? %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
+    diffLabel("?? fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    diffLabel("???? fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    diffLabel("???????? fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    diffLabel(
+      "????? ??????????",
+      current.bank_fee_posting_time_bishkek,
+      prev.bank_fee_posting_time_bishkek,
+    ),
+    diffLabel("???? ??? ??", current.central_bank_som_account, prev.central_bank_som_account),
+    diffLabel("??????? SALAM ??", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
+    diffLabel("??????? USDT ??", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
+    diffLabel("???? ??? ?????", current.bank_som_account, prev.bank_som_account),
+    diffLabel("??????? SALAM ?????", current.bank_salam_wallet, prev.bank_salam_wallet),
+    diffLabel("??????? USDT ?????", current.bank_usdt_wallet, prev.bank_usdt_wallet),
+    diffLabel("????????", current.bank_commission_partners_json, prev.bank_commission_partners_json),
+  ].filter(Boolean);
+  return parts.length ? parts.join(" | ") : "??? ?????????";
+}
+
 function extractBankCommissionHistory(
   logs: AdminActionLog[],
 ): CommissionHistoryRow[] {
-  return logs
+  const ordered = [...logs].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+  let previousBody: Record<string, any> | null = null;
+
+  const rows = ordered
     .map((log) => {
       const details = parseActionDetails(log.details);
       const body = (details?.body ?? details?.data ?? details) as Record<
@@ -185,90 +233,16 @@ function extractBankCommissionHistory(
         ),
       );
 
-      const centralPercent =
-        body.bank_commission_central_bank_pct != null
-          ? String(body.bank_commission_central_bank_pct)
-          : "";
-      const bankPercent =
-        body.bank_commission_bank_pct != null
-          ? String(body.bank_commission_bank_pct)
-          : "";
-      const partnersPercent =
-        body.bank_commission_partners_pct != null
-          ? String(body.bank_commission_partners_pct)
-          : "";
-      const centralFixed =
-        body.bank_commission_central_bank_fixed != null
-          ? String(body.bank_commission_central_bank_fixed)
-          : "";
-      const bankFixed =
-        body.bank_commission_bank_fixed != null
-          ? String(body.bank_commission_bank_fixed)
-          : "";
-      const partnersFixed =
-        body.bank_commission_partners_fixed != null
-          ? String(body.bank_commission_partners_fixed)
-          : "";
+      const changes = buildBankCommissionChangeSummary(body, previousBody);
+      previousBody = body;
 
-      const changes = [
-        body.bank_commission_distribution_mode != null
-          ? `Режим: ${mode === "FIXED" ? "Фикс. сумма" : "Проценты"}`
-          : null,
-        body.bank_commission_central_bank_pct != null
-          ? `ЦБ %: ${centralPercent}`
-          : null,
-        body.bank_commission_bank_pct != null ? `Банк %: ${bankPercent}` : null,
-        body.bank_commission_partners_pct != null
-          ? `Партнеры %: ${partnersPercent}`
-          : null,
-        body.bank_commission_central_bank_fixed != null
-          ? `ЦБ fixed: ${centralFixed}`
-          : null,
-        body.bank_commission_bank_fixed != null ? `Банк fixed: ${bankFixed}` : null,
-        body.bank_commission_partners_fixed != null
-          ? `Партнеры fixed: ${partnersFixed}`
-          : null,
-        body.bank_fee_posting_time_bishkek != null
-          ? `Время зачисления: ${String(body.bank_fee_posting_time_bishkek)}`
-          : null,
-        body.central_bank_som_account != null
-          ? `Счет СОМ ЦБ: ${String(body.central_bank_som_account)}`
-          : null,
-        body.central_bank_salam_wallet != null
-          ? `Кошелек SALAM ЦБ: ${String(body.central_bank_salam_wallet)}`
-          : null,
-        body.central_bank_usdt_wallet != null
-          ? `Кошелек USDT ЦБ: ${String(body.central_bank_usdt_wallet)}`
-          : null,
-        body.bank_som_account != null
-          ? `Счет СОМ банка: ${String(body.bank_som_account)}`
-          : null,
-        body.bank_salam_wallet != null
-          ? `Кошелек SALAM банка: ${String(body.bank_salam_wallet)}`
-          : null,
-        body.bank_usdt_wallet != null
-          ? `Кошелек USDT банка: ${String(body.bank_usdt_wallet)}`
-          : null,
-        body.bank_commission_partners_json != null
-          ? "Реквизиты партнеров"
-          : null,
-      ]
-        .filter(Boolean)
-        .join(" | ");
-
-      if (!changes && !comment) return null;
+      if (changes === "??? ?????????" && !comment) return null;
 
       return {
         createdAt: log.createdAt,
         adminId: log.admin_id,
         comment,
         mode,
-        centralPercent,
-        bankPercent,
-        partnersPercent,
-        centralFixed,
-        bankFixed,
-        partnersFixed,
         changes,
       };
     })
@@ -277,6 +251,8 @@ function extractBankCommissionHistory(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
+
+  return rows;
 }
 
 function extractPartner(raw: string): PartnerForm {
@@ -636,18 +612,13 @@ function HistoryPanel({
               rows.map((row) => (
                 <tr key={`${row.createdAt}-${row.adminId}`} className="border-t border-soft">
                   <td className="px-4 py-3 whitespace-nowrap">{formatDateTime(row.createdAt)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">#{row.adminId}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">{row.adminName}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.mode === "FIXED" ? "Фикс. сумма" : "Проценты"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="max-w-[620px] break-words text-muted">
                       {row.changes}
-                    </div>
-                    <div className="mt-1 text-xs text-muted">
-                      ЦБ: {row.centralPercent || "—"} | Банк: {row.bankPercent || "—"} | Партнеры:{" "}
-                      {row.partnersPercent || "—"} | fixed: {row.centralFixed || "—"} / {row.bankFixed || "—"} /{" "}
-                      {row.partnersFixed || "—"}
                     </div>
                   </td>
                   <td className="px-4 py-3 max-w-[320px] break-words text-muted">
@@ -732,6 +703,7 @@ export default function BankCommissionsClient() {
   const [success, setSuccess] = useState<string | null>(null);
   const [historyRows, setHistoryRows] = useState<CommissionHistoryRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [adminNames, setAdminNames] = useState<Record<string, string>>({});
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveComment, setSaveComment] = useState("");
   const [saveCommentError, setSaveCommentError] = useState<string | null>(null);
@@ -788,13 +760,27 @@ export default function BankCommissionsClient() {
   async function loadHistory() {
     setHistoryLoading(true);
     try {
-      const logs = await getAdminActionLogs({
-        actionQuery: "PUT /blockchain-config/admin-settings",
-        limit: 200,
-        sortBy: "createdAt",
-        sortDir: "desc",
-      });
-      setHistoryRows(extractBankCommissionHistory(logs.items));
+      const [logs, adminsResult] = await Promise.all([
+        getAdminActionLogs({
+          actionQuery: "PUT /blockchain-config/admin-settings",
+          limit: 200,
+          sortBy: "createdAt",
+          sortDir: "desc",
+        }),
+        getAdmins({ offset: 0, limit: 500, sortLastName: "asc", sortFirstName: "asc" }),
+      ]);
+      const adminMap: Record<string, string> = {};
+      for (const admin of adminsResult.items) {
+        const fullName = [admin.lastName, admin.firstName].filter(Boolean).join(" ").trim();
+        adminMap[admin.id] = fullName || admin.login || `#${admin.id}`;
+      }
+      setAdminNames(adminMap);
+      setHistoryRows(
+        extractBankCommissionHistory(logs.items).map((row) => ({
+          ...row,
+          adminName: adminMap[String(row.adminId)] || `#${row.adminId}`,
+        })),
+      );
     } catch (err) {
       setError(getErrorMessage(err, "Не удалось загрузить историю изменений"));
     } finally {
@@ -970,7 +956,12 @@ export default function BankCommissionsClient() {
       setInitialPartner(
         extractPartner(saved.bank_commission_partners_json || "[]"),
       );
-      setHistoryRows(extractBankCommissionHistory(logs.items));
+      setHistoryRows(
+        extractBankCommissionHistory(logs.items).map((row) => ({
+          ...row,
+          adminName: adminNames[String(row.adminId)] || `#${row.adminId}`,
+        })),
+      );
       setEditingFields({});
       setSuccess("Настройки комиссий банка сохранены");
     } catch (err) {
@@ -986,21 +977,13 @@ export default function BankCommissionsClient() {
       fileBaseName: "bank-commission-history",
       title: "Bank commission changes",
       columns: [
-        { header: "Дата", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
-        { header: "Admin ID", getValue: (row: CommissionHistoryRow) => row.adminId },
+        { header: "????", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
+        { header: "?????", getValue: (row: CommissionHistoryRow) => row.adminName },
         {
-          header: "Режим",
-          getValue: (row: CommissionHistoryRow) =>
-            row.mode === "FIXED" ? "Фикс. сумма" : "Проценты",
+          header: "?????????",
+          getValue: (row: CommissionHistoryRow) => row.changes,
         },
-        { header: "ЦБ %", getValue: (row: CommissionHistoryRow) => row.centralPercent },
-        { header: "Банк %", getValue: (row: CommissionHistoryRow) => row.bankPercent },
-        { header: "Партнеры %", getValue: (row: CommissionHistoryRow) => row.partnersPercent },
-        { header: "ЦБ fixed", getValue: (row: CommissionHistoryRow) => row.centralFixed },
-        { header: "Банк fixed", getValue: (row: CommissionHistoryRow) => row.bankFixed },
-        { header: "Партнеры fixed", getValue: (row: CommissionHistoryRow) => row.partnersFixed },
-        { header: "Комментарий", getValue: (row: CommissionHistoryRow) => row.comment },
-        { header: "Изменения", getValue: (row: CommissionHistoryRow) => row.changes },
+        { header: "???????????", getValue: (row: CommissionHistoryRow) => row.comment },
       ],
       rows: historyRows,
     });
