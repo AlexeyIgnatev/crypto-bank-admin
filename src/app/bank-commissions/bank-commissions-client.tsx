@@ -161,6 +161,124 @@ function parseActionDetails(details: unknown): Record<string, any> | null {
   }
 }
 
+function extractBankCommissionHistory(
+  logs: AdminActionLog[],
+): CommissionHistoryRow[] {
+  return logs
+    .map((log) => {
+      const details = parseActionDetails(log.details);
+      const body = (details?.body ?? details?.data ?? details) as Record<
+        string,
+        any
+      > | null;
+      if (!body || typeof body !== "object") return null;
+
+      const comment = String(
+        body.comment ?? body.reason ?? body.notes ?? body.message ?? "",
+      ).trim();
+      const mode = getBankCommissionMode(
+        String(
+          body.bank_commission_distribution_mode ??
+            body.mode ??
+            body.distribution_mode ??
+            "PERCENT",
+        ),
+      );
+
+      const centralPercent =
+        body.bank_commission_central_bank_pct != null
+          ? String(body.bank_commission_central_bank_pct)
+          : "";
+      const bankPercent =
+        body.bank_commission_bank_pct != null
+          ? String(body.bank_commission_bank_pct)
+          : "";
+      const partnersPercent =
+        body.bank_commission_partners_pct != null
+          ? String(body.bank_commission_partners_pct)
+          : "";
+      const centralFixed =
+        body.bank_commission_central_bank_fixed != null
+          ? String(body.bank_commission_central_bank_fixed)
+          : "";
+      const bankFixed =
+        body.bank_commission_bank_fixed != null
+          ? String(body.bank_commission_bank_fixed)
+          : "";
+      const partnersFixed =
+        body.bank_commission_partners_fixed != null
+          ? String(body.bank_commission_partners_fixed)
+          : "";
+
+      const changes = [
+        body.bank_commission_distribution_mode != null
+          ? `Режим: ${mode === "FIXED" ? "Фикс. сумма" : "Проценты"}`
+          : null,
+        body.bank_commission_central_bank_pct != null
+          ? `ЦБ %: ${centralPercent}`
+          : null,
+        body.bank_commission_bank_pct != null ? `Банк %: ${bankPercent}` : null,
+        body.bank_commission_partners_pct != null
+          ? `Партнеры %: ${partnersPercent}`
+          : null,
+        body.bank_commission_central_bank_fixed != null
+          ? `ЦБ fixed: ${centralFixed}`
+          : null,
+        body.bank_commission_bank_fixed != null ? `Банк fixed: ${bankFixed}` : null,
+        body.bank_commission_partners_fixed != null
+          ? `Партнеры fixed: ${partnersFixed}`
+          : null,
+        body.bank_fee_posting_time_bishkek != null
+          ? `Время зачисления: ${String(body.bank_fee_posting_time_bishkek)}`
+          : null,
+        body.central_bank_som_account != null
+          ? `Счет СОМ ЦБ: ${String(body.central_bank_som_account)}`
+          : null,
+        body.central_bank_salam_wallet != null
+          ? `Кошелек SALAM ЦБ: ${String(body.central_bank_salam_wallet)}`
+          : null,
+        body.central_bank_usdt_wallet != null
+          ? `Кошелек USDT ЦБ: ${String(body.central_bank_usdt_wallet)}`
+          : null,
+        body.bank_som_account != null
+          ? `Счет СОМ банка: ${String(body.bank_som_account)}`
+          : null,
+        body.bank_salam_wallet != null
+          ? `Кошелек SALAM банка: ${String(body.bank_salam_wallet)}`
+          : null,
+        body.bank_usdt_wallet != null
+          ? `Кошелек USDT банка: ${String(body.bank_usdt_wallet)}`
+          : null,
+        body.bank_commission_partners_json != null
+          ? "Реквизиты партнеров"
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" | ");
+
+      if (!changes && !comment) return null;
+
+      return {
+        createdAt: log.createdAt,
+        adminId: log.admin_id,
+        comment,
+        mode,
+        centralPercent,
+        bankPercent,
+        partnersPercent,
+        centralFixed,
+        bankFixed,
+        partnersFixed,
+        changes,
+      };
+    })
+    .filter((row): row is CommissionHistoryRow => Boolean(row))
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+}
+
 function extractPartner(raw: string): PartnerForm {
   if (!raw.trim()) return EMPTY_PARTNER;
   try {
@@ -601,9 +719,11 @@ function CommentModal({
 
 export default function BankCommissionsClient() {
   const [settings, setSettings] = useState<AdminSettings>(EMPTY_SETTINGS);
+  const [initialSettings, setInitialSettings] = useState<AdminSettings | null>(null);
   const [balances, setBalances] =
     useState<BankCommissionBalances>(EMPTY_BALANCES);
   const [partner, setPartner] = useState<PartnerForm>(EMPTY_PARTNER);
+  const [initialPartner, setInitialPartner] = useState<PartnerForm | null>(null);
   const [editingFields, setEditingFields] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -629,6 +749,41 @@ export default function BankCommissionsClient() {
     bank: settings.bank_commission_bank_fixed,
     partners: settings.bank_commission_partners_fixed,
   };
+  const hasChanges = (() => {
+    if (!initialSettings || !initialPartner) return false;
+    const settingsChanged =
+      settings.bank_fee_posting_time_bishkek.trim() !==
+        initialSettings.bank_fee_posting_time_bishkek.trim() ||
+      settings.central_bank_som_account.trim() !==
+        initialSettings.central_bank_som_account.trim() ||
+      settings.central_bank_salam_wallet.trim() !==
+        initialSettings.central_bank_salam_wallet.trim() ||
+      settings.central_bank_usdt_wallet.trim() !==
+        initialSettings.central_bank_usdt_wallet.trim() ||
+      settings.bank_commission_central_bank_pct.trim() !==
+        initialSettings.bank_commission_central_bank_pct.trim() ||
+      settings.bank_commission_bank_pct.trim() !==
+        initialSettings.bank_commission_bank_pct.trim() ||
+      settings.bank_commission_partners_pct.trim() !==
+        initialSettings.bank_commission_partners_pct.trim() ||
+      settings.bank_commission_distribution_mode.trim() !==
+        initialSettings.bank_commission_distribution_mode.trim() ||
+      settings.bank_commission_central_bank_fixed.trim() !==
+        initialSettings.bank_commission_central_bank_fixed.trim() ||
+      settings.bank_commission_bank_fixed.trim() !==
+        initialSettings.bank_commission_bank_fixed.trim() ||
+      settings.bank_commission_partners_fixed.trim() !==
+        initialSettings.bank_commission_partners_fixed.trim() ||
+      settings.bank_som_account.trim() !== initialSettings.bank_som_account.trim() ||
+      settings.bank_salam_wallet.trim() !==
+        initialSettings.bank_salam_wallet.trim() ||
+      settings.bank_usdt_wallet.trim() !== initialSettings.bank_usdt_wallet.trim() ||
+      settings.bank_commission_partners_json.trim() !==
+        initialSettings.bank_commission_partners_json.trim();
+    const partnerChanged =
+      serializePartner(partner) !== serializePartner(initialPartner);
+    return settingsChanged || partnerChanged;
+  })();
 
   async function loadHistory() {
     setHistoryLoading(true);
@@ -660,7 +815,11 @@ export default function BankCommissionsClient() {
 
       if (settingsResult.status === "fulfilled") {
         setSettings(settingsResult.value);
+        setInitialSettings(settingsResult.value);
         setPartner(extractPartner(settingsResult.value.bank_commission_partners_json || "[]"));
+        setInitialPartner(
+          extractPartner(settingsResult.value.bank_commission_partners_json || "[]"),
+        );
       } else {
         setError(
           getErrorMessage(
@@ -807,6 +966,10 @@ export default function BankCommissionsClient() {
       setSettings((prev) => ({ ...prev, ...saved }));
       setBalances(balanceData);
       setPartner(extractPartner(saved.bank_commission_partners_json || "[]"));
+      setInitialSettings(saved as AdminSettings);
+      setInitialPartner(
+        extractPartner(saved.bank_commission_partners_json || "[]"),
+      );
       setHistoryRows(extractBankCommissionHistory(logs.items));
       setEditingFields({});
       setSuccess("Настройки комиссий банка сохранены");
@@ -1060,15 +1223,19 @@ export default function BankCommissionsClient() {
             {refreshingBalances ? "Обновление..." : "Обновить балансы"}
           </button>
           <button
-            className="btn btn-primary h-10 px-4"
-            type="button"
-            onClick={() => {
+          className="btn btn-primary h-10 px-4"
+          type="button"
+          onClick={() => {
+              if (!hasChanges) {
+                void save("");
+                return;
+              }
               setSaveComment("");
               setSaveCommentError(null);
               setSaveModalOpen(true);
             }}
-            disabled={saving}
-          >
+          disabled={saving}
+        >
             Сохранить настройки
           </button>
         </div>
