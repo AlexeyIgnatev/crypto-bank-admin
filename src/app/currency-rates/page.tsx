@@ -278,16 +278,33 @@ export default function CurrencyRatesPage() {
     let alive = true;
     (async () => {
       try {
-        const res = await getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" });
-        if (!alive) return;
-        const adminItems = Array.isArray(res.items)
-          ? res.items.filter((item): item is AdminOption => Boolean(item && typeof item === "object"))
+        const q = new URLSearchParams();
+        q.set("limit", "500");
+        q.set("offset", "0");
+        q.set("sortLastName", "asc");
+        q.set("sortFirstName", "asc");
+        const res = await fetch(`/api/admin-management?${q.toString()}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error("Failed to load admins");
+        const data = await res.json();
+        const itemsSrc: any[] = data.items || data || [];
+        const adminItems = Array.isArray(itemsSrc)
+          ? itemsSrc.filter((item): item is AdminOption => Boolean(item && typeof item === "object"))
           : [];
+        if (!alive) return;
         setAdmins(
-          adminItems.map((admin) => ({
-            id: admin.id,
-            label: [admin.lastName, admin.firstName].filter(Boolean).join(" ") || admin.login || `#${admin.id}`,
-            login: admin.login,
+          adminItems.map((admin: any) => ({
+            id: String(admin.id),
+            label:
+              [admin.lastName ?? admin.last_name, admin.firstName ?? admin.first_name]
+                .filter(Boolean)
+                .join(" ") ||
+              admin.email ||
+              admin.login ||
+              admin.username ||
+              `#${admin.id}`,
+            login: admin.email || admin.login || admin.username || "",
           })),
         );
       } catch {
