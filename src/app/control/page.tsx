@@ -3,11 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import {
+  getAdminActionLogs,
+  getAdmins,
   getAntifraudRules,
   updateAntifraudRule,
+  type AdminActionLog,
   type AntiFraudRule,
   type AntiFraudRuleUpdate,
 } from "@/lib/api";
+import { exportRows, type ExportFormat } from "@/lib/exporters";
 import type { TariffCategory } from "@/types";
 
 type RuleField = "period_days" | "threshold_som" | "min_count" | "percent_threshold";
@@ -28,6 +32,22 @@ type RuleMeta = {
     label: string;
     kind: "number" | "percent";
   }>;
+};
+
+type AdminOption = {
+  id: string;
+  label: string;
+  login: string;
+};
+
+type ControlHistoryRow = {
+  createdAt: string;
+  adminId: number;
+  adminName: string;
+  ruleTitle: string;
+  changes: string;
+  comment: string;
+  ip: string;
 };
 
 const CATEGORY_META: Record<TariffCategory, { title: string; description: string }> = {
@@ -234,6 +254,170 @@ function sortRules(rules: AntiFraudRule[]): AntiFraudRule[] {
   });
 }
 
+function parseActionDetails(details: unknown): Record<string, unknown> | null {
+  if (!details) return null;
+  if (typeof details === "object") return details as Record<string, unknown>;
+  if (typeof details !== "string") return null;
+  try {
+    const parsed = JSON.parse(details);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function toText(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map(toText).filter(Boolean).join(", ");
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "";
+    }
+  }
+  return "";
+}
+
+function extractComment(details: unknown): string {
+  const body = (parseActionDetails(details)?.body ??
+    parseActionDetails(details)?.data ??
+    parseActionDetails(details)?.payload ??
+    parseActionDetails(details)) as Record<string, unknown> | null;
+  if (!body) return "Комментарий не указан";
+
+  const comment = [
+    body.comment,
+    body.reason,
+    body.note,
+    body.message,
+  ]
+    .map((item) => toText(item).trim())
+    .find(Boolean);
+
+  return comment || "Комментарий не указан";
+}
+
+function formatControlValue(value: unknown): string {
+  if (value == null || value === "") return "—";
+  if (typeof value === "boolean") return value ? "вкл." : "выкл.";
+  const text = String(value).trim();
+  if (!text) return "—";
+  const normalized = text.replace(",", ".");
+  const num = Number(normalized);
+  if (Number.isFinite(num) && /^-?\d+(\.\d+)?$/.test(normalized)) {
+    return num.toLocaleString("ru-RU", { maximumFractionDigits: 18 });
+  }
+  return text;
+}
+
+function shortControlDiff(label: string, before: unknown, after: unknown): string | null {
+  const prev = formatControlValue(before);
+  const next = formatControlValue(after);
+  if (prev === next) return null;
+  return `${label}: ${prev} → ${next}`;
+}
+
+function buildControlHistorySummary(
+  current: Record<string, unknown>,
+  previous: Record<string, unknown> | null,
+  ruleTitle: string,
+): string | null {
+  const prev = previous || {};
+  const parts = [
+    shortControlDiff("Включение", prev.enabled, current.enabled),
+    shortControlDiff("Период", prev.period_days, current.period_days),
+    shortControlDiff("Порог", prev.threshold_som, current.threshold_som),
+    shortControlDiff("Кол-во", prev.min_count, current.min_count),
+    shortControlDiff("Процент", prev.percent_threshold, current.percent_threshold),
+  ].filter(Boolean) as string[];
+
+  if (!parts.length) return null;
+  return `${ruleTitle}: ${parts.join("; ")}`;
+}
+
+function extractControlHistory(
+  logs: AdminActionLog[],
+  selectedCategory: TariffCategory,
+): ControlHistoryRow[] {
+  const ordered = [...logs].filter(Boolean).sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+  const previousByRule = new Map<string, Record<string, unknown>>();
+
+  return ordered
+    .map((log) => {
+      const details = parseActionDetails(log.details);
+      const query = (details?.query && typeof details.query === "object"
+        ? details.query
+        : {}) as Record<string, unknown>;
+      const params = (details?.params && typeof details.params === "object"
+        ? details.params
+        : {}) as Record<string, unknown>;
+      const body = (details?.body && typeof details.body === "object"
+        ? details.body
+        : details?.data && typeof details.data === "object"
+          ? details.data
+          : details?.payload && typeof details.payload === "object"
+            ? details.payload
+            : details && typeof details === "object"
+              ? details
+              : {}) as Record<string, unknown>;
+
+      const category = String(query.category ?? body.category ?? "").trim().toUpperCase();
+      if (category && category !== selectedCategory) return null;
+
+      const key = String(params.key ?? body.key ?? query.key ?? "").trim();
+      if (!key) return null;
+
+      const current = {
+        enabled: body.enabled,
+        period_days: body.period_days,
+        threshold_som: body.threshold_som,
+        min_count: body.min_count,
+        percent_threshold: body.percent_threshold,
+      };
+      const previous = previousByRule.get(`${category || selectedCategory}:${key}`) ?? null;
+      previousByRule.set(`${category || selectedCategory}:${key}`, current);
+
+      const changes = buildControlHistorySummary(
+        current,
+        previous,
+        RULE_META[key]?.title ?? key,
+      );
+      if (!changes) return null;
+
+      return {
+        createdAt: log.createdAt,
+        adminId: log.admin_id,
+        adminName: "",
+        ruleTitle: RULE_META[key]?.title ?? key,
+        changes,
+        comment: extractComment(details),
+        ip: log.ip,
+      };
+    })
+    .filter((row): row is ControlHistoryRow => Boolean(row))
+    .sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+}
+
+function buildRuleSnapshotPayload(rule: AntiFraudRule, draft: RuleDraft): AntiFraudRuleUpdate {
+  const payload: AntiFraudRuleUpdate = {
+    enabled: draft.enabled,
+  };
+  if (draft.period_days.trim()) payload.period_days = String(parseNumber(draft.period_days));
+  if (draft.threshold_som.trim()) payload.threshold_som = String(parseNumber(draft.threshold_som));
+  if (draft.min_count.trim()) payload.min_count = String(parseNumber(draft.min_count));
+  if (draft.percent_threshold.trim()) {
+    payload.percent_threshold = String(parseNumber(draft.percent_threshold));
+  }
+  return payload;
+}
+
 export default function ControlPage() {
   const [selectedCategory, setSelectedCategory] = useState<TariffCategory>("K1");
   const [rules, setRules] = useState<AntiFraudRule[]>([]);
@@ -245,6 +429,11 @@ export default function ControlPage() {
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
+  const [history, setHistory] = useState<AdminActionLog[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [historyExporting, setHistoryExporting] = useState<ExportFormat | null>(null);
+  const [admins, setAdmins] = useState<AdminOption[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -274,6 +463,61 @@ export default function ControlPage() {
       alive = false;
     };
   }, [selectedCategory]);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [adminsRes, logsRes] = await Promise.all([
+          getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" }),
+          getAdminActionLogs({
+            offset: 0,
+            limit: 300,
+            sortBy: "createdAt",
+            sortDir: "desc",
+            actionQuery: "PUT /antifraud/rules",
+          }),
+        ]);
+        if (!alive) return;
+        setAdmins(
+          adminsRes.items.map((admin) => ({
+            id: admin.id,
+            label:
+              [admin.lastName, admin.firstName].filter(Boolean).join(" ") ||
+              admin.login ||
+              `#${admin.id}`,
+            login: admin.login,
+          })),
+        );
+        setHistory(logsRes.items);
+      } catch (e) {
+        if (!alive) return;
+        setAdmins([]);
+        setHistory([]);
+        setHistoryError(e instanceof Error ? e.message : "Не удалось загрузить историю");
+      } finally {
+        if (alive) setHistoryLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const adminLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const admin of admins) map.set(admin.id, admin.label);
+    return map;
+  }, [admins]);
+
+  const historyRows = useMemo(
+    () =>
+      extractControlHistory(history, selectedCategory).map((row) => ({
+        ...row,
+        adminName: adminLookup.get(String(row.adminId)) || `#${row.adminId}`,
+      })),
+    [adminLookup, history, selectedCategory],
+  );
 
   const dirtyKeys = useMemo(
     () =>
@@ -323,13 +567,33 @@ export default function ControlPage() {
         if (!draft) continue;
         const payload = buildUpdatePayload(rule, draft);
         if (!Object.keys(payload).length) continue;
-        await updateAntifraudRule(rule.key, { ...payload, comment: nonEmptyComment }, selectedCategory);
+        await updateAntifraudRule(
+          rule.key,
+          {
+            ...buildRuleSnapshotPayload(rule, draft),
+            comment: nonEmptyComment,
+          },
+          selectedCategory,
+        );
       }
       const refreshed = sortRules(await getAntifraudRules(selectedCategory));
       setRules(refreshed);
       const nextDrafts: Record<string, RuleDraft> = {};
       for (const rule of refreshed) nextDrafts[rule.key] = createDraft(rule);
       setDrafts(nextDrafts);
+      try {
+        const logsRes = await getAdminActionLogs({
+          offset: 0,
+          limit: 300,
+          sortBy: "createdAt",
+          sortDir: "desc",
+          actionQuery: "PUT /antifraud/rules",
+        });
+        setHistory(logsRes.items);
+        setHistoryError(null);
+      } catch {
+        setHistory([]);
+      }
       setSaveMessage("Правила сохранены");
       setCommentOpen(false);
       setCommentDraft("");
@@ -544,6 +808,89 @@ export default function ControlPage() {
               <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-6 text-sm text-muted">
                 Нет правил для этой категории.
               </div>
+            )}
+          </div>
+        </section>
+
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
+            <div>
+              <div className="text-lg font-semibold">История изменений</div>
+              <div className="text-sm text-muted">
+                Краткие изменения по правилам финконтроля с комментариями администратора.
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn h-10 px-4"
+              onClick={async () => {
+                if (!historyRows.length || historyExporting) return;
+                setHistoryExporting("csv");
+                try {
+                  await exportRows({
+                    format: "csv",
+                    fileBaseName: "antifraud_history",
+                    title: "История изменений финконтроля",
+                    columns: [
+                      {
+                        header: "Дата",
+                        getValue: (row: ControlHistoryRow) =>
+                          new Date(row.createdAt).toLocaleString("ru-RU"),
+                      },
+                      { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
+                      { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
+                      { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
+                      { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
+                    ],
+                    rows: historyRows,
+                  });
+                } finally {
+                  setHistoryExporting(null);
+                }
+              }}
+              disabled={!historyRows.length || Boolean(historyExporting)}
+            >
+              {historyExporting === "csv" ? "CSV..." : "CSV"}
+            </button>
+          </div>
+          <div className="max-h-[460px] overflow-auto">
+            {historyLoading ? (
+              <div className="p-5 text-sm text-muted">Загрузка истории...</div>
+            ) : historyError ? (
+              <div className="p-5 text-sm text-red-600">{historyError}</div>
+            ) : historyRows.length ? (
+              <table className="w-full min-w-[1080px] text-sm">
+                <thead className="sticky top-0 z-[1] bg-[var(--card)] text-left text-xs font-semibold uppercase tracking-wide text-muted">
+                  <tr className="border-b border-soft">
+                    <th className="px-5 py-3">Дата</th>
+                    <th className="px-5 py-3">Админ</th>
+                    <th className="px-5 py-3">Изменения</th>
+                    <th className="px-5 py-3">Комментарий</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyRows.map((row) => (
+                    <tr key={`${row.createdAt}-${row.adminId}-${row.ruleTitle}`} className="border-b border-soft last:border-b-0 hover:bg-[var(--bg-soft)]/60">
+                      <td className="whitespace-nowrap px-5 py-4 text-muted">
+                        {new Date(row.createdAt).toLocaleString("ru-RU")}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap font-medium">{row.adminName}</td>
+                      <td className="px-5 py-4">
+                        <div className="max-w-[620px] whitespace-pre-line break-words leading-6">
+                          {row.changes}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="max-w-[420px] whitespace-pre-line break-words leading-6 text-muted">
+                          {row.comment}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-5 text-sm text-muted">Пока нет истории финконтроля.</div>
             )}
           </div>
         </section>
