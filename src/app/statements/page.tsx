@@ -308,8 +308,8 @@ export default function StatementsPage() {
           </div>
         </div>
 
-        <div className="min-h-[72vh] flex-1 overflow-auto">
-          <table className="min-w-[1800px] w-full table-fixed text-sm">
+        <div className="min-h-[84vh] flex-1 overflow-auto">
+          <table className="min-w-[2100px] w-full table-fixed text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--card)]">
               <tr className="border-b border-soft">
                 <th className="w-10 px-4 py-3">
@@ -319,19 +319,19 @@ export default function StatementsPage() {
                     onChange={toggleAllVisible}
                   />
                 </th>
-                <th className="px-4 py-3 text-left">Дата</th>
-                <th className="px-4 py-3 text-left">Tx / ID</th>
-                <th className="px-4 py-3 text-left">Статус</th>
-                <th className="px-4 py-3 text-left">Валюта</th>
-                <th className="px-4 py-3 text-right">Сумма</th>
-                <th className="px-4 py-3 text-right">Комиссия банка</th>
-                <th className="px-4 py-3 text-right">Сетевая комиссия</th>
-                <th className="px-4 py-3 text-right">Газ (energy)</th>
-                <th className="px-4 py-3 text-right">Двигающая сила</th>
-                <th className="px-4 py-3 text-right">Сожжено BRICS</th>
-                <th className="px-4 py-3 text-left">Отправитель</th>
-                <th className="px-4 py-3 text-left">Получатель</th>
-                <th className="px-4 py-3 text-left">Причина отклонения</th>
+                <th className="w-40 px-4 py-3 text-left">Дата</th>
+                <th className="w-64 px-4 py-3 text-left">Tx / ID</th>
+                <th className="w-28 px-4 py-3 text-left">Статус</th>
+                <th className="w-28 px-4 py-3 text-left">Валюта</th>
+                <th className="w-28 px-4 py-3 text-right">Сумма</th>
+                <th className="w-36 px-4 py-3 text-right">Комиссия банка</th>
+                <th className="w-36 px-4 py-3 text-right">Сетевая комиссия</th>
+                <th className="w-28 px-4 py-3 text-right">Газ (energy)</th>
+                <th className="w-32 px-4 py-3 text-right">Двигающая сила</th>
+                <th className="w-32 px-4 py-3 text-right">Сожжено BRICS</th>
+                <th className="w-60 px-4 py-3 text-left">Отправитель</th>
+                <th className="w-60 px-4 py-3 text-left">Получатель</th>
+                <th className="w-72 px-4 py-3 text-left">Причина отклонения</th>
               </tr>
             </thead>
             <tbody>

@@ -233,10 +233,20 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
-  let previousBody: Record<string, any> | null = null;
+  const grouped = new Map<string, AdminActionLog[]>();
+  for (const log of ordered) {
+    const action = String(log.action || "unknown");
+    const list = grouped.get(action);
+    if (list) list.push(log);
+    else grouped.set(action, [log]);
+  }
 
-  return ordered
-    .map((log) => {
+  const rows: RateHistoryRow[] = [];
+
+  for (const actionLogs of grouped.values()) {
+    let previousBody: Record<string, any> | null = null;
+
+    for (const log of actionLogs) {
       const details = parseActionDetails(log.details);
       const rawBody = details?.body ?? details?.data ?? details;
       const body =
@@ -309,20 +319,21 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       }
 
       previousBody = body;
-      if (!changes.length) return null;
+      if (!changes.length) continue;
 
-      return {
+      rows.push({
         createdAt: log.createdAt,
         adminId: log.admin_id,
         comment: commentParts.length ? commentParts.join("\n") : "-",
         changes: changes.join("\n"),
-      };
-    })
-    .filter((row): row is RateHistoryRow => Boolean(row))
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+      });
+    }
+  }
+
+  return rows.sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 function InfoHint({ text }: { text: string }) {
@@ -756,6 +767,11 @@ export default function RatesPage() {
     return items;
   }, [currentTariffs, originalCurrentTariffs, originalSettings, settings]);
 
+  const tariffChanged = useMemo(
+    () => changedReasonItems.some((item) => item.key.startsWith("tariff:")),
+    [changedReasonItems],
+  );
+
   const rateCommentKeys = useMemo(() => {
     const keys: string[] = [];
     if (normalizeDecimalInput(settings.usd_buy_rate) !== normalizeDecimalInput(originalSettings.usd_buy_rate)) {
@@ -918,43 +934,43 @@ export default function RatesPage() {
         fixed_fee: normalizeDecimalInput(item.fixed_fee),
       }));
 
-      const [savedSettings, savedTariffs] = await Promise.all([
-        putAdminSettings(settingsPayload),
-        putTariffs(tariffsPayload),
-      ]);
+      const savedSettings = await putAdminSettings(settingsPayload);
+      const savedTariffs = tariffChanged ? await putTariffs(tariffsPayload) : null;
 
       setSettings((prev) => ({ ...prev, ...savedSettings }));
       setOriginalSettings((prev) => ({ ...prev, ...savedSettings }));
-      setTariffs((prev) => {
-        const merged = new Map(
-          prev.map((item) => [
-            makeTariffKey(item.category, item.residency, item.operation),
-            item,
-          ]),
-        );
-        for (const item of savedTariffs) {
-          merged.set(
-            makeTariffKey(item.category, item.residency, item.operation),
-            item,
+      if (savedTariffs) {
+        setTariffs((prev) => {
+          const merged = new Map(
+            prev.map((item) => [
+              makeTariffKey(item.category, item.residency, item.operation),
+              item,
+            ]),
           );
-        }
-        return Array.from(merged.values());
-      });
-      setOriginalTariffs((prev) => {
-        const merged = new Map(
-          prev.map((item) => [
-            makeTariffKey(item.category, item.residency, item.operation),
-            item,
-          ]),
-        );
-        for (const item of savedTariffs) {
-          merged.set(
-            makeTariffKey(item.category, item.residency, item.operation),
-            item,
+          for (const item of savedTariffs) {
+            merged.set(
+              makeTariffKey(item.category, item.residency, item.operation),
+              item,
+            );
+          }
+          return Array.from(merged.values());
+        });
+        setOriginalTariffs((prev) => {
+          const merged = new Map(
+            prev.map((item) => [
+              makeTariffKey(item.category, item.residency, item.operation),
+              item,
+            ]),
           );
-        }
-        return Array.from(merged.values());
-      });
+          for (const item of savedTariffs) {
+            merged.set(
+              makeTariffKey(item.category, item.residency, item.operation),
+              item,
+            );
+          }
+          return Array.from(merged.values());
+        });
+      }
       setReasons(nextReasons);
       setReasonDrafts(nextReasons);
       setSuccess("Тарифная сетка сохранена");
@@ -1023,6 +1039,11 @@ export default function RatesPage() {
   }
 
   async function saveRates() {
+    if (!changedReasonItems.length) {
+      setSuccess("Изменений нет");
+      setError(null);
+      return;
+    }
     const missingItem = changedReasonItems.find(
       (item) => !getRateReason(item.key).trim(),
     );
