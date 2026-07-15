@@ -846,7 +846,14 @@ export async function updateAntifraudRule(
       body: JSON.stringify(payload),
     },
   );
-  if (!res.ok) throw new Error("Failed to update antifraud rule");
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      body.trim()
+        ? `Failed to update antifraud rule: ${body.trim()}`
+        : `Failed to update antifraud rule (HTTP ${res.status})`,
+    );
+  }
   return res.json();
 }
 
