@@ -772,6 +772,21 @@ export default function RatesPage() {
     [changedReasonItems],
   );
 
+  const settingsChanged = useMemo(() => {
+    return (
+      normalizeDecimalInput(settings.usd_buy_rate) !==
+        normalizeDecimalInput(originalSettings.usd_buy_rate) ||
+      normalizeDecimalInput(settings.usd_sell_rate) !==
+        normalizeDecimalInput(originalSettings.usd_sell_rate) ||
+      normalizeDecimalInput(settings.usdt_trade_fee_pct) !==
+        normalizeDecimalInput(originalSettings.usdt_trade_fee_pct) ||
+      normalizeDecimalInput(settings.usdt_withdraw_fee_fixed) !==
+        normalizeDecimalInput(originalSettings.usdt_withdraw_fee_fixed) ||
+      normalizeDecimalInput(settings.min_withdraw_usdt_trc20) !==
+        normalizeDecimalInput(originalSettings.min_withdraw_usdt_trc20)
+    );
+  }, [originalSettings, settings]);
+
   const rateCommentKeys = useMemo(() => {
     const keys: string[] = [];
     if (normalizeDecimalInput(settings.usd_buy_rate) !== normalizeDecimalInput(originalSettings.usd_buy_rate)) {
@@ -913,26 +928,33 @@ export default function RatesPage() {
       };
 
       const settingsPayload: Partial<AdminSettings> = {
-        esom_per_usd: normalizeDecimalInput(settings.usd_buy_rate),
-        usd_buy_rate: normalizeDecimalInput(settings.usd_buy_rate),
-        usd_sell_rate: normalizeDecimalInput(settings.usd_sell_rate),
-        usdt_trade_fee_pct: normalizeDecimalInput(settings.usdt_trade_fee_pct),
-        usdt_withdraw_fee_fixed: normalizeDecimalInput(
-          settings.usdt_withdraw_fee_fixed,
-        ),
-        min_withdraw_usdt_trc20: normalizeDecimalInput(
-          settings.min_withdraw_usdt_trc20,
-        ),
         rates_change_reasons_json: JSON.stringify(nextReasons),
       };
 
-      const tariffsPayload = currentTariffs.map((item) => ({
-        category: item.category,
-        residency: item.residency,
-        operation: item.operation,
-        percent_fee: normalizeDecimalInput(item.percent_fee),
-        fixed_fee: normalizeDecimalInput(item.fixed_fee),
-      }));
+      if (settingsChanged) {
+        settingsPayload.esom_per_usd = normalizeDecimalInput(settings.usd_buy_rate);
+        settingsPayload.usd_buy_rate = normalizeDecimalInput(settings.usd_buy_rate);
+        settingsPayload.usd_sell_rate = normalizeDecimalInput(settings.usd_sell_rate);
+        settingsPayload.usdt_trade_fee_pct = normalizeDecimalInput(
+          settings.usdt_trade_fee_pct,
+        );
+        settingsPayload.usdt_withdraw_fee_fixed = normalizeDecimalInput(
+          settings.usdt_withdraw_fee_fixed,
+        );
+        settingsPayload.min_withdraw_usdt_trc20 = normalizeDecimalInput(
+          settings.min_withdraw_usdt_trc20,
+        );
+      }
+
+      const tariffsPayload = tariffChanged
+        ? currentTariffs.map((item) => ({
+            category: item.category,
+            residency: item.residency,
+            operation: item.operation,
+            percent_fee: normalizeDecimalInput(item.percent_fee),
+            fixed_fee: normalizeDecimalInput(item.fixed_fee),
+          }))
+        : null;
 
       const savedSettings = await putAdminSettings(settingsPayload);
       const savedTariffs = tariffChanged ? await putTariffs(tariffsPayload) : null;

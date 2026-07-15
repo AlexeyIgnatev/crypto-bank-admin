@@ -99,7 +99,7 @@ function currencyHistoryLabel(key: string): string {
 }
 
 function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
-  const ordered = [...logs].sort(
+  const ordered = [...logs].filter(Boolean).sort(
     (a, b) =>
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
@@ -256,7 +256,9 @@ export default function CurrencyRatesPage() {
       try {
         const res = await getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" });
         if (!alive) return;
-        const adminItems = Array.isArray(res.items) ? res.items : [];
+        const adminItems = Array.isArray(res.items)
+          ? res.items.filter((item): item is AdminOption => Boolean(item && typeof item === "object"))
+          : [];
         setAdmins(
           adminItems.map((admin) => ({
             id: admin.id,
@@ -286,7 +288,11 @@ export default function CurrencyRatesPage() {
         });
         if (!alive) return;
         setRateHistoryRows(
-          extractCurrencyHistory(Array.isArray(logs?.items) ? logs.items : []),
+          extractCurrencyHistory(
+            Array.isArray(logs?.items)
+              ? logs.items.filter((item): item is AdminActionLog => Boolean(item && typeof item === "object"))
+              : [],
+          ),
         );
       } catch {
         if (!alive) return;
@@ -386,7 +392,11 @@ export default function CurrencyRatesPage() {
           sortDir: "desc",
         });
         setRateHistoryRows(
-          extractCurrencyHistory(Array.isArray(logs?.items) ? logs.items : []),
+          extractCurrencyHistory(
+            Array.isArray(logs?.items)
+              ? logs.items.filter((item): item is AdminActionLog => Boolean(item && typeof item === "object"))
+              : [],
+          ),
         );
       } catch {
         setRateHistoryRows([]);

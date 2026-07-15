@@ -175,38 +175,94 @@ function diffLabel(label: string, current: unknown, previous: unknown): string |
   return formatDelta(label, current, previous);
 }
 
+function shortDiffLabel(label: string, current: unknown, previous: unknown): string | null {
+  const next = asText(current);
+  const prev = asText(previous);
+  if (!next && !prev) return null;
+  if (next === prev) return null;
+  if (!prev) return `${label}: ${next}`;
+  if (!next) return `${label}: ${prev} ->`;
+  return `${label}: ${prev} -> ${next}`;
+}
+
+function buildBankCommissionChangeSummaryShort(
+  current: Record<string, any>,
+  previous: Record<string, any> | null,
+): string | null {
+  const prev = previous || {};
+  const parts = [
+    shortDiffLabel(
+      "\u0420\u0435\u0436\u0438\u043c",
+      current.bank_commission_distribution_mode ?? current.mode ?? current.distribution_mode,
+      prev.bank_commission_distribution_mode ?? prev.mode ?? prev.distribution_mode,
+    ),
+    shortDiffLabel("\u0426\u0411 %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
+    shortDiffLabel("\u0411\u0430\u043d\u043a %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
+    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
+    shortDiffLabel("\u0426\u0411 fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    shortDiffLabel("\u0411\u0430\u043d\u043a fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    shortDiffLabel("\u0412\u0440\u0435\u043c\u044f", current.bank_fee_posting_time_bishkek, prev.bank_fee_posting_time_bishkek),
+    current.central_bank_som_account !== prev.central_bank_som_account
+      ? "\u0421\u0447\u0451\u0442 \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.central_bank_salam_wallet !== prev.central_bank_salam_wallet
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.central_bank_usdt_wallet !== prev.central_bank_usdt_wallet
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.bank_som_account !== prev.bank_som_account
+      ? "\u0421\u0447\u0451\u0442 \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.bank_salam_wallet !== prev.bank_salam_wallet
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.bank_usdt_wallet !== prev.bank_usdt_wallet
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+    current.bank_commission_partners_json !== prev.bank_commission_partners_json
+      ? "\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b: \u0441\u043e\u0441\u0442\u0430\u0432 \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
+  ].filter(Boolean);
+  if (!parts.length) return null;
+  return parts.map((part) => String(part).replace(/\s+/g, " ").trim()).join("; ");
+}
+
 function buildBankCommissionChangeSummary(
   current: Record<string, any>,
   previous: Record<string, any> | null,
 ): string | null {
   const prev = previous || {};
   const parts = [
-    diffLabel(
+    shortDiffLabel(
       "\u0420\u0435\u0436\u0438\u043c",
       current.bank_commission_distribution_mode ?? current.mode ?? current.distribution_mode,
       prev.bank_commission_distribution_mode ?? prev.mode ?? prev.distribution_mode,
     ),
-    diffLabel("\u0426\u0411 %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
-    diffLabel("\u0411\u0430\u043d\u043a %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
-    diffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
-    diffLabel("\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 \u0426\u0411", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
-    diffLabel("\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 \u0431\u0430\u043d\u043a\u0430", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
-    diffLabel("\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 \u043f\u0430\u0440\u0442\u043d\u0451\u0440\u043e\u0432", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
-    diffLabel(
-      "\u0412\u0440\u0435\u043c\u044f \u0437\u0430\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044f",
+    shortDiffLabel("\u0426\u0411 %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
+    shortDiffLabel("\u0411\u0430\u043d\u043a %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
+    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
+    shortDiffLabel("\u0426\u0411 fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    shortDiffLabel("\u0411\u0430\u043d\u043a fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    shortDiffLabel(
+      "\u0412\u0440Рµ\u043c\u044f",
       current.bank_fee_posting_time_bishkek,
       prev.bank_fee_posting_time_bishkek,
     ),
-    diffLabel("\u0421\u0447\u0451\u0442 \u0421\u041e\u041c \u0426\u0411", current.central_bank_som_account, prev.central_bank_som_account),
-    diffLabel("\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0426\u0411", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
-    diffLabel("\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0426\u0411", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
-    diffLabel("\u0421\u0447\u0451\u0442 \u0421\u041e\u041c \u0431\u0430\u043d\u043a\u0430", current.bank_som_account, prev.bank_som_account),
-    diffLabel("\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0431\u0430\u043d\u043a\u0430", current.bank_salam_wallet, prev.bank_salam_wallet),
-    diffLabel("\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0431\u0430\u043d\u043a\u0430", current.bank_usdt_wallet, prev.bank_usdt_wallet),
-    diffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b", current.bank_commission_partners_json, prev.bank_commission_partners_json),
+    shortDiffLabel("\u0421\u0447\u0451\u0442 \u0426\u0411", current.central_bank_som_account, prev.central_bank_som_account),
+    shortDiffLabel("\u0421\u0430\u043bР°\u043c \u0426\u0411", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
+    shortDiffLabel("\u0423\u0421\u0414\u0422 \u0426\u0411", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
+    shortDiffLabel("\u0421\u0447\u0451\u0442 \u0431\u0430\u043d\u043a\u0430", current.bank_som_account, prev.bank_som_account),
+    shortDiffLabel("\u0421\u0430\u043bР°\u043c \u0431\u0430\u043d\u043a\u0430", current.bank_salam_wallet, prev.bank_salam_wallet),
+    shortDiffLabel("\u0423\u0421\u0414\u0422 \u0431\u0430\u043d\u043a\u0430", current.bank_usdt_wallet, prev.bank_usdt_wallet),
+    current.bank_commission_partners_json !== prev.bank_commission_partners_json
+      ? "\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b: \u0441\u043e\u0441\u0442\u0430\u0432 \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      : null,
   ].filter(Boolean);
   if (!parts.length) return null;
-  return parts.map((part) => String(part).replace(/\s+/g, ' ').trim()).join('; ');
+  return parts.map((part) => String(part).replace(/\s+/g, " ").trim()).join("; ");
 }
 
 function extractBankCommissionHistory(
@@ -239,7 +295,7 @@ function extractBankCommissionHistory(
         ),
       );
 
-      const changes = buildBankCommissionChangeSummary(body, previousBody);
+      const changes = buildBankCommissionChangeSummaryShort(body, previousBody);
       previousBody = body;
 
       if (!changes) return null;
