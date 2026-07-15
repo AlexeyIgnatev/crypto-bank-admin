@@ -542,9 +542,9 @@ export async function getAdmins(params: {
   const itemsSrc: any[] = data.items || data || [];
   const items: Admin[] = itemsSrc.map((a: any) => ({
     id: String(a.id),
-    firstName: a.firstName || "",
-    lastName: a.lastName || "",
-    login: a.email || "",
+    firstName: a.firstName || a.first_name || "",
+    lastName: a.lastName || a.last_name || "",
+    login: a.email || a.login || a.username || "",
     role: roleLabelFromKey(a.role || "SUPER_ADMIN"),
     createdAt: a.createdAt || new Date().toISOString(),
   }));
