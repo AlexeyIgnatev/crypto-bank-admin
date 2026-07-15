@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/lib/api";
@@ -7,8 +7,8 @@ import { readableRejectionReason } from "@/lib/rejectionReason";
 import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
-  { label: "СОМ", value: "SOM" },
-  { label: "САЛАМ", value: "SALAM" },
+  { label: "РЎРћРњ", value: "SOM" },
+  { label: "РЎРђР›РђРњ", value: "SALAM" },
   { label: "USDT TRC20", value: "USDT" },
 ] as const;
 
@@ -19,7 +19,7 @@ function asNumber(value: number | undefined): number {
 }
 
 function txLabel(t: Transaction) {
-  return t.kind ? `${t.kind} · ${t.id}` : t.id;
+  return t.kind ? `${t.kind} В· ${t.id}` : t.id;
 }
 
 async function fetchAllByRole(params: {
@@ -69,12 +69,12 @@ export default function StatementsPage() {
 
   const searchSummary = useMemo(() => {
     const parts = [
-      fioSearch.trim() ? `ФИО: ${fioSearch.trim()}` : "",
-      phoneSearch.trim() ? `Телефон: ${phoneSearch.trim()}` : "",
-      walletSearch.trim() ? `Кошелёк: ${walletSearch.trim()}` : "",
+      fioSearch.trim() ? `Р¤РРћ: ${fioSearch.trim()}` : "",
+      phoneSearch.trim() ? `РўРµР»РµС„РѕРЅ: ${phoneSearch.trim()}` : "",
+      walletSearch.trim() ? `РљРѕС€РµР»С‘Рє: ${walletSearch.trim()}` : "",
     ].filter(Boolean);
 
-    return parts.length ? parts.join(" · ") : "Без фильтра";
+    return parts.length ? parts.join(" В· ") : "Р‘РµР· С„РёР»СЊС‚СЂР°";
   }, [fioSearch, phoneSearch, walletSearch]);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function StatementsPage() {
   async function load() {
     const terms = [fioSearch.trim(), phoneSearch.trim(), walletSearch.trim()].filter(Boolean);
     if (!terms.length) {
-      setError("Заполни хотя бы одно поле: ФИО, телефон или кошелёк");
+      setError("Р—Р°РїРѕР»РЅРё С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РїРѕР»Рµ: Р¤РРћ, С‚РµР»РµС„РѕРЅ РёР»Рё РєРѕС€РµР»С‘Рє");
       setItems([]);
       setSelectedIds(new Set());
       return;
@@ -112,10 +112,10 @@ export default function StatementsPage() {
       setItems(sorted);
       setSelectedIds(new Set());
       if (!sorted.length) {
-        setError("По этим фильтрам ничего не найдено");
+        setError("РџРѕ СЌС‚РёРј С„РёР»СЊС‚СЂР°Рј РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ");
       }
     } catch {
-      setError("Не удалось загрузить выписку");
+      setError("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РІС‹РїРёСЃРєСѓ");
       setItems([]);
       setSelectedIds(new Set());
     } finally {
@@ -149,25 +149,25 @@ export default function StatementsPage() {
     await exportRows({
       format,
       fileBaseName,
-      title: "Выписка по операциям",
-      periodLabel: `Выборка: ${searchSummary} · ${asset}`,
+      title: "Р’С‹РїРёСЃРєР° РїРѕ РѕРїРµСЂР°С†РёСЏРј",
+      periodLabel: `Р’С‹Р±РѕСЂРєР°: ${searchSummary} В· ${asset}`,
       columns: [
-        { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
+        { header: "Р”Р°С‚Р°", getValue: (row) => new Date(row.createdAt).toLocaleString() },
         { header: "Tx / ID", getValue: (row) => row.id },
-        { header: "Статус", getValue: (row) => row.status },
-        { header: "Актив", getValue: (row) => row.currency },
-        { header: "Сумма", getValue: (row) => row.amount },
-        { header: "Комиссия банка", getValue: (row) => row.feeAmount ?? 0 },
+        { header: "РЎС‚Р°С‚СѓСЃ", getValue: (row) => row.status },
+        { header: "РђРєС‚РёРІ", getValue: (row) => row.currency },
+        { header: "РЎСѓРјРјР°", getValue: (row) => row.amount },
+        { header: "РљРѕРјРёСЃСЃРёСЏ Р±Р°РЅРєР°", getValue: (row) => row.feeAmount ?? 0 },
         {
-          header: "Сетевая комиссия",
+          header: "РЎРµС‚РµРІР°СЏ РєРѕРјРёСЃСЃРёСЏ",
           getValue: (row) => `${asNumber(row.networkFeeAmount)} ${row.networkFeeAsset || ""}`.trim(),
         },
-        { header: "Газ (energy)", getValue: (row) => asNumber(row.energyUsed) },
-        { header: "Двигающая сила", getValue: (row) => asNumber(row.bandwidthUsed) },
-        { header: "Сожжено BRICS", getValue: (row) => asNumber(row.bricsBurnedAmount) },
-        { header: "Отправитель", getValue: (row) => row.sender },
-        { header: "Получатель", getValue: (row) => row.recipient },
-        { header: "Причина отклонения", getValue: (row) => readableRejectionReason(row) },
+        { header: "Р“Р°Р· (energy)", getValue: (row) => asNumber(row.energyUsed) },
+        { header: "Р”РІРёРіР°СЋС‰Р°СЏ СЃРёР»Р°", getValue: (row) => asNumber(row.bandwidthUsed) },
+        { header: "РЎРѕР¶Р¶РµРЅРѕ BRICS", getValue: (row) => asNumber(row.bricsBurnedAmount) },
+        { header: "РћС‚РїСЂР°РІРёС‚РµР»СЊ", getValue: (row) => row.sender },
+        { header: "РџРѕР»СѓС‡Р°С‚РµР»СЊ", getValue: (row) => row.recipient },
+        { header: "РџСЂРёС‡РёРЅР° РѕС‚РєР»РѕРЅРµРЅРёСЏ", getValue: (row) => readableRejectionReason(row) },
       ],
       rows,
     });
@@ -200,17 +200,17 @@ export default function StatementsPage() {
       <div className="card rounded-xl border border-soft p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.1fr_1.1fr_1.1fr_0.9fr_auto] md:items-end">
           <label className="grid gap-1">
-            <div className="text-sm mb-1">ФИО</div>
+            <div className="text-sm mb-1">Р¤РРћ</div>
             <input
               className="ui-input w-full"
               value={fioSearch}
               onChange={(e) => setFioSearch(e.target.value)}
-              placeholder="Иванов Иван Иванович"
+              placeholder="РРІР°РЅРѕРІ РРІР°РЅ РРІР°РЅРѕРІРёС‡"
             />
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">Телефон</div>
+            <div className="text-sm mb-1">РўРµР»РµС„РѕРЅ</div>
             <input
               className="ui-input w-full"
               value={phoneSearch}
@@ -220,7 +220,7 @@ export default function StatementsPage() {
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">Кошелёк</div>
+            <div className="text-sm mb-1">РљРѕС€РµР»С‘Рє</div>
             <input
               className="ui-input w-full"
               value={walletSearch}
@@ -230,7 +230,7 @@ export default function StatementsPage() {
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">Актив</div>
+            <div className="text-sm mb-1">РђРєС‚РёРІ</div>
             <select className="ui-input w-full" value={asset} onChange={(e) => setAsset(e.target.value)}>
               {ASSET_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -241,23 +241,23 @@ export default function StatementsPage() {
           </label>
 
           <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
-            {loading ? "Загрузка..." : "Показать выписку"}
+            {loading ? "Р—Р°РіСЂСѓР·РєР°..." : "РџРѕРєР°Р·Р°С‚СЊ РІС‹РїРёСЃРєСѓ"}
           </button>
         </div>
 
-        <div className="mt-3 text-xs text-muted">Фильтр ищет отдельно по ФИО, телефону и кошельку, затем объединяет найденные операции.</div>
+        <div className="mt-3 text-xs text-muted">Р¤РёР»СЊС‚СЂ РёС‰РµС‚ РѕС‚РґРµР»СЊРЅРѕ РїРѕ Р¤РРћ, С‚РµР»РµС„РѕРЅСѓ Рё РєРѕС€РµР»СЊРєСѓ, Р·Р°С‚РµРј РѕР±СЉРµРґРёРЅСЏРµС‚ РЅР°Р№РґРµРЅРЅС‹Рµ РѕРїРµСЂР°С†РёРё.</div>
 
         {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
       </div>
 
       <div className="card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-soft">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft p-3 text-sm text-muted">
-          <div>Операции: {items.length}</div>
-          <div>Выбрано: {selectedItems.length}</div>
+          <div>РћРїРµСЂР°С†РёРё: {items.length}</div>
+          <div>Р’С‹Р±СЂР°РЅРѕ: {selectedItems.length}</div>
           <div>{searchSummary}</div>
           <div className="flex flex-wrap gap-2">
             <button className="btn h-9 px-3" onClick={toggleAllVisible} disabled={!items.length}>
-              {selectedIds.size === items.length && items.length ? "Снять выбор" : "Выбрать все"}
+              {selectedIds.size === items.length && items.length ? "РЎРЅСЏС‚СЊ РІС‹Р±РѕСЂ" : "Р’С‹Р±СЂР°С‚СЊ РІСЃРµ"}
             </button>
             <div className="flex flex-wrap gap-2">
               <button
@@ -265,21 +265,21 @@ export default function StatementsPage() {
                 onClick={() => exportAll("pdf")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-pdf" ? "PDF..." : "Экспорт выборки PDF"}
+                {exporting === "all-pdf" ? "PDF..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё PDF"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportAll("csv")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-csv" ? "CSV..." : "Экспорт выборки CSV"}
+                {exporting === "all-csv" ? "CSV..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё CSV"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportAll("txt")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-txt" ? "TXT..." : "Экспорт выборки TXT"}
+                {exporting === "all-txt" ? "TXT..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё TXT"}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -288,50 +288,50 @@ export default function StatementsPage() {
                 onClick={() => exportSelected("pdf")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-pdf" ? "PDF..." : "Выбранные PDF"}
+                {exporting === "selected-pdf" ? "PDF..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ PDF"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportSelected("csv")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-csv" ? "CSV..." : "Выбранные CSV"}
+                {exporting === "selected-csv" ? "CSV..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ CSV"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportSelected("txt")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-txt" ? "TXT..." : "Выбранные TXT"}
+                {exporting === "selected-txt" ? "TXT..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ TXT"}
               </button>
             </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-auto">
-          <table className="w-full text-sm">
+        <div className="min-h-[72vh] flex-1 overflow-auto">
+          <table className="min-w-[1800px] w-full table-fixed text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--card)]">
               <tr className="border-b border-soft">
-                <th className="w-10 px-3 py-2">
+                <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
                     checked={items.length > 0 && selectedIds.size === items.length}
                     onChange={toggleAllVisible}
                   />
                 </th>
-                <th className="px-3 py-2 text-left">Дата</th>
-                <th className="px-3 py-2 text-left">Tx / ID</th>
-                <th className="px-3 py-2 text-left">Статус</th>
-                <th className="px-3 py-2 text-left">Актив</th>
-                <th className="px-3 py-2 text-right">Сумма</th>
-                <th className="px-3 py-2 text-right">Комиссия банка</th>
-                <th className="px-3 py-2 text-right">Сетевая комиссия</th>
-                <th className="px-3 py-2 text-right">Газ (energy)</th>
-                <th className="px-3 py-2 text-right">Двигающая сила</th>
-                <th className="px-3 py-2 text-right">Сожжено BRICS</th>
-                <th className="px-3 py-2 text-left">Отправитель</th>
-                <th className="px-3 py-2 text-left">Получатель</th>
-                <th className="px-3 py-2 text-left">Причина отклонения</th>
+                <th className="px-4 py-3 text-left">Р”Р°С‚Р°</th>
+                <th className="px-4 py-3 text-left">Tx / ID</th>
+                <th className="px-4 py-3 text-left">РЎС‚Р°С‚СѓСЃ</th>
+                <th className="px-4 py-3 text-left">РђРєС‚РёРІ</th>
+                <th className="px-4 py-3 text-right">РЎСѓРјРјР°</th>
+                <th className="px-4 py-3 text-right">РљРѕРјРёСЃСЃРёСЏ Р±Р°РЅРєР°</th>
+                <th className="px-4 py-3 text-right">РЎРµС‚РµРІР°СЏ РєРѕРјРёСЃСЃРёСЏ</th>
+                <th className="px-4 py-3 text-right">Р“Р°Р· (energy)</th>
+                <th className="px-4 py-3 text-right">Р”РІРёРіР°СЋС‰Р°СЏ СЃРёР»Р°</th>
+                <th className="px-4 py-3 text-right">РЎРѕР¶Р¶РµРЅРѕ BRICS</th>
+                <th className="px-4 py-3 text-left">РћС‚РїСЂР°РІРёС‚РµР»СЊ</th>
+                <th className="px-4 py-3 text-left">РџРѕР»СѓС‡Р°С‚РµР»СЊ</th>
+                <th className="px-4 py-3 text-left">РџСЂРёС‡РёРЅР° РѕС‚РєР»РѕРЅРµРЅРёСЏ</th>
               </tr>
             </thead>
             <tbody>
@@ -339,42 +339,42 @@ export default function StatementsPage() {
                 const rejectionReason = readableRejectionReason(t);
                 return (
                   <tr key={t.id} className="border-b border-soft">
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-4 py-3 align-top">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(t.id)}
                         onChange={() => toggleSelected(t.id)}
                       />
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
-                    <td className="px-3 py-2 break-all">{txLabel(t)}</td>
-                    <td className="px-3 py-2">{t.status}</td>
-                    <td className="px-3 py-2">{t.currency}</td>
-                    <td className="px-3 py-2 text-right">{t.amount.toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right">{Number(t.feeAmount || 0).toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 break-all">{txLabel(t)}</td>
+                    <td className="px-4 py-3">{t.status}</td>
+                    <td className="px-4 py-3">{t.currency}</td>
+                    <td className="px-4 py-3 text-right">{t.amount.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">{Number(t.feeAmount || 0).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">
                       {`${asNumber(t.networkFeeAmount).toLocaleString()} ${t.networkFeeAsset || ""}`.trim()}
                     </td>
-                    <td className="px-3 py-2 text-right">{asNumber(t.energyUsed).toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right">{asNumber(t.bandwidthUsed).toLocaleString()}</td>
-                    <td className="px-3 py-2 text-right">{asNumber(t.bricsBurnedAmount).toLocaleString()}</td>
-                    <td className="px-3 py-2 break-words">{t.sender}</td>
-                    <td className="px-3 py-2 break-words">{t.recipient}</td>
-                    <td className="px-3 py-2 break-words">{rejectionReason}</td>
+                    <td className="px-4 py-3 text-right">{asNumber(t.energyUsed).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">{asNumber(t.bandwidthUsed).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">{asNumber(t.bricsBurnedAmount).toLocaleString()}</td>
+                    <td className="px-4 py-3 break-words">{t.sender}</td>
+                    <td className="px-4 py-3 break-words">{t.recipient}</td>
+                    <td className="px-4 py-3 break-words">{rejectionReason}</td>
                   </tr>
                 );
               })}
               {!loading && !hasAnySearch && items.length === 0 && (
                 <tr>
-                  <td className="px-3 py-8 text-center text-muted" colSpan={15}>
-                    Заполни фильтр и нажми «Показать выписку»
+                  <td className="px-4 py-8 text-center text-muted" colSpan={15}>
+                    Р—Р°РїРѕР»РЅРё С„РёР»СЊС‚СЂ Рё РЅР°Р¶РјРё В«РџРѕРєР°Р·Р°С‚СЊ РІС‹РїРёСЃРєСѓВ»
                   </td>
                 </tr>
               )}
               {!loading && hasAnySearch && items.length === 0 && (
                 <tr>
-                  <td className="px-3 py-8 text-center text-muted" colSpan={15}>
-                    Нет данных
+                  <td className="px-4 py-8 text-center text-muted" colSpan={15}>
+                    РќРµС‚ РґР°РЅРЅС‹С…
                   </td>
                 </tr>
               )}
@@ -385,3 +385,4 @@ export default function StatementsPage() {
     </div>
   );
 }
+

@@ -167,8 +167,8 @@ function formatDelta(label: string, current: unknown, previous: unknown): string
   if (!next && !prev) return null;
   if (next === prev) return null;
   if (!prev) return `${label}: ${next}`;
-  if (!next) return `${label}: ${prev} →`;
-  return `${label}: ${prev} → ${next}`;
+  if (!next) return `${label}: ${prev} ->`;
+  return `${label}: ${prev} -> ${next}`;
 }
 
 function diffLabel(label: string, current: unknown, previous: unknown): string | null {
@@ -182,33 +182,35 @@ function buildBankCommissionChangeSummary(
   const prev = previous || {};
   const parts = [
     diffLabel(
-      "Режим распределения",
+      "\u0420\u0435\u0436\u0438\u043c",
       current.bank_commission_distribution_mode ?? current.mode ?? current.distribution_mode,
       prev.bank_commission_distribution_mode ?? prev.mode ?? prev.distribution_mode,
     ),
-    diffLabel("ЦБ %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
-    diffLabel("Банк %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
-    diffLabel("Партнёры %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
-    diffLabel("ЦБ fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
-    diffLabel("Банк fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
-    diffLabel("Партнёры fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    diffLabel("\u0426\u0411 %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
+    diffLabel("\u0411\u0430\u043d\u043a %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
+    diffLabel("\u041f\u0430\u0440\u0442\u043d\u0435\u0440\u044b %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
+    diffLabel("\u0424\u0438\u043a\u0441. \u0426\u0411", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    diffLabel("\u0424\u0438\u043a\u0441. \u0431\u0430\u043d\u043a", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    diffLabel("\u0424\u0438\u043a\u0441. \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u044b", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
     diffLabel(
-      "Время зачисления",
+      "\u0412\u0440\u0435\u043c\u044f \u0437\u0430\u0447\u0438\u0441\u043b\u0435\u043d\u0438\u044f",
       current.bank_fee_posting_time_bishkek,
       prev.bank_fee_posting_time_bishkek,
     ),
-    diffLabel("Счёт СОМ ЦБ", current.central_bank_som_account, prev.central_bank_som_account),
-    diffLabel("Кошелёк SALAM ЦБ", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
-    diffLabel("Кошелёк USDT ЦБ", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
-    diffLabel("Счёт СОМ банка", current.bank_som_account, prev.bank_som_account),
-    diffLabel("Кошелёк SALAM банка", current.bank_salam_wallet, prev.bank_salam_wallet),
-    diffLabel("Кошелёк USDT банка", current.bank_usdt_wallet, prev.bank_usdt_wallet),
-    diffLabel("Партнёры", current.bank_commission_partners_json, prev.bank_commission_partners_json),
+    diffLabel("\u0421\u0447\u0435\u0442 \u0421\u041e\u041c \u0426\u0411", current.central_bank_som_account, prev.central_bank_som_account),
+    diffLabel("\u041a\u043e\u0448\u0435\u043b\u0435\u043a SALAM \u0426\u0411", current.central_bank_salam_wallet, prev.central_bank_salam_wallet),
+    diffLabel("\u041a\u043e\u0448\u0435\u043b\u0435\u043a USDT \u0426\u0411", current.central_bank_usdt_wallet, prev.central_bank_usdt_wallet),
+    diffLabel("\u0421\u0447\u0435\u0442 \u0421\u041e\u041c \u0431\u0430\u043d\u043a\u0430", current.bank_som_account, prev.bank_som_account),
+    diffLabel("\u041a\u043e\u0448\u0435\u043b\u0435\u043a SALAM \u0431\u0430\u043d\u043a\u0430", current.bank_salam_wallet, prev.bank_salam_wallet),
+    diffLabel("\u041a\u043e\u0448\u0435\u043b\u0435\u043a USDT \u0431\u0430\u043d\u043a\u0430", current.bank_usdt_wallet, prev.bank_usdt_wallet),
+    diffLabel("\u041f\u0430\u0440\u0442\u043d\u0435\u0440\u044b", current.bank_commission_partners_json, prev.bank_commission_partners_json),
   ].filter(Boolean);
-  return parts.length ? parts.join(" | ") : null;
+  if (!parts.length) return null;
+  return parts.map((part) => String(part).replace(/\s+/g, ' ').trim()).join('; ');
 }
 
 function extractBankCommissionHistory(
+
   logs: AdminActionLog[],
 ): CommissionHistoryRow[] {
   const ordered = [...logs].sort(

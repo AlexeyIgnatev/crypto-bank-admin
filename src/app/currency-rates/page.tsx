@@ -19,6 +19,12 @@ type RateHistoryRow = {
   changes: string;
 };
 
+type AdminOption = {
+  id: string;
+  label: string;
+  login: string;
+};
+
 const EMPTY_SETTINGS: AdminSettings = {
   esom_per_usd: "0",
   usd_buy_rate: "0",
@@ -113,7 +119,7 @@ function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
         return `${currencyHistoryLabel(key)}: ${current}`;
       })
         .filter(Boolean)
-        .join(" | ");
+        .join("; ");
 
       if (!changes) return null;
 
@@ -134,7 +140,7 @@ function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
           }),
         ]
           .filter(Boolean)
-          .join(" | ") || "-";
+          .join("\n") || "-";
 
       return {
         createdAt: log.createdAt,
@@ -148,26 +154,6 @@ function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
-}
-
-function Card({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="card overflow-hidden rounded-2xl border border-soft shadow-sm">
-      <header className="border-b border-soft px-5 py-4">
-        <div className="text-lg font-semibold">{title}</div>
-        {subtitle ? <div className="mt-1 text-sm text-muted">{subtitle}</div> : null}
-      </header>
-      <div className="p-5">{children}</div>
-    </section>
-  );
 }
 
 function GridValue({
@@ -222,6 +208,7 @@ export default function CurrencyRatesPage() {
   const [reasons, setReasons] = useState<ReasonMap>({});
   const [reasonDrafts, setReasonDrafts] = useState<ReasonMap>({});
   const [rateHistoryRows, setRateHistoryRows] = useState<RateHistoryRow[]>([]);
+  const [admins, setAdmins] = useState<AdminOption[]>([]);
 
   function normalizeLoadedSettings(input: AdminSettings): AdminSettings {
     const buyRate =
@@ -266,6 +253,29 @@ export default function CurrencyRatesPage() {
     let alive = true;
     (async () => {
       try {
+        const res = await getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" });
+        if (!alive) return;
+        setAdmins(
+          res.items.map((admin) => ({
+            id: admin.id,
+            label: [admin.lastName, admin.firstName].filter(Boolean).join(" ") || admin.login || `#${admin.id}`,
+            login: admin.login,
+          })),
+        );
+      } catch {
+        if (!alive) return;
+        setAdmins([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
         const logs = await getAdminActionLogs({
           actionQuery: "PUT /blockchain-config/admin-settings",
           limit: 200,
@@ -283,6 +293,12 @@ export default function CurrencyRatesPage() {
       alive = false;
     };
   }, []);
+
+  const adminLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const admin of admins) map.set(admin.id, admin.label);
+    return map;
+  }, [admins]);
 
   const currencyRateChanged = useMemo(() => {
     return (
@@ -510,13 +526,13 @@ export default function CurrencyRatesPage() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {formatDateTime(row.createdAt)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">#{row.adminId}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{adminLookup.get(String(row.adminId)) || (row.adminId === 0 ? "\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u043e" : `#${row.adminId}`)}</td>
                       <td className="px-4 py-3">
-                        <div className="max-w-[28rem] break-words text-muted">
+                        <div className="max-w-[28rem] whitespace-pre-line break-words text-muted">
                           {row.changes}
                         </div>
                       </td>
-                      <td className="px-4 py-3 max-w-[18rem] break-words text-muted">
+                      <td className="px-4 py-3 max-w-[18rem] whitespace-pre-line break-words text-muted">
                         {row.comment || "—"}
                       </td>
                     </tr>

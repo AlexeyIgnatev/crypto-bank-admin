@@ -171,30 +171,59 @@ function formatDate(value: string): string {
   return date.toLocaleString("ru-RU");
 }
 
+function formatAmlChangeLabel(key: string, value: unknown, ruleName: string): string {
+  const text = formatValue(value);
+  switch (key) {
+    case "enabled":
+      return Boolean(value)
+        ? `${ruleName ? `\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430: ${ruleName}` : "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430"}`
+        : `${ruleName ? `\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430: ${ruleName}` : "\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430"}`;
+    case "period_days":
+      return `\u041f\u0435\u0440\u0438\u043e\u0434 \u043d\u0430\u0431\u043b\u044e\u0434\u0435\u043d\u0438\u044f: ${text} \u0434\u043d.`;
+    case "threshold_som":
+      return `\u041f\u043e\u0440\u043e\u0433 \u0441\u0443\u043c\u043c\u044b: ${text} \u0441\u043e\u043c`;
+    case "min_count":
+      return `\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439: ${text}`;
+    case "percent_threshold":
+      return `\u041f\u043e\u0440\u043e\u0433 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430: ${text}%`;
+    default:
+      return `${getRuleLabel(key)}: ${text}`;
+  }
+}
+
 function formatChangedFields(details: any): string {
   const rawBody = details?.body ?? details?.data ?? details;
-  if (!rawBody || typeof rawBody !== "object") return "—";
-  const entries = Object.entries(rawBody as Record<string, unknown>).filter(
+  if (!rawBody || typeof rawBody !== "object") return "\u2014";
+  const body = rawBody as Record<string, unknown>;
+  const ruleName = String(
+    body.name ?? body.title ?? body.rule_name ?? body.ruleName ?? body.key ?? "",
+  ).trim();
+  const entries = Object.entries(body).filter(
     ([key, value]) =>
-      key !== "comment" && value != null && String(value).trim() !== "",
+      key !== "comment" &&
+      key !== "reason" &&
+      value != null &&
+      String(value).trim() !== "",
   );
-  if (!entries.length) return "—";
+  if (!entries.length) return "\u2014";
   return entries
-    .map(([key, value]) => `${key}: ${formatValue(value)}`)
+    .map(([key, value]) => formatAmlChangeLabel(key, value, ruleName))
+    .filter(Boolean)
     .join("; ");
 }
 
 function extractComment(details: any): string {
   const rawBody = details?.body ?? details?.data ?? details;
-  if (!rawBody || typeof rawBody !== "object") return "—";
+  if (!rawBody || typeof rawBody !== "object") return "\u2014";
   const comment =
     (rawBody as Record<string, unknown>).comment ??
     (rawBody as Record<string, unknown>).reason ??
     "";
-  return String(comment || "—");
+  return String(comment || "\u2014");
 }
 
 function formatValue(value: unknown): string {
+
   if (value == null) return "—";
   if (typeof value === "boolean") return value ? "Да" : "Нет";
   if (typeof value === "number") return Number(value).toLocaleString("ru-RU");
@@ -310,7 +339,7 @@ export default function AmlRulesPage() {
         res.items.map((admin) => ({
           id: admin.id,
           label:
-            [admin.firstName, admin.lastName].filter(Boolean).join(" ") ||
+            [admin.lastName, admin.firstName].filter(Boolean).join(" ") ||
             admin.login ||
             `#${admin.id}`,
           login: admin.login,

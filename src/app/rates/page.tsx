@@ -5,6 +5,7 @@ import Modal from "@/components/Modal";
 import {
   getAdminActionLogs,
   getAdminSettings,
+  getAdmins,
   getTariffs,
   putAdminSettings,
   putTariffs,
@@ -42,6 +43,12 @@ type RateHistoryRow = {
   adminId: number;
   comment: string;
   changes: string;
+};
+
+type AdminOption = {
+  id: string;
+  label: string;
+  login: string;
 };
 
 const TARIFF_GRID_ROWS: TariffGridRow[] = [
@@ -196,6 +203,30 @@ function normalizeHistoryValue(value: unknown): string {
   return normalizeDecimalInput(String(value ?? ""));
 }
 
+function historyLabelForRates(key: string): string {
+  const labels: Record<string, string> = {
+    "rate:usd_buy_rate": "\u041a\u0443\u0440\u0441 \u043f\u043e\u043a\u0443\u043f\u043a\u0438 USD",
+    "rate:usd_sell_rate": "\u041a\u0443\u0440\u0441 \u043f\u0440\u043e\u0434\u0430\u0436\u0438 USD",
+    "external:usdt_trade_fee_pct": "\u041a\u043e\u043c\u0438\u0441\u0441\u0438\u044f \u0432\u043d\u0435\u0448\u043d\u0435\u0433\u043e \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
+    "external:usdt_withdraw_fee_fixed": "\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 \u0432\u043d\u0435\u0448\u043d\u0435\u0433\u043e \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
+    "external:min_withdraw_usdt_trc20": "\u041c\u0438\u043d\u0438\u043c\u0443\u043c \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
+  };
+  if (labels[key]) return labels[key];
+  if (key.startsWith("tariff:")) {
+    const operation = key.slice("tariff:".length) as TariffOperation;
+    const map: Record<string, string> = {
+      SOM_TO_ESOM: "\u0421\u041e\u041c \u2192 SALAM",
+      ESOM_TO_SOM: "SALAM \u2192 \u0421\u041e\u041c",
+      WALLET_TRANSFER_ESOM: "\u0412\u043d\u0443\u0442\u0440. SALAM",
+      ESOM_TO_USDT_TRC20: "SALAM \u2192 USDT",
+      USDT_TRC20_TO_ESOM: "USDT \u2192 SALAM",
+      WALLET_TRANSFER_USDT_TRC20: "\u0412\u043d\u0443\u0442\u0440. USDT",
+    };
+    return map[operation] || rateHistoryLabelForKey(key);
+  }
+  return rateHistoryLabelForKey(key);
+}
+
 function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
   return [...logs]
     .sort(
@@ -224,21 +255,21 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       for (const key of RATE_HISTORY_KEYS) {
         const value = normalizeHistoryValue(body[key]);
         if (!String(value).trim()) continue;
-        changes.push(`${rateHistoryLabelForKey(`rate:${key}`)}: ${value}`);
+        changes.push(`${historyLabelForRates(`rate:${key}`)}: ${value}`);
       }
 
       for (const item of tariffItems) {
         if (!item || typeof item !== "object") continue;
         const operation = String((item as Record<string, any>).operation ?? "");
         if (!operation) continue;
-        const label = rateHistoryLabelForKey(`tariff:${operation}`);
+        const label = historyLabelForRates(`tariff:${operation}`);
         const percent = normalizeHistoryValue((item as Record<string, any>).percent_fee);
         const fixed = normalizeHistoryValue((item as Record<string, any>).fixed_fee);
         const parts = [
-          String(percent).trim() ? `% ${percent}` : "",
-          String(fixed).trim() ? `fixed ${fixed}` : "",
+          String(percent).trim() ? `${percent}%` : "",
+          String(fixed).trim() ? `????. ${fixed}` : "",
         ].filter(Boolean);
-        if (parts.length) changes.push(`${label}: ${parts.join(", ")}`);
+        if (parts.length) changes.push(`${label}: ${parts.join(', ')}`);
       }
 
       if (!changes.length) return null;
@@ -251,17 +282,17 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
           typeof body.message === "string" ? body.message.trim() : "",
           ...Object.entries(reasons).map(([key, value]) => {
             const text = String(value || "").trim();
-            return text ? `${rateHistoryLabelForKey(key)}: ${text}` : "";
+            return text ? `${historyLabelForRates(key)}: ${text}` : "";
           }),
         ]
           .filter(Boolean)
-          .join(" | ") || "-";
+          .join("\n") || "-";
 
       return {
         createdAt: log.createdAt,
         adminId: log.admin_id,
         comment,
-        changes: changes.join(" | "),
+        changes: changes.join("; "),
       };
     })
     .filter((row): row is RateHistoryRow => Boolean(row))
@@ -482,6 +513,7 @@ export default function RatesPage() {
   const [reasonDrafts, setReasonDrafts] = useState<ReasonMap>({});
   const [rateHistoryRows, setRateHistoryRows] = useState<RateHistoryRow[]>([]);
   const [currencyHistoryLoading, setCurrencyHistoryLoading] = useState(false);
+  const [admins, setAdmins] = useState<AdminOption[]>([]);
 
   function normalizeLoadedSettings(input: AdminSettings): AdminSettings {
     const buyRate =
@@ -530,6 +562,29 @@ export default function RatesPage() {
   useEffect(() => {
     let alive = true;
     (async () => {
+      try {
+        const res = await getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" });
+        if (!alive) return;
+        setAdmins(
+          res.items.map((admin) => ({
+            id: admin.id,
+            label: [admin.lastName, admin.firstName].filter(Boolean).join(" ") || admin.login || `#${admin.id}`,
+            login: admin.login,
+          })),
+        );
+      } catch {
+        if (!alive) return;
+        setAdmins([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
       setCurrencyHistoryLoading(true);
       try {
         const [adminLogs, tariffLogs] = await Promise.all([
@@ -561,6 +616,12 @@ export default function RatesPage() {
       alive = false;
     };
   }, []);
+
+  const adminLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const admin of admins) map.set(admin.id, admin.label);
+    return map;
+  }, [admins]);
 
   const currentTariffs = useMemo(() => {
     const map = new Map(
@@ -923,7 +984,7 @@ export default function RatesPage() {
         },
         {
           header: "Админ ID",
-          getValue: (row: RateHistoryRow) => row.adminId,
+          getValue: (row: RateHistoryRow) => adminLookup.get(String(row.adminId)) || (row.adminId === 0 ? "\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u043e" : `#${row.adminId}`),
         },
         {
           header: "Изменения",
@@ -1131,13 +1192,13 @@ export default function RatesPage() {
                           <td className="px-4 py-3 whitespace-nowrap">
                             {formatDateTime(row.createdAt)}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap">#{row.adminId}</td>
+                          <td className="px-4 py-3 whitespace-nowrap">{adminLookup.get(String(row.adminId)) || (row.adminId === 0 ? "\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u043e" : `#${row.adminId}`)}</td>
                           <td className="px-4 py-3">
-                            <div className="max-w-[28rem] break-words text-muted">
+                            <div className="max-w-[28rem] whitespace-pre-line break-words text-muted">
                               {row.changes}
                             </div>
                           </td>
-                          <td className="px-4 py-3 max-w-[18rem] break-words text-muted">
+                          <td className="px-4 py-3 max-w-[18rem] whitespace-pre-line break-words text-muted">
                             {row.comment || "—"}
                           </td>
                         </tr>
