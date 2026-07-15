@@ -20,6 +20,13 @@ type AmlSettingsDraft = {
   activeSources: ActiveSource[];
 };
 
+type AmlSettingsSnapshot = {
+  api: string;
+  urls: string[];
+  fileName: string;
+  activeSources: ActiveSource[];
+};
+
 type HistoryRow = {
   date: string;
   user: string;
@@ -191,49 +198,55 @@ function sourceSummary(activeSources: ActiveSource[]): string {
 
 function buildHistorySummary(details: unknown): string {
   const body = unwrapBody(details);
-  if (!body) return "Изменений нет";
+  if (!body) return "—";
 
-  const summary =
-    toText(body.summary) ||
-    toText(body.changed) ||
-    toText(body.change) ||
-    toText(body.description);
-  if (summary.trim()) return summary;
-
-  const parts: string[] = [];
-  const activeSources = Array.isArray(body.activeSources)
-    ? normalizeActiveSources(body.activeSources)
-    : [];
-
-  if (activeSources.length) {
-    parts.push(`Активно: ${sourceSummary(activeSources)}`);
+  const changesRaw = body.changes ?? body.diff ?? body.changedFields ?? body.changes_list;
+  if (Array.isArray(changesRaw)) {
+    const changes = changesRaw
+      .map((entry) => toText(entry).trim())
+      .filter(Boolean);
+    return changes.length ? changes.join("\n") : "—";
   }
 
-  const api = toText(body.api).trim();
-  if (api) {
-    parts.push(`API: ${api.slice(0, 80)}`);
+  if (changesRaw && typeof changesRaw === "object") {
+    const entries = Object.entries(changesRaw as Record<string, unknown>)
+      .map(([key, value]) => {
+        if (!value || typeof value !== "object") return "";
+        const typed = value as Record<string, unknown>;
+        const before = toText(typed.before ?? typed.from).trim();
+        const after = toText(typed.after ?? typed.to).trim();
+        if (before === after) return "";
+        return `${formatAmlFieldLabel(key as keyof AmlSettingsSnapshot)}: ${before || "—"} -> ${after || "—"}`;
+      })
+      .filter(Boolean);
+    return entries.length ? entries.join("\n") : "—";
   }
 
-  const urls = body.urls;
-  if (Array.isArray(urls)) {
-    const normalized = urls.map((item) => toText(item).trim()).filter(Boolean);
-    if (normalized.length) {
-      parts.push(`URL: ${normalized.length} шт.`);
-    }
-  } else {
-    const text = toText(urls).trim();
-    if (text) {
-      parts.push(`URL: ${text.slice(0, 80)}`);
-    }
+  const beforeBody = unwrapDetails(body.before);
+  const afterBody = unwrapDetails(body.after);
+  if (beforeBody && afterBody) {
+    const changes = buildAmlChanges(
+      {
+        api: toText(beforeBody.api),
+        urls: Array.isArray(beforeBody.urls)
+          ? beforeBody.urls.map((item) => toText(item).trim()).filter(Boolean)
+          : normalizeSources(toText(beforeBody.urls)),
+        fileName: toText(beforeBody.fileName),
+        activeSources: normalizeActiveSources(beforeBody.activeSources),
+      },
+      {
+        api: toText(afterBody.api),
+        urls: Array.isArray(afterBody.urls)
+          ? afterBody.urls.map((item) => toText(item).trim()).filter(Boolean)
+          : normalizeSources(toText(afterBody.urls)),
+        fileName: toText(afterBody.fileName),
+        activeSources: normalizeActiveSources(afterBody.activeSources),
+      },
+    );
+    return changes.length ? changes.join("\n") : "—";
   }
 
-  const fileName = toText(body.fileName).trim();
-  if (fileName) {
-    parts.push(`Файл: ${fileName}`);
-  }
-
-  if (parts.length) return parts.join(" | ");
-  return "Изменений нет";
+  return "—";
 }
 
 function extractComment(details: unknown): string {
@@ -308,6 +321,76 @@ function readSettingsSnapshot(settings: AmlSettingsDraft): AmlSettingsDraft {
     fileName: settings.fileName.trim(),
     activeSources: [...settings.activeSources],
   };
+}
+
+function readSettingsValue(settings: AmlSettingsDraft): AmlSettingsSnapshot {
+  return {
+    api: settings.api.trim(),
+    urls: normalizeSources(settings.urls),
+    fileName: settings.fileName.trim(),
+    activeSources: [...settings.activeSources],
+  };
+}
+
+function sameTextArray(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) return false;
+  return left.every((item, index) => item === right[index]);
+}
+
+function formatAmlValue(value: string | string[]): string {
+  if (Array.isArray(value)) {
+    return value.length ? value.join(", ") : "—";
+  }
+  const text = value.trim();
+  return text || "—";
+}
+
+function formatAmlFieldLabel(field: keyof AmlSettingsSnapshot): string {
+  switch (field) {
+    case "api":
+      return "API";
+    case "urls":
+      return "URL";
+    case "fileName":
+      return "Файл";
+    case "activeSources":
+      return "Активные источники";
+  }
+}
+
+function buildAmlChanges(
+  previous: AmlSettingsSnapshot,
+  next: AmlSettingsSnapshot,
+): string[] {
+  const changes: string[] = [];
+
+  if (previous.api !== next.api) {
+    changes.push(
+      `${formatAmlFieldLabel("api")}: ${formatAmlValue(previous.api)} -> ${formatAmlValue(next.api)}`,
+    );
+  }
+
+  if (!sameTextArray(previous.urls, next.urls)) {
+    changes.push(
+      `${formatAmlFieldLabel("urls")}: ${formatAmlValue(previous.urls)} -> ${formatAmlValue(next.urls)}`,
+    );
+  }
+
+  if (previous.fileName !== next.fileName) {
+    changes.push(
+      `${formatAmlFieldLabel("fileName")}: ${formatAmlValue(previous.fileName)} -> ${formatAmlValue(next.fileName)}`,
+    );
+  }
+
+  const previousSources = [...previous.activeSources].sort().join(",");
+  const nextSources = [...next.activeSources].sort().join(",");
+  if (previousSources !== nextSources) {
+    changes.push(
+      `${formatAmlFieldLabel("activeSources")}: ${formatAmlValue(previous.activeSources.map(activeSourceChipLabel))} -> ${formatAmlValue(next.activeSources.map(activeSourceChipLabel))}`,
+    );
+  }
+
+  return changes;
 }
 
 export default function AmlRulesPage() {
@@ -415,15 +498,29 @@ export default function AmlRulesPage() {
         throw new Error("Укажите комментарий, на каком основании меняются AML-настройки");
       }
 
-      const snapshot = readSettingsSnapshot({
+      const previous = loadStoredSettings() ?? {
+        api: "",
+        urls: "",
+        fileName: "",
+        activeSources: DEFAULT_ACTIVE_SOURCES,
+      };
+      const draft = {
         api: apiDraft,
         urls: urlDraft,
         fileName,
         activeSources,
-      });
+      };
+      const snapshot = readSettingsSnapshot(draft);
+      const changes = buildAmlChanges(
+        readSettingsValue(previous),
+        readSettingsValue(draft),
+      );
 
       if (!snapshot.activeSources.length) {
         throw new Error("Выберите хотя бы один активный источник");
+      }
+      if (!changes.length) {
+        throw new Error("Нет изменений для сохранения");
       }
 
       const payload = {
@@ -436,7 +533,6 @@ export default function AmlRulesPage() {
       window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload));
       window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(payload));
 
-      const summary = buildAmlSummary(snapshot);
       const synthetic: AdminActionLog = {
         id: Date.now(),
         admin_id: 0,
@@ -447,7 +543,7 @@ export default function AmlRulesPage() {
             ...payload,
             comment: commentText,
             reason: commentText,
-            summary,
+            changes,
           },
         }),
         createdAt: new Date().toISOString(),
