@@ -308,8 +308,8 @@ export default function StatementsPage() {
           </div>
         </div>
 
-        <div className="min-h-[calc(100vh-170px)] flex-1 overflow-auto">
-          <table className="min-w-[2300px] w-full table-fixed text-sm">
+        <div className="min-h-[calc(100vh-90px)] flex-1 overflow-auto">
+          <table className="min-w-[2600px] w-full table-fixed text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--card)]">
               <tr className="border-b border-soft">
                 <th className="w-10 px-4 py-3">

@@ -74,6 +74,10 @@ function parseReasons(raw: string): ReasonMap {
   }
 }
 
+function toCleanString(value: unknown): string {
+  return String(value ?? "").trim();
+}
+
 function parseActionDetails(details: unknown): Record<string, any> | null {
   if (!details) return null;
   if (typeof details === "object") return details as Record<string, any>;
@@ -212,15 +216,15 @@ export default function CurrencyRatesPage() {
   function normalizeLoadedSettings(input?: Partial<AdminSettings> | null): AdminSettings {
     const safe = input ?? EMPTY_SETTINGS;
     const buyRate =
-      safe.usd_buy_rate?.trim() || safe.esom_per_usd?.trim() || "0";
+      toCleanString(safe.usd_buy_rate) || toCleanString(safe.esom_per_usd) || "0";
     const sellRate =
-      safe.usd_sell_rate?.trim() || safe.esom_per_usd?.trim() || buyRate;
+      toCleanString(safe.usd_sell_rate) || toCleanString(safe.esom_per_usd) || buyRate;
     return {
       ...EMPTY_SETTINGS,
       ...safe,
       usd_buy_rate: buyRate,
       usd_sell_rate: sellRate,
-      esom_per_usd: safe.esom_per_usd?.trim() || buyRate,
+      esom_per_usd: toCleanString(safe.esom_per_usd) || buyRate,
     };
   }
 

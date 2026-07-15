@@ -157,6 +157,51 @@ function parseActionDetails(details: unknown): Record<string, any> | null {
   }
 }
 
+const BANK_COMMISSION_DIFF_KEYS = new Set([
+  "bank_commission_distribution_mode",
+  "bank_commission_central_bank_pct",
+  "bank_commission_bank_pct",
+  "bank_commission_partners_pct",
+  "bank_commission_central_bank_fixed",
+  "bank_commission_bank_fixed",
+  "bank_commission_partners_fixed",
+  "bank_fee_posting_time_bishkek",
+  "central_bank_som_account",
+  "central_bank_salam_wallet",
+  "central_bank_usdt_wallet",
+  "bank_som_account",
+  "bank_salam_wallet",
+  "bank_usdt_wallet",
+  "bank_commission_partners_json",
+]);
+
+type AdminSettingsDiffEntry = {
+  key: string;
+  label: string;
+  before: string;
+  after: string;
+};
+
+function parseDiffEntries(details: Record<string, any> | null): AdminSettingsDiffEntry[] {
+  const raw = details?.diff;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((item): item is AdminSettingsDiffEntry =>
+      Boolean(
+        item &&
+          typeof item === "object" &&
+          typeof item.key === "string" &&
+          BANK_COMMISSION_DIFF_KEYS.has(item.key),
+      ),
+    )
+    .map((item) => ({
+      key: item.key,
+      label: String(item.label ?? item.key).trim(),
+      before: String(item.before ?? "").trim(),
+      after: String(item.after ?? "").trim(),
+    }));
+}
+
 function asText(value: unknown): string {
   return String(value ?? "").trim();
 }
@@ -185,6 +230,16 @@ function shortDiffLabel(label: string, current: unknown, previous: unknown): str
   return `${label}: ${prev} -> ${next}`;
 }
 
+function formatDiffEntry(entry: AdminSettingsDiffEntry): string {
+  const before = entry.before.trim();
+  const after = entry.after.trim();
+  if (!before && !after) return "";
+  if (before === after) return "";
+  if (!before) return `${entry.label}: ${after}`;
+  if (!after) return `${entry.label}: ${before} →`;
+  return `${entry.label}: ${before} → ${after}`;
+}
+
 function buildBankCommissionChangeSummaryShort(
   current: Record<string, any>,
   previous: Record<string, any> | null,
@@ -199,9 +254,9 @@ function buildBankCommissionChangeSummaryShort(
     shortDiffLabel("\u0426\u0411 %", current.bank_commission_central_bank_pct, prev.bank_commission_central_bank_pct),
     shortDiffLabel("\u0411\u0430\u043d\u043a %", current.bank_commission_bank_pct, prev.bank_commission_bank_pct),
     shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b %", current.bank_commission_partners_pct, prev.bank_commission_partners_pct),
-    shortDiffLabel("\u0426\u0411 fixed", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
-    shortDiffLabel("\u0411\u0430\u043d\u043a fixed", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
-    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b fixed", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
+    shortDiffLabel("\u0426\u0411 \u0444\u0438\u043a\u0441.", current.bank_commission_central_bank_fixed, prev.bank_commission_central_bank_fixed),
+    shortDiffLabel("\u0411\u0430\u043d\u043a \u0444\u0438\u043a\u0441.", current.bank_commission_bank_fixed, prev.bank_commission_bank_fixed),
+    shortDiffLabel("\u041f\u0430\u0440\u0442\u043d\u0451\u0440\u044b \u0444\u0438\u043a\u0441.", current.bank_commission_partners_fixed, prev.bank_commission_partners_fixed),
     shortDiffLabel("\u0412\u0440\u0435\u043c\u044f", current.bank_fee_posting_time_bishkek, prev.bank_fee_posting_time_bishkek),
     current.central_bank_som_account !== prev.central_bank_som_account
       ? "\u0421\u0447\u0451\u0442 \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
@@ -266,10 +321,9 @@ function buildBankCommissionChangeSummary(
 }
 
 function extractBankCommissionHistory(
-
   logs: AdminActionLog[],
 ): CommissionHistoryRow[] {
-  const ordered = [...logs].sort(
+  const ordered = [...logs].filter(Boolean).sort(
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
   let previousBody: Record<string, any> | null = null;
@@ -295,7 +349,19 @@ function extractBankCommissionHistory(
         ),
       );
 
-      const changes = buildBankCommissionChangeSummaryShort(body, previousBody);
+      const diffEntries = parseDiffEntries(details);
+      const hasBankFields =
+        diffEntries.length > 0 ||
+        Array.from(BANK_COMMISSION_DIFF_KEYS).some((key) =>
+          Object.prototype.hasOwnProperty.call(body, key),
+        );
+      if (!hasBankFields) return null;
+
+      const changes = diffEntries.length
+        ? diffEntries.map(formatDiffEntry).filter(Boolean).join("; ")
+        : previousBody
+          ? buildBankCommissionChangeSummaryShort(body, previousBody)
+          : null;
       previousBody = body;
 
       if (!changes) return null;
