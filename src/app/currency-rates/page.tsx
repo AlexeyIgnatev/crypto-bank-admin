@@ -334,6 +334,10 @@ export default function CurrencyRatesPage() {
     return map;
   }, [admins]);
 
+  function getAdminLabel(adminId: number) {
+    return adminLookup.get(String(adminId)) || (adminId === 0 ? "Локально" : `#${adminId}`);
+  }
+
   const currencyRateChanged = useMemo(() => {
     return (
       normalizeDecimalInput(settings.usd_buy_rate) !==
@@ -458,8 +462,8 @@ export default function CurrencyRatesPage() {
           getValue: (row: RateHistoryRow) => formatDateTime(row.createdAt),
         },
         {
-          header: "Админ ID",
-          getValue: (row: RateHistoryRow) => row.adminId,
+          header: "Админ",
+          getValue: (row: RateHistoryRow) => getAdminLabel(row.adminId),
         },
         {
           header: "Изменения",
@@ -566,7 +570,7 @@ export default function CurrencyRatesPage() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         {formatDateTime(row.createdAt)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">{adminLookup.get(String(row.adminId)) || (row.adminId === 0 ? "\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u043e" : `#${row.adminId}`)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{getAdminLabel(row.adminId)}</td>
                       <td className="px-4 py-3">
                         <div className="max-w-[28rem] whitespace-pre-line break-words text-muted">
                           {row.changes}
