@@ -196,7 +196,7 @@ export default function StatementsPage() {
   const hasAnySearch = Boolean(fioSearch.trim() || phoneSearch.trim() || walletSearch.trim());
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-hidden">
       <div className="card rounded-xl border border-soft p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.1fr_1.1fr_1.1fr_0.9fr_auto] md:items-end">
           <label className="grid gap-1">
@@ -250,7 +250,7 @@ export default function StatementsPage() {
         {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
       </div>
 
-      <div className="card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-soft">
+      <div className="card flex min-h-[72vh] flex-[1.2] flex-col overflow-hidden rounded-xl border border-soft">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft p-3 text-sm text-muted">
           <div>Операций: {items.length}</div>
           <div>Выбрано: {selectedItems.length}</div>
@@ -308,7 +308,7 @@ export default function StatementsPage() {
           </div>
         </div>
 
-        <div className="min-h-[calc(100vh-40px)] flex-1 overflow-auto pb-10">
+        <div className="flex-1 overflow-auto pb-10">
           <table className="min-w-[2600px] w-full table-fixed text-sm">
             <thead className="sticky top-0 z-10 bg-[var(--card)]">
               <tr className="border-b border-soft">
