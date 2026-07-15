@@ -99,54 +99,53 @@ function currencyHistoryLabel(key: string): string {
 }
 
 function extractCurrencyHistory(logs: AdminActionLog[]): RateHistoryRow[] {
-  return [...logs]
-    .sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    )
+  const ordered = [...logs].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+  let previousBody: Record<string, any> | null = null;
+
+  return ordered
     .map((log) => {
       const details = parseActionDetails(log.details);
       const body = (details?.body && typeof details.body === "object"
         ? details.body
         : {}) as Record<string, any>;
-      const currentValues = Object.fromEntries(
-        CURRENCY_HISTORY_KEYS.map((key) => [key, normalizeHistoryValue(body[key])]),
-      ) as Record<(typeof CURRENCY_HISTORY_KEYS)[number], string>;
-
-      const changes = CURRENCY_HISTORY_KEYS.map((key) => {
-        const current = currentValues[key];
-        if (!String(current).trim()) return null;
-        return `${currencyHistoryLabel(key)}: ${current}`;
-      })
-        .filter(Boolean)
-        .join("; ");
-
-      if (!changes) return null;
 
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
           : "",
       );
-      const comment =
-        [
-          typeof body.comment === "string" ? body.comment.trim() : "",
-          typeof body.reason === "string" ? body.reason.trim() : "",
-          ...CURRENCY_HISTORY_KEYS.map((key) => {
-            const reason = reasons[`rate:${key}`];
-            return reason && String(reason).trim()
-              ? `${currencyHistoryLabel(key)}: ${String(reason).trim()}`
-              : "";
-          }),
-        ]
-          .filter(Boolean)
-          .join("\n") || "-";
+
+      const changes: string[] = [];
+      const commentParts: string[] = [];
+
+      for (const key of CURRENCY_HISTORY_KEYS) {
+        const current = normalizeHistoryValue(body[key]);
+        const previous = normalizeHistoryValue(previousBody?.[key]);
+        if (!String(current).trim() && !String(previous).trim()) continue;
+        if (current === previous) continue;
+
+        const label = currencyHistoryLabel(key);
+        changes.push(
+          !previous
+            ? `${label}: ${current}`
+            : `${label}: ${previous} \u2192 ${current}`,
+        );
+
+        const reason = String(reasons[`rate:${key}`] ?? "").trim();
+        if (reason) commentParts.push(`${label}: ${reason}`);
+      }
+
+      previousBody = body;
+      if (!changes.length) return null;
 
       return {
         createdAt: log.createdAt,
         adminId: log.admin_id,
-        comment,
-        changes,
+        comment: commentParts.length ? commentParts.join("\n") : "-",
+        changes: changes.join("\n"),
       };
     })
     .filter((row): row is RateHistoryRow => Boolean(row))
@@ -255,8 +254,9 @@ export default function CurrencyRatesPage() {
       try {
         const res = await getAdmins({ limit: 500, offset: 0, sortLastName: "asc", sortFirstName: "asc" });
         if (!alive) return;
+        const adminItems = Array.isArray(res.items) ? res.items : [];
         setAdmins(
-          res.items.map((admin) => ({
+          adminItems.map((admin) => ({
             id: admin.id,
             label: [admin.lastName, admin.firstName].filter(Boolean).join(" ") || admin.login || `#${admin.id}`,
             login: admin.login,
@@ -283,7 +283,7 @@ export default function CurrencyRatesPage() {
           sortDir: "desc",
         });
         if (!alive) return;
-        setRateHistoryRows(extractCurrencyHistory(logs.items));
+        setRateHistoryRows(extractCurrencyHistory(Array.isArray(logs.items) ? logs.items : []));
       } catch {
         if (!alive) return;
         setRateHistoryRows([]);

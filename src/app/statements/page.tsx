@@ -7,8 +7,8 @@ import { readableRejectionReason } from "@/lib/rejectionReason";
 import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
-  { label: "РЎРћРњ", value: "SOM" },
-  { label: "РЎРђР›РђРњ", value: "SALAM" },
+  { label: "СОМ", value: "SOM" },
+  { label: "SALAM", value: "SALAM" },
   { label: "USDT TRC20", value: "USDT" },
 ] as const;
 
@@ -19,7 +19,7 @@ function asNumber(value: number | undefined): number {
 }
 
 function txLabel(t: Transaction) {
-  return t.kind ? `${t.kind} В· ${t.id}` : t.id;
+  return t.kind ? `${t.kind} · ${t.id}` : t.id;
 }
 
 async function fetchAllByRole(params: {
@@ -69,12 +69,12 @@ export default function StatementsPage() {
 
   const searchSummary = useMemo(() => {
     const parts = [
-      fioSearch.trim() ? `Р¤РРћ: ${fioSearch.trim()}` : "",
-      phoneSearch.trim() ? `РўРµР»РµС„РѕРЅ: ${phoneSearch.trim()}` : "",
-      walletSearch.trim() ? `РљРѕС€РµР»С‘Рє: ${walletSearch.trim()}` : "",
+      fioSearch.trim() ? `ФИО: ${fioSearch.trim()}` : "",
+      phoneSearch.trim() ? `Телефон: ${phoneSearch.trim()}` : "",
+      walletSearch.trim() ? `Кошелёк: ${walletSearch.trim()}` : "",
     ].filter(Boolean);
 
-    return parts.length ? parts.join(" В· ") : "Р‘РµР· С„РёР»СЊС‚СЂР°";
+    return parts.length ? parts.join(" · ") : "Без фильтра";
   }, [fioSearch, phoneSearch, walletSearch]);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function StatementsPage() {
   async function load() {
     const terms = [fioSearch.trim(), phoneSearch.trim(), walletSearch.trim()].filter(Boolean);
     if (!terms.length) {
-      setError("Р—Р°РїРѕР»РЅРё С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РїРѕР»Рµ: Р¤РРћ, С‚РµР»РµС„РѕРЅ РёР»Рё РєРѕС€РµР»С‘Рє");
+      setError("Сначала укажите хотя бы одно поле: ФИО, телефон или кошелёк");
       setItems([]);
       setSelectedIds(new Set());
       return;
@@ -112,10 +112,10 @@ export default function StatementsPage() {
       setItems(sorted);
       setSelectedIds(new Set());
       if (!sorted.length) {
-        setError("РџРѕ СЌС‚РёРј С„РёР»СЊС‚СЂР°Рј РЅРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ");
+        setError("По таким параметрам ничего не найдено");
       }
     } catch {
-      setError("РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РІС‹РїРёСЃРєСѓ");
+      setError("Не удалось загрузить выписку");
       setItems([]);
       setSelectedIds(new Set());
     } finally {
@@ -149,25 +149,25 @@ export default function StatementsPage() {
     await exportRows({
       format,
       fileBaseName,
-      title: "Р’С‹РїРёСЃРєР° РїРѕ РѕРїРµСЂР°С†РёСЏРј",
-      periodLabel: `Р’С‹Р±РѕСЂРєР°: ${searchSummary} В· ${asset}`,
+      title: "Выписка по операциям",
+      periodLabel: `Выборка: ${searchSummary} · ${asset}`,
       columns: [
-        { header: "Р”Р°С‚Р°", getValue: (row) => new Date(row.createdAt).toLocaleString() },
+        { header: "Дата", getValue: (row) => new Date(row.createdAt).toLocaleString() },
         { header: "Tx / ID", getValue: (row) => row.id },
-        { header: "РЎС‚Р°С‚СѓСЃ", getValue: (row) => row.status },
-        { header: "РђРєС‚РёРІ", getValue: (row) => row.currency },
-        { header: "РЎСѓРјРјР°", getValue: (row) => row.amount },
-        { header: "РљРѕРјРёСЃСЃРёСЏ Р±Р°РЅРєР°", getValue: (row) => row.feeAmount ?? 0 },
+        { header: "Статус", getValue: (row) => row.status },
+        { header: "Валюта", getValue: (row) => row.currency },
+        { header: "Сумма", getValue: (row) => row.amount },
+        { header: "Комиссия банка", getValue: (row) => row.feeAmount ?? 0 },
         {
-          header: "РЎРµС‚РµРІР°СЏ РєРѕРјРёСЃСЃРёСЏ",
+          header: "Сетевая комиссия",
           getValue: (row) => `${asNumber(row.networkFeeAmount)} ${row.networkFeeAsset || ""}`.trim(),
         },
-        { header: "Р“Р°Р· (energy)", getValue: (row) => asNumber(row.energyUsed) },
-        { header: "Р”РІРёРіР°СЋС‰Р°СЏ СЃРёР»Р°", getValue: (row) => asNumber(row.bandwidthUsed) },
-        { header: "РЎРѕР¶Р¶РµРЅРѕ BRICS", getValue: (row) => asNumber(row.bricsBurnedAmount) },
-        { header: "РћС‚РїСЂР°РІРёС‚РµР»СЊ", getValue: (row) => row.sender },
-        { header: "РџРѕР»СѓС‡Р°С‚РµР»СЊ", getValue: (row) => row.recipient },
-        { header: "РџСЂРёС‡РёРЅР° РѕС‚РєР»РѕРЅРµРЅРёСЏ", getValue: (row) => readableRejectionReason(row) },
+        { header: "Газ (energy)", getValue: (row) => asNumber(row.energyUsed) },
+        { header: "Двигающая сила", getValue: (row) => asNumber(row.bandwidthUsed) },
+        { header: "Сожжено BRICS", getValue: (row) => asNumber(row.bricsBurnedAmount) },
+        { header: "Отправитель", getValue: (row) => row.sender },
+        { header: "Получатель", getValue: (row) => row.recipient },
+        { header: "Причина отклонения", getValue: (row) => readableRejectionReason(row) },
       ],
       rows,
     });
@@ -200,17 +200,17 @@ export default function StatementsPage() {
       <div className="card rounded-xl border border-soft p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.1fr_1.1fr_1.1fr_0.9fr_auto] md:items-end">
           <label className="grid gap-1">
-            <div className="text-sm mb-1">Р¤РРћ</div>
+            <div className="text-sm mb-1">ФИО</div>
             <input
               className="ui-input w-full"
               value={fioSearch}
               onChange={(e) => setFioSearch(e.target.value)}
-              placeholder="РРІР°РЅРѕРІ РРІР°РЅ РРІР°РЅРѕРІРёС‡"
+              placeholder="Иван Иванов"
             />
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">РўРµР»РµС„РѕРЅ</div>
+            <div className="text-sm mb-1">Телефон</div>
             <input
               className="ui-input w-full"
               value={phoneSearch}
@@ -220,7 +220,7 @@ export default function StatementsPage() {
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">РљРѕС€РµР»С‘Рє</div>
+            <div className="text-sm mb-1">Кошелёк</div>
             <input
               className="ui-input w-full"
               value={walletSearch}
@@ -230,7 +230,7 @@ export default function StatementsPage() {
           </label>
 
           <label className="grid gap-1">
-            <div className="text-sm mb-1">РђРєС‚РёРІ</div>
+            <div className="text-sm mb-1">Валюта</div>
             <select className="ui-input w-full" value={asset} onChange={(e) => setAsset(e.target.value)}>
               {ASSET_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -241,23 +241,23 @@ export default function StatementsPage() {
           </label>
 
           <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
-            {loading ? "Р—Р°РіСЂСѓР·РєР°..." : "РџРѕРєР°Р·Р°С‚СЊ РІС‹РїРёСЃРєСѓ"}
+            {loading ? "Загрузка..." : "Показать выписку"}
           </button>
         </div>
 
-        <div className="mt-3 text-xs text-muted">Р¤РёР»СЊС‚СЂ РёС‰РµС‚ РѕС‚РґРµР»СЊРЅРѕ РїРѕ Р¤РРћ, С‚РµР»РµС„РѕРЅСѓ Рё РєРѕС€РµР»СЊРєСѓ, Р·Р°С‚РµРј РѕР±СЉРµРґРёРЅСЏРµС‚ РЅР°Р№РґРµРЅРЅС‹Рµ РѕРїРµСЂР°С†РёРё.</div>
+        <div className="mt-3 text-xs text-muted">Фильтр ищет только по ФИО, телефону и кошельку, затем объединяет найденные операции.</div>
 
         {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
       </div>
 
       <div className="card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-soft">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft p-3 text-sm text-muted">
-          <div>РћРїРµСЂР°С†РёРё: {items.length}</div>
-          <div>Р’С‹Р±СЂР°РЅРѕ: {selectedItems.length}</div>
+          <div>Операций: {items.length}</div>
+          <div>Выбрано: {selectedItems.length}</div>
           <div>{searchSummary}</div>
           <div className="flex flex-wrap gap-2">
             <button className="btn h-9 px-3" onClick={toggleAllVisible} disabled={!items.length}>
-              {selectedIds.size === items.length && items.length ? "РЎРЅСЏС‚СЊ РІС‹Р±РѕСЂ" : "Р’С‹Р±СЂР°С‚СЊ РІСЃРµ"}
+              {selectedIds.size === items.length && items.length ? "Снять все" : "Выбрать все"}
             </button>
             <div className="flex flex-wrap gap-2">
               <button
@@ -265,21 +265,21 @@ export default function StatementsPage() {
                 onClick={() => exportAll("pdf")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-pdf" ? "PDF..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё PDF"}
+                {exporting === "all-pdf" ? "PDF..." : "Экспорт всего PDF"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportAll("csv")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-csv" ? "CSV..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё CSV"}
+                {exporting === "all-csv" ? "CSV..." : "Экспорт всего CSV"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportAll("txt")}
                 disabled={!items.length || exporting !== null}
               >
-                {exporting === "all-txt" ? "TXT..." : "Р­РєСЃРїРѕСЂС‚ РІС‹Р±РѕСЂРєРё TXT"}
+                {exporting === "all-txt" ? "TXT..." : "Экспорт всего TXT"}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -288,21 +288,21 @@ export default function StatementsPage() {
                 onClick={() => exportSelected("pdf")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-pdf" ? "PDF..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ PDF"}
+                {exporting === "selected-pdf" ? "PDF..." : "Экспорт выбранных PDF"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportSelected("csv")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-csv" ? "CSV..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ CSV"}
+                {exporting === "selected-csv" ? "CSV..." : "Экспорт выбранных CSV"}
               </button>
               <button
                 className="btn h-9 px-3"
                 onClick={() => exportSelected("txt")}
                 disabled={!selectedItems.length || exporting !== null}
               >
-                {exporting === "selected-txt" ? "TXT..." : "Р’С‹Р±СЂР°РЅРЅС‹Рµ TXT"}
+                {exporting === "selected-txt" ? "TXT..." : "Экспорт выбранных TXT"}
               </button>
             </div>
           </div>
@@ -319,19 +319,19 @@ export default function StatementsPage() {
                     onChange={toggleAllVisible}
                   />
                 </th>
-                <th className="px-4 py-3 text-left">Р”Р°С‚Р°</th>
+                <th className="px-4 py-3 text-left">Дата</th>
                 <th className="px-4 py-3 text-left">Tx / ID</th>
-                <th className="px-4 py-3 text-left">РЎС‚Р°С‚СѓСЃ</th>
-                <th className="px-4 py-3 text-left">РђРєС‚РёРІ</th>
-                <th className="px-4 py-3 text-right">РЎСѓРјРјР°</th>
-                <th className="px-4 py-3 text-right">РљРѕРјРёСЃСЃРёСЏ Р±Р°РЅРєР°</th>
-                <th className="px-4 py-3 text-right">РЎРµС‚РµРІР°СЏ РєРѕРјРёСЃСЃРёСЏ</th>
-                <th className="px-4 py-3 text-right">Р“Р°Р· (energy)</th>
-                <th className="px-4 py-3 text-right">Р”РІРёРіР°СЋС‰Р°СЏ СЃРёР»Р°</th>
-                <th className="px-4 py-3 text-right">РЎРѕР¶Р¶РµРЅРѕ BRICS</th>
-                <th className="px-4 py-3 text-left">РћС‚РїСЂР°РІРёС‚РµР»СЊ</th>
-                <th className="px-4 py-3 text-left">РџРѕР»СѓС‡Р°С‚РµР»СЊ</th>
-                <th className="px-4 py-3 text-left">РџСЂРёС‡РёРЅР° РѕС‚РєР»РѕРЅРµРЅРёСЏ</th>
+                <th className="px-4 py-3 text-left">Статус</th>
+                <th className="px-4 py-3 text-left">Валюта</th>
+                <th className="px-4 py-3 text-right">Сумма</th>
+                <th className="px-4 py-3 text-right">Комиссия банка</th>
+                <th className="px-4 py-3 text-right">Сетевая комиссия</th>
+                <th className="px-4 py-3 text-right">Газ (energy)</th>
+                <th className="px-4 py-3 text-right">Двигающая сила</th>
+                <th className="px-4 py-3 text-right">Сожжено BRICS</th>
+                <th className="px-4 py-3 text-left">Отправитель</th>
+                <th className="px-4 py-3 text-left">Получатель</th>
+                <th className="px-4 py-3 text-left">Причина отклонения</th>
               </tr>
             </thead>
             <tbody>
@@ -367,14 +367,14 @@ export default function StatementsPage() {
               {!loading && !hasAnySearch && items.length === 0 && (
                 <tr>
                   <td className="px-4 py-8 text-center text-muted" colSpan={15}>
-                    Р—Р°РїРѕР»РЅРё С„РёР»СЊС‚СЂ Рё РЅР°Р¶РјРё В«РџРѕРєР°Р·Р°С‚СЊ РІС‹РїРёСЃРєСѓВ»
+                    Сначала укажите фильтры и нажмите «Показать выписку»
                   </td>
                 </tr>
               )}
               {!loading && hasAnySearch && items.length === 0 && (
                 <tr>
                   <td className="px-4 py-8 text-center text-muted" colSpan={15}>
-                    РќРµС‚ РґР°РЅРЅС‹С…
+                    По таким параметрам ничего не найдено
                   </td>
                 </tr>
               )}

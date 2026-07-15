@@ -207,19 +207,19 @@ function historyLabelForRates(key: string): string {
   const labels: Record<string, string> = {
     "rate:usd_buy_rate": "\u041a\u0443\u0440\u0441 \u043f\u043e\u043a\u0443\u043f\u043a\u0438 USD",
     "rate:usd_sell_rate": "\u041a\u0443\u0440\u0441 \u043f\u0440\u043e\u0434\u0430\u0436\u0438 USD",
-    "external:usdt_trade_fee_pct": "\u041a\u043e\u043c\u0438\u0441\u0441\u0438\u044f \u0432\u043d\u0435\u0448\u043d\u0435\u0433\u043e \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
-    "external:usdt_withdraw_fee_fixed": "\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 \u0432\u043d\u0435\u0448\u043d\u0435\u0433\u043e \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
-    "external:min_withdraw_usdt_trc20": "\u041c\u0438\u043d\u0438\u043c\u0443\u043c \u0432\u044b\u0432\u043e\u0434\u0430 USDT",
+    "external:usdt_trade_fee_pct": "\u041a\u043e\u043c\u0438\u0441\u0441\u0438\u044f USDT",
+    "external:usdt_withdraw_fee_fixed": "\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 USDT",
+    "external:min_withdraw_usdt_trc20": "\u041c\u0438\u043d. \u0432\u044b\u0432\u043e\u0434 USDT",
   };
   if (labels[key]) return labels[key];
   if (key.startsWith("tariff:")) {
     const operation = key.slice("tariff:".length) as TariffOperation;
     const map: Record<string, string> = {
-      SOM_TO_ESOM: "\u0421\u041e\u041c \u2192 SALAM",
-      ESOM_TO_SOM: "SALAM \u2192 \u0421\u041e\u041c",
+      SOM_TO_ESOM: "\u0421\u041e\u041c \u0432 SALAM",
+      ESOM_TO_SOM: "SALAM \u0432 \u0421\u041e\u041c",
       WALLET_TRANSFER_ESOM: "\u0412\u043d\u0443\u0442\u0440. SALAM",
-      ESOM_TO_USDT_TRC20: "SALAM \u2192 USDT",
-      USDT_TRC20_TO_ESOM: "USDT \u2192 SALAM",
+      ESOM_TO_USDT_TRC20: "SALAM \u0432 USDT",
+      USDT_TRC20_TO_ESOM: "USDT \u0432 SALAM",
       WALLET_TRANSFER_USDT_TRC20: "\u0412\u043d\u0443\u0442\u0440. USDT",
     };
     return map[operation] || rateHistoryLabelForKey(key);
@@ -228,11 +228,14 @@ function historyLabelForRates(key: string): string {
 }
 
 function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
-  return [...logs]
-    .sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    )
+  const ordered = [...logs].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+
+  let previousBody: Record<string, any> | null = null;
+
+  return ordered
     .map((log) => {
       const details = parseActionDetails(log.details);
       const rawBody = details?.body ?? details?.data ?? details;
@@ -245,6 +248,9 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
         : Array.isArray(body.items)
           ? body.items
           : [];
+      const prevTariffItems = Array.isArray(previousBody?.items)
+        ? (previousBody?.items as Record<string, any>[])
+        : [];
       const reasons = parseReasons(
         typeof body.rates_change_reasons_json === "string"
           ? body.rates_change_reasons_json
@@ -252,47 +258,64 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       );
 
       const changes: string[] = [];
+      const commentParts: string[] = [];
+
       for (const key of RATE_HISTORY_KEYS) {
-        const value = normalizeHistoryValue(body[key]);
-        if (!String(value).trim()) continue;
-        changes.push(`${historyLabelForRates(`rate:${key}`)}: ${value}`);
+        const current = normalizeHistoryValue(body[key]);
+        const previous = normalizeHistoryValue(previousBody?.[key]);
+        if (!String(current).trim() && !String(previous).trim()) continue;
+        if (current === previous) continue;
+        const label = historyLabelForRates(`rate:${key}`);
+        const changeText = !previous
+          ? `${label}: ${current}`
+          : `${label}: ${previous} \u2192 ${current}`;
+        changes.push(changeText.replace(/\s+/g, " ").trim());
+
+        const reason = String(reasons[`rate:${key}`] ?? "").trim();
+        if (reason) commentParts.push(`${label}: ${reason}`);
       }
 
       for (const item of tariffItems) {
         if (!item || typeof item !== "object") continue;
         const operation = String((item as Record<string, any>).operation ?? "");
         if (!operation) continue;
-        const label = historyLabelForRates(`tariff:${operation}`);
+        const previousItem = prevTariffItems.find(
+          (candidate) => String(candidate?.operation ?? "") === operation,
+        );
         const percent = normalizeHistoryValue((item as Record<string, any>).percent_fee);
         const fixed = normalizeHistoryValue((item as Record<string, any>).fixed_fee);
-        const parts = [
-          String(percent).trim() ? `${percent}%` : "",
-          String(fixed).trim() ? `????. ${fixed}` : "",
-        ].filter(Boolean);
-        if (parts.length) changes.push(`${label}: ${parts.join(', ')}`);
+        const prevPercent = normalizeHistoryValue(previousItem?.percent_fee);
+        const prevFixed = normalizeHistoryValue(previousItem?.fixed_fee);
+
+        if (percent === prevPercent && fixed === prevFixed) continue;
+
+        const label = historyLabelForRates(`tariff:${operation}`);
+        const parts: string[] = [];
+        if (percent !== prevPercent) {
+          parts.push(
+            prevPercent ? `\u041f\u0440\u043e\u0446\u0435\u043d\u0442 ${prevPercent} \u2192 ${percent}` : `\u041f\u0440\u043e\u0446\u0435\u043d\u0442 ${percent}`,
+          );
+        }
+        if (fixed !== prevFixed) {
+          parts.push(
+            prevFixed ? `\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 ${prevFixed} \u2192 ${fixed}` : `\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 ${fixed}`,
+          );
+        }
+        if (parts.length) {
+          changes.push(`${label}: ${parts.join(", ")}`.replace(/\s+/g, " ").trim());
+          const reason = String(reasons[`tariff:${operation}`] ?? "").trim();
+          if (reason) commentParts.push(`${label}: ${reason}`);
+        }
       }
 
+      previousBody = body;
       if (!changes.length) return null;
-
-      const comment =
-        [
-          typeof body.comment === "string" ? body.comment.trim() : "",
-          typeof body.reason === "string" ? body.reason.trim() : "",
-          typeof body.notes === "string" ? body.notes.trim() : "",
-          typeof body.message === "string" ? body.message.trim() : "",
-          ...Object.entries(reasons).map(([key, value]) => {
-            const text = String(value || "").trim();
-            return text ? `${historyLabelForRates(key)}: ${text}` : "";
-          }),
-        ]
-          .filter(Boolean)
-          .join("\n") || "-";
 
       return {
         createdAt: log.createdAt,
         adminId: log.admin_id,
-        comment,
-        changes: changes.join("; "),
+        comment: commentParts.length ? commentParts.join("\n") : "-",
+        changes: changes.join("\n"),
       };
     })
     .filter((row): row is RateHistoryRow => Boolean(row))
