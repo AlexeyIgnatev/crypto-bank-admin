@@ -45,8 +45,8 @@ const EMPTY_SETTINGS: AdminSettings = {
   bank_commission_partners_json: "[]",
 };
 
-function normalizeDecimalInput(value: string) {
-  const trimmed = value.trim();
+function normalizeDecimalInput(value: unknown) {
+  const trimmed = String(value ?? "").trim();
   if (!trimmed) return "0";
   return trimmed.replace(",", ".");
 }
