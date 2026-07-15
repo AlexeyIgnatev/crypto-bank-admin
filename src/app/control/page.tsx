@@ -190,7 +190,7 @@ function buildUpdatePayload(
   if (Boolean(rule.enabled) !== draft.enabled) payload.enabled = draft.enabled;
   if (!sameNumber(rule.period_days, draft.period_days)) {
     const num = parseNumber(draft.period_days);
-    if (num != null) payload.period_days = num.toString();
+    if (num != null) payload.period_days = num;
   }
   if (!sameNumber(rule.threshold_som, draft.threshold_som)) {
     const num = parseNumber(draft.threshold_som);
@@ -198,7 +198,7 @@ function buildUpdatePayload(
   }
   if (!sameNumber(rule.min_count, draft.min_count)) {
     const num = parseNumber(draft.min_count);
-    if (num != null) payload.min_count = num.toString();
+    if (num != null) payload.min_count = num;
   }
   if (!sameNumber(rule.percent_threshold, draft.percent_threshold)) {
     const num = parseNumber(draft.percent_threshold);
