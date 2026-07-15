@@ -196,7 +196,7 @@ export default function StatementsPage() {
   const hasAnySearch = Boolean(fioSearch.trim() || phoneSearch.trim() || walletSearch.trim());
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-4 overflow-y-auto overflow-x-hidden pb-8 pr-1">
       <div className="card rounded-xl border border-soft p-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-[1.1fr_1.1fr_1.1fr_0.9fr_auto] md:items-end">
           <label className="grid gap-1">
