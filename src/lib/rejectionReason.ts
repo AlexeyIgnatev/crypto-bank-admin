@@ -12,7 +12,7 @@ const TECHNICAL_RULE_REASONS: Array<[RegExp, string]> = [
 
 export function readableRejectionReason(transaction: Transaction): string {
   if (transaction.status !== "REJECTED" && transaction.status !== "FAILED")
-    return "-";
+    return "Транзакция прошла успешно";
 
   const source = (transaction.comment || "").trim();
   if (!source) return "Операция отклонена";
