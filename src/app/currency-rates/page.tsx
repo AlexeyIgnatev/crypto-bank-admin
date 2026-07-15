@@ -201,7 +201,7 @@ function GridValue({
   );
 }
 
-function Card({
+function RatesCard({
   title,
   subtitle,
   children,
@@ -518,7 +518,7 @@ export default function CurrencyRatesPage() {
           ) : null}
         </div>
 
-        <Card
+        <RatesCard
           title="Курсы валют"
           subtitle="Любое изменение требует комментарий рядом с полем перед сохранением."
         >
@@ -551,7 +551,7 @@ export default function CurrencyRatesPage() {
               {saving ? "Сохранение..." : "Сохранить курсы"}
             </button>
           </div>
-        </Card>
+        </RatesCard>
 
         <div className="mt-8 rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
