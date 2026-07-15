@@ -52,61 +52,61 @@ type AdminOption = {
 };
 
 const TARIFF_GRID_ROWS: TariffGridRow[] = [
-  { kind: "tariff", operation: "SOM_TO_ESOM", label: "Конвертация СОМ в SALAM" },
-  { kind: "tariff", operation: "ESOM_TO_SOM", label: "Конвертация SALAM в СОМ" },
+  { kind: "tariff", operation: "SOM_TO_ESOM", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ РЎРћРњ РІ SALAM" },
+  { kind: "tariff", operation: "ESOM_TO_SOM", label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ SALAM РІ РЎРћРњ" },
   {
     kind: "tariff",
     operation: "WALLET_TRANSFER_ESOM",
-    label: "Перевод SALAM между пользователями",
+    label: "РџРµСЂРµРІРѕРґ SALAM РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё",
   },
   {
     kind: "tariff",
     operation: "ESOM_TO_USDT_TRC20",
-    label: "Конвертация SALAM в USDT TRC20",
+    label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ SALAM РІ USDT TRC20",
   },
   {
     kind: "tariff",
     operation: "USDT_TRC20_TO_ESOM",
-    label: "Конвертация USDT TRC20 в SALAM",
+    label: "РљРѕРЅРІРµСЂС‚Р°С†РёСЏ USDT TRC20 РІ SALAM",
   },
   {
     kind: "tariff",
     operation: "WALLET_TRANSFER_USDT_TRC20",
-    label: "Перевод USDT TRC20 между пользователями",
+    label: "РџРµСЂРµРІРѕРґ USDT TRC20 РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё",
   },
   {
     kind: "external_usdt",
-    label: "Перевод USDT TRC20 внешним пользователям",
+    label: "РџРµСЂРµРІРѕРґ USDT TRC20 РІРЅРµС€РЅРёРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј",
   },
   {
     kind: "external_usdt_min",
-    label: "Минимум вывода USDT TRC20",
+    label: "РњРёРЅРёРјСѓРј РІС‹РІРѕРґР° USDT TRC20",
   },
 ];
 
 const RATE_ROW_HINTS: Record<string, string> = {
-  SOM_TO_ESOM: "Здесь назначается комиссия за конвертацию SOM в SALAM.",
-  ESOM_TO_SOM: "Здесь назначается комиссия за конвертацию SALAM в SOM.",
+  SOM_TO_ESOM: "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РєРѕРЅРІРµСЂС‚Р°С†РёСЋ SOM РІ SALAM.",
+  ESOM_TO_SOM: "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РєРѕРЅРІРµСЂС‚Р°С†РёСЋ SALAM РІ SOM.",
   WALLET_TRANSFER_ESOM:
-    "Здесь назначается комиссия за внутренний перевод банка между пользователями в валюте SALAM.",
+    "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РІРЅСѓС‚СЂРµРЅРЅРёР№ РїРµСЂРµРІРѕРґ Р±Р°РЅРєР° РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё РІ РІР°Р»СЋС‚Рµ SALAM.",
   ESOM_TO_USDT_TRC20:
-    "Здесь назначается комиссия за конвертацию SALAM в USDT TRC20.",
+    "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РєРѕРЅРІРµСЂС‚Р°С†РёСЋ SALAM РІ USDT TRC20.",
   USDT_TRC20_TO_ESOM:
-    "Здесь назначается комиссия за конвертацию USDT TRC20 в SALAM.",
+    "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РєРѕРЅРІРµСЂС‚Р°С†РёСЋ USDT TRC20 РІ SALAM.",
   WALLET_TRANSFER_USDT_TRC20:
-    "Здесь назначается комиссия за внутренний перевод банка между пользователями в USDT TRC20.",
+    "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РІРЅСѓС‚СЂРµРЅРЅРёР№ РїРµСЂРµРІРѕРґ Р±Р°РЅРєР° РјРµР¶РґСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё РІ USDT TRC20.",
   external_usdt:
-    "Здесь назначается комиссия за вывод USDT TRC20 внешнему пользователю.",
+    "Р—РґРµСЃСЊ РЅР°Р·РЅР°С‡Р°РµС‚СЃСЏ РєРѕРјРёСЃСЃРёСЏ Р·Р° РІС‹РІРѕРґ USDT TRC20 РІРЅРµС€РЅРµРјСѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ.",
   external_usdt_min:
-    "Здесь указывается минимальная сумма вывода USDT TRC20.",
+    "Р—РґРµСЃСЊ СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РјРёРЅРёРјР°Р»СЊРЅР°СЏ СЃСѓРјРјР° РІС‹РІРѕРґР° USDT TRC20.",
 };
 
 const RATE_HISTORY_LABELS: Record<string, string> = {
-  "rate:usd_buy_rate": "Курс покупки USD",
-  "rate:usd_sell_rate": "Курс продажи USD",
-  "external:usdt_trade_fee_pct": "Комиссия внешнего перевода USDT TRC20",
-  "external:usdt_withdraw_fee_fixed": "Фикс. сумма комиссии внешнего вывода USDT TRC20",
-  "external:min_withdraw_usdt_trc20": "Минимум вывода USDT TRC20",
+  "rate:usd_buy_rate": "РљСѓСЂСЃ РїРѕРєСѓРїРєРё USD",
+  "rate:usd_sell_rate": "РљСѓСЂСЃ РїСЂРѕРґР°Р¶Рё USD",
+  "external:usdt_trade_fee_pct": "РљРѕРјРёСЃСЃРёСЏ РІРЅРµС€РЅРµРіРѕ РїРµСЂРµРІРѕРґР° USDT TRC20",
+  "external:usdt_withdraw_fee_fixed": "Р¤РёРєСЃ. СЃСѓРјРјР° РєРѕРјРёСЃСЃРёРё РІРЅРµС€РЅРµРіРѕ РІС‹РІРѕРґР° USDT TRC20",
+  "external:min_withdraw_usdt_trc20": "РњРёРЅРёРјСѓРј РІС‹РІРѕРґР° USDT TRC20",
 };
 
 function rateHistoryLabelForKey(key: string): string {
@@ -233,101 +233,169 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
-  const grouped = new Map<string, AdminActionLog[]>();
+  type RateBatch = {
+    createdAt: string;
+    adminId: number;
+    logs: AdminActionLog[];
+  };
+
+  const batches: RateBatch[] = [];
+  const saveWindowMs = 10_000;
+
   for (const log of ordered) {
-    const action = String(log.action || "unknown");
-    const list = grouped.get(action);
-    if (list) list.push(log);
-    else grouped.set(action, [log]);
+    const action = String(log.action || '');
+    const timestamp = new Date(log.createdAt).getTime();
+    const lastBatch = batches[batches.length - 1];
+    const isAdminSettings = action.includes('/blockchain-config/admin-settings');
+    const isTariffs = action.includes('/blockchain-config/tariffs');
+
+    if (!lastBatch) {
+      batches.push({
+        createdAt: log.createdAt,
+        adminId: log.admin_id,
+        logs: [log],
+      });
+      continue;
+    }
+
+    const lastTimestamp = new Date(lastBatch.createdAt).getTime();
+    const sameAdmin = lastBatch.adminId === log.admin_id;
+    const closeInTime = Math.abs(timestamp - lastTimestamp) <= saveWindowMs;
+
+    if (isAdminSettings || !sameAdmin || !closeInTime) {
+      batches.push({
+        createdAt: log.createdAt,
+        adminId: log.admin_id,
+        logs: [log],
+      });
+      continue;
+    }
+
+    if (
+      isTariffs ||
+      lastBatch.logs.some((item) =>
+        String(item.action || '').includes('/blockchain-config/admin-settings'),
+      )
+    ) {
+      lastBatch.logs.push(log);
+      continue;
+    }
+
+    batches.push({
+      createdAt: log.createdAt,
+      adminId: log.admin_id,
+      logs: [log],
+    });
   }
 
   const rows: RateHistoryRow[] = [];
+  let previousSettings: Record<string, any> | null = null;
+  let previousTariffs: Record<string, any>[] = [];
 
-  for (const actionLogs of grouped.values()) {
-    let previousBody: Record<string, any> | null = null;
+  for (const batch of batches) {
+    const settingsLog = batch.logs.find((item) =>
+      String(item.action || '').includes('/blockchain-config/admin-settings'),
+    );
+    const tariffsLog = batch.logs.find((item) =>
+      String(item.action || '').includes('/blockchain-config/tariffs'),
+    );
+    const primaryLog = settingsLog || tariffsLog || batch.logs[0];
 
-    for (const log of actionLogs) {
-      const details = parseActionDetails(log.details);
-      const rawBody = details?.body ?? details?.data ?? details;
-      const body =
-        rawBody && typeof rawBody === "object" && !Array.isArray(rawBody)
-          ? (rawBody as Record<string, any>)
-          : {};
-      const tariffItems = Array.isArray(rawBody)
-        ? rawBody
-        : Array.isArray(body.items)
-          ? body.items
-          : [];
-      const prevTariffItems = Array.isArray(previousBody?.items)
-        ? (previousBody?.items as Record<string, any>[])
+    const settingsDetails = parseActionDetails(settingsLog?.details);
+    const settingsRawBody =
+      settingsDetails?.body ?? settingsDetails?.data ?? settingsDetails;
+    const settingsBody =
+      settingsRawBody &&
+      typeof settingsRawBody === 'object' &&
+      !Array.isArray(settingsRawBody)
+        ? (settingsRawBody as Record<string, any>)
+        : {};
+
+    const tariffsDetails = parseActionDetails(tariffsLog?.details);
+    const tariffsRawBody =
+      tariffsDetails?.body ?? tariffsDetails?.data ?? tariffsDetails;
+    const tariffItems = Array.isArray(tariffsRawBody)
+      ? tariffsRawBody
+      : Array.isArray((tariffsRawBody as Record<string, any> | undefined)?.items)
+        ? ((tariffsRawBody as Record<string, any>).items as Record<string, any>[])
         : [];
-      const reasons = parseReasons(
-        typeof body.rates_change_reasons_json === "string"
-          ? body.rates_change_reasons_json
-          : "",
-      );
 
-      const changes: string[] = [];
-      const commentParts: string[] = [];
+    const reasons = parseReasons(
+      typeof settingsBody.rates_change_reasons_json === 'string'
+        ? settingsBody.rates_change_reasons_json
+        : typeof settingsBody.comment === 'string'
+          ? settingsBody.comment
+          : '',
+    );
 
-      for (const key of RATE_HISTORY_KEYS) {
-        const current = normalizeHistoryValue(body[key]);
-        const previous = normalizeHistoryValue(previousBody?.[key]);
-        if (!String(current).trim() && !String(previous).trim()) continue;
-        if (current === previous) continue;
-        const label = historyLabelForRates(`rate:${key}`);
-        const changeText = !previous
-          ? `${label}: ${current}`
-          : `${label}: ${previous} \u2192 ${current}`;
-        changes.push(changeText.replace(/\s+/g, " ").trim());
+    const changes: string[] = [];
+    const commentParts: string[] = [];
 
-        const reason = String(reasons[`rate:${key}`] ?? "").trim();
-        if (reason) commentParts.push(`${label}: ${reason}`);
-      }
+    for (const key of RATE_HISTORY_KEYS) {
+      const current = normalizeHistoryValue(settingsBody[key]);
+      const previous = normalizeHistoryValue(previousSettings?.[key]);
+      if (!String(current).trim() && !String(previous).trim()) continue;
+      if (current === previous) continue;
 
-      for (const item of tariffItems) {
-        if (!item || typeof item !== "object") continue;
-        const operation = String((item as Record<string, any>).operation ?? "");
-        if (!operation) continue;
-        const previousItem = prevTariffItems.find(
-          (candidate) => String(candidate?.operation ?? "") === operation,
-        );
-        const percent = normalizeHistoryValue((item as Record<string, any>).percent_fee);
-        const fixed = normalizeHistoryValue((item as Record<string, any>).fixed_fee);
-        const prevPercent = normalizeHistoryValue(previousItem?.percent_fee);
-        const prevFixed = normalizeHistoryValue(previousItem?.fixed_fee);
+      const label = historyLabelForRates(`rate:${key}`);
+      const changeText = !previous
+        ? `${label}: ${current}`
+        : `${label}: ${previous} → ${current}`;
+      changes.push(changeText.replace(/\s+/g, ' ').trim());
 
-        if (percent === prevPercent && fixed === prevFixed) continue;
-
-        const label = historyLabelForRates(`tariff:${operation}`);
-        const parts: string[] = [];
-        if (percent !== prevPercent) {
-          parts.push(
-            prevPercent ? `\u041f\u0440\u043e\u0446\u0435\u043d\u0442 ${prevPercent} \u2192 ${percent}` : `\u041f\u0440\u043e\u0446\u0435\u043d\u0442 ${percent}`,
-          );
-        }
-        if (fixed !== prevFixed) {
-          parts.push(
-            prevFixed ? `\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 ${prevFixed} \u2192 ${fixed}` : `\u0424\u0438\u043a\u0441. \u0441\u0443\u043c\u043c\u0430 ${fixed}`,
-          );
-        }
-        if (parts.length) {
-          changes.push(`${label}: ${parts.join(", ")}`.replace(/\s+/g, " ").trim());
-          const reason = String(reasons[`tariff:${operation}`] ?? "").trim();
-          if (reason) commentParts.push(`${label}: ${reason}`);
-        }
-      }
-
-      previousBody = body;
-      if (!changes.length) continue;
-
-      rows.push({
-        createdAt: log.createdAt,
-        adminId: log.admin_id,
-        comment: commentParts.length ? commentParts.join("\n") : "-",
-        changes: changes.join("\n"),
-      });
+      const reason = String(reasons[`rate:${key}`] ?? '').trim();
+      if (reason) commentParts.push(`${label}: ${reason}`);
     }
+
+    const previousTariffByOperation = new Map(
+      previousTariffs.map((item) => [String(item?.operation ?? ''), item]),
+    );
+
+    for (const item of tariffItems) {
+      if (!item || typeof item !== 'object') continue;
+      const operation = String((item as Record<string, any>).operation ?? '');
+      if (!operation) continue;
+      const percent = normalizeHistoryValue(
+        (item as Record<string, any>).percent_fee,
+      );
+      const fixed = normalizeHistoryValue((item as Record<string, any>).fixed_fee);
+      const previousItem = previousTariffByOperation.get(operation);
+      const prevPercent = normalizeHistoryValue(previousItem?.percent_fee);
+      const prevFixed = normalizeHistoryValue(previousItem?.fixed_fee);
+
+      if (percent === prevPercent && fixed === prevFixed) continue;
+
+      const label = historyLabelForRates(`tariff:${operation}`);
+      const parts: string[] = [];
+      if (percent !== prevPercent) {
+        parts.push(
+          prevPercent ? `Процент ${prevPercent} → ${percent}` : `Процент ${percent}`,
+        );
+      }
+      if (fixed !== prevFixed) {
+        parts.push(
+          prevFixed ? `Фикс. сумма ${prevFixed} → ${fixed}` : `Фикс. сумма ${fixed}`,
+        );
+      }
+      if (!parts.length) continue;
+
+      changes.push(`${label}: ${parts.join(', ')}`.replace(/\s+/g, ' ').trim());
+
+      const reason = String(reasons[`tariff:${operation}`] ?? '').trim();
+      if (reason) commentParts.push(`${label}: ${reason}`);
+    }
+
+    previousSettings = { ...settingsBody };
+    previousTariffs = tariffItems.map((item) => ({ ...(item as Record<string, any>) }));
+
+    if (!changes.length) continue;
+
+    rows.push({
+      createdAt: primaryLog.createdAt,
+      adminId: primaryLog.admin_id,
+      comment: commentParts.length ? commentParts.join('\n') : 'Комментарий не указан',
+      changes: changes.join('\n'),
+    });
   }
 
   return rows.sort(
@@ -335,7 +403,6 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 }
-
 function InfoHint({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex">
@@ -343,7 +410,7 @@ function InfoHint({ text }: { text: string }) {
         ?
       </span>
       <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-64 -translate-x-1/2 rounded-xl border border-soft bg-[var(--card)] px-3 py-2 text-xs leading-5 text-fg opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
-        {text || "Причина изменения пока не указана."}
+        {text || "РџСЂРёС‡РёРЅР° РёР·РјРµРЅРµРЅРёСЏ РїРѕРєР° РЅРµ СѓРєР°Р·Р°РЅР°."}
       </span>
     </span>
   );
@@ -388,8 +455,8 @@ function GridValue({
   onChange,
   comment,
   onCommentChange,
-  commentLabel = "Комментарий",
-  commentPlaceholder = "Почему меняется значение",
+  commentLabel = "РљРѕРјРјРµРЅС‚Р°СЂРёР№",
+  commentPlaceholder = "РџРѕС‡РµРјСѓ РјРµРЅСЏРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµ",
   suffix,
   placeholder = "0",
   disabled = false,
@@ -465,8 +532,8 @@ function TariffGridRowCard({
   onCommentChange,
   percentDisabled = false,
   fixedDisabled = false,
-  percentLabel = "Процент",
-  fixedLabel = "Фикс сумма комиссии",
+  percentLabel = "РџСЂРѕС†РµРЅС‚",
+  fixedLabel = "Р¤РёРєСЃ СЃСѓРјРјР° РєРѕРјРёСЃСЃРёРё",
   showPercent = true,
   showFixed = true,
 }: {
@@ -519,13 +586,13 @@ function TariffGridRowCard({
       ) : null}
       <div className={`grid gap-1 ${commentSpanClass}`}>
         <span className="text-[11px] uppercase tracking-[0.12em] text-muted">
-          Комментарий к изменению
+          РљРѕРјРјРµРЅС‚Р°СЂРёР№ Рє РёР·РјРµРЅРµРЅРёСЋ
         </span>
         <textarea
           className="ui-input min-h-[72px] resize-y"
           value={comment || ""}
           onChange={(e) => onCommentChange?.(e.target.value)}
-          placeholder="Почему меняется тариф"
+          placeholder="РџРѕС‡РµРјСѓ РјРµРЅСЏРµС‚СЃСЏ С‚Р°СЂРёС„"
         />
       </div>
     </div>
@@ -583,7 +650,7 @@ export default function RatesPage() {
         setReasonDrafts(loadedReasons);
       } catch (err: unknown) {
         if (!alive) return;
-        setError(getErrorMessage(err, "Не удалось загрузить проценты"));
+        setError(getErrorMessage(err, "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РїСЂРѕС†РµРЅС‚С‹"));
       } finally {
         if (alive) setLoading(false);
       }
@@ -709,14 +776,14 @@ export default function RatesPage() {
       normalizeDecimalInput(settings.usd_buy_rate) !==
       normalizeDecimalInput(originalSettings.usd_buy_rate)
     ) {
-      items.push({ key: "rate:usd_buy_rate", label: "Курс покупки USD" });
+      items.push({ key: "rate:usd_buy_rate", label: "РљСѓСЂСЃ РїРѕРєСѓРїРєРё USD" });
     }
 
     if (
       normalizeDecimalInput(settings.usd_sell_rate) !==
       normalizeDecimalInput(originalSettings.usd_sell_rate)
     ) {
-      items.push({ key: "rate:usd_sell_rate", label: "Курс продажи USD" });
+      items.push({ key: "rate:usd_sell_rate", label: "РљСѓСЂСЃ РїСЂРѕРґР°Р¶Рё USD" });
     }
 
     if (
@@ -727,7 +794,7 @@ export default function RatesPage() {
     ) {
       items.push({
         key: "external:usdt_trade_fee_pct",
-        label: "Перевод USDT TRC20 внешним пользователям",
+        label: "РџРµСЂРµРІРѕРґ USDT TRC20 РІРЅРµС€РЅРёРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРј",
       });
     }
 
@@ -760,7 +827,7 @@ export default function RatesPage() {
     ) {
       items.push({
         key: "external:min_withdraw_usdt_trc20",
-        label: "Минимум вывода USDT TRC20",
+        label: "РњРёРЅРёРјСѓРј РІС‹РІРѕРґР° USDT TRC20",
       });
     }
 
@@ -995,7 +1062,7 @@ export default function RatesPage() {
       }
       setReasons(nextReasons);
       setReasonDrafts(nextReasons);
-      setSuccess("Тарифная сетка сохранена");
+      setSuccess("РўР°СЂРёС„РЅР°СЏ СЃРµС‚РєР° СЃРѕС…СЂР°РЅРµРЅР°");
       const [adminLogs, tariffLogs] = await Promise.all([
         getAdminActionLogs({
           actionQuery: "PUT /blockchain-config/admin-settings",
@@ -1014,7 +1081,7 @@ export default function RatesPage() {
         extractRateHistory([...adminLogs.items, ...tariffLogs.items]),
       );
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Не удалось сохранить тарифную сетку"));
+      setError(getErrorMessage(err, "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С‚Р°СЂРёС„РЅСѓСЋ СЃРµС‚РєСѓ"));
     } finally {
       setSaving(false);
     }
@@ -1022,12 +1089,12 @@ export default function RatesPage() {
 
   async function saveCurrencyRates() {
     if (!currencyRateChanged) {
-      setSuccess("Курсы валют уже актуальны");
+      setSuccess("РљСѓСЂСЃС‹ РІР°Р»СЋС‚ СѓР¶Рµ Р°РєС‚СѓР°Р»СЊРЅС‹");
       return;
     }
     const missing = rateCommentKeys.find((key) => !getRateReason(key).trim());
     if (missing) {
-      setError(`Укажите комментарий для поля: ${RATE_HISTORY_LABELS[missing] || missing}`);
+      setError(`РЈРєР°Р¶РёС‚Рµ РєРѕРјРјРµРЅС‚Р°СЂРёР№ РґР»СЏ РїРѕР»СЏ: ${RATE_HISTORY_LABELS[missing] || missing}`);
       return;
     }
     await persistRates();
@@ -1037,22 +1104,22 @@ export default function RatesPage() {
     await exportRows({
       format: "csv",
       fileBaseName: "rates_comments_history",
-      title: "История комментариев и изменений тарифов",
+      title: "РСЃС‚РѕСЂРёСЏ РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ Рё РёР·РјРµРЅРµРЅРёР№ С‚Р°СЂРёС„РѕРІ",
       columns: [
         {
-          header: "Дата",
+          header: "Р”Р°С‚Р°",
           getValue: (row: RateHistoryRow) => formatDateTime(row.createdAt),
         },
         {
-          header: "Админ ID",
+          header: "РђРґРјРёРЅ ID",
           getValue: (row: RateHistoryRow) => adminLookup.get(String(row.adminId)) || (row.adminId === 0 ? "\u041b\u043e\u043a\u0430\u043b\u044c\u043d\u043e" : `#${row.adminId}`),
         },
         {
-          header: "Изменения",
+          header: "РР·РјРµРЅРµРЅРёСЏ",
           getValue: (row: RateHistoryRow) => row.changes,
         },
         {
-          header: "Комментарий",
+          header: "РљРѕРјРјРµРЅС‚Р°СЂРёР№",
           getValue: (row: RateHistoryRow) => row.comment,
         },
       ],
@@ -1062,7 +1129,7 @@ export default function RatesPage() {
 
   async function saveRates() {
     if (!changedReasonItems.length) {
-      setSuccess("Изменений нет");
+      setSuccess("РР·РјРµРЅРµРЅРёР№ РЅРµС‚");
       setError(null);
       return;
     }
@@ -1070,14 +1137,14 @@ export default function RatesPage() {
       (item) => !getRateReason(item.key).trim(),
     );
     if (missingItem) {
-      setError(`Укажите комментарий для поля: ${missingItem.label}`);
+      setError(`РЈРєР°Р¶РёС‚Рµ РєРѕРјРјРµРЅС‚Р°СЂРёР№ РґР»СЏ РїРѕР»СЏ: ${missingItem.label}`);
       return;
     }
     await persistRates();
   }
 
   if (loading) {
-    return <div className="m-auto text-muted">Загрузка...</div>;
+    return <div className="m-auto text-muted">Р—Р°РіСЂСѓР·РєР°...</div>;
   }
 
   return (
@@ -1086,7 +1153,7 @@ export default function RatesPage() {
         <div className="w-full max-w-[1500px] px-4">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="rounded-full border border-soft bg-card/80 px-4 py-2 text-sm text-muted">
-              Настройка тарифов, комиссий и причин их изменения для текущей витрины
+              РќР°СЃС‚СЂРѕР№РєР° С‚Р°СЂРёС„РѕРІ, РєРѕРјРёСЃСЃРёР№ Рё РїСЂРёС‡РёРЅ РёС… РёР·РјРµРЅРµРЅРёСЏ РґР»СЏ С‚РµРєСѓС‰РµР№ РІРёС‚СЂРёРЅС‹
             </div>
             {success ? (
               <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-600">
@@ -1101,12 +1168,12 @@ export default function RatesPage() {
           </div>
 
           <Card
-            title="Тарифная сетка клиентов"
-            subtitle="Для тарифов теперь обязательно указывается причина изменений, а минимум вывода USDT TRC20 вынесен отдельной строкой под внешними переводами."
+            title="РўР°СЂРёС„РЅР°СЏ СЃРµС‚РєР° РєР»РёРµРЅС‚РѕРІ"
+            subtitle="Р”Р»СЏ С‚Р°СЂРёС„РѕРІ С‚РµРїРµСЂСЊ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ СѓРєР°Р·С‹РІР°РµС‚СЃСЏ РїСЂРёС‡РёРЅР° РёР·РјРµРЅРµРЅРёР№, Р° РјРёРЅРёРјСѓРј РІС‹РІРѕРґР° USDT TRC20 РІС‹РЅРµСЃРµРЅ РѕС‚РґРµР»СЊРЅРѕР№ СЃС‚СЂРѕРєРѕР№ РїРѕРґ РІРЅРµС€РЅРёРјРё РїРµСЂРµРІРѕРґР°РјРё."
           >
             <div className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="grid gap-1">
-                <span className="text-xs text-muted">Категория</span>
+                <span className="text-xs text-muted">РљР°С‚РµРіРѕСЂРёСЏ</span>
                 <select
                   className="ui-input"
                   value={category}
@@ -1122,27 +1189,27 @@ export default function RatesPage() {
                 </select>
               </label>
               <label className="grid gap-1">
-                <span className="text-xs text-muted">Резидентство</span>
+                <span className="text-xs text-muted">Р РµР·РёРґРµРЅС‚СЃС‚РІРѕ</span>
                 <select
                   className="ui-input"
                   value={residency}
                   onChange={(e) => setResidency(e.target.value as CustomerResidency)}
                 >
-                  <option value="RESIDENT">Резидент</option>
-                  <option value="NON_RESIDENT">Нерезидент</option>
+                  <option value="RESIDENT">Р РµР·РёРґРµРЅС‚</option>
+                  <option value="NON_RESIDENT">РќРµСЂРµР·РёРґРµРЅС‚</option>
                 </select>
               </label>
             </div>
 
             <div className="mb-3 hidden xl:grid xl:grid-cols-[1.8fr_0.7fr_0.9fr] xl:gap-3 xl:px-1">
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                Операция
+                РћРїРµСЂР°С†РёСЏ
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                Процент
+                РџСЂРѕС†РµРЅС‚
               </div>
               <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">
-                Фикс сумма комиссии
+                Р¤РёРєСЃ СЃСѓРјРјР° РєРѕРјРёСЃСЃРёРё
               </div>
             </div>
 
@@ -1177,8 +1244,8 @@ export default function RatesPage() {
                       label={row.label}
                       hint={RATE_ROW_HINTS.external_usdt_min}
                       percent={settings.min_withdraw_usdt_trc20}
-                      fixed="—"
-                      percentLabel="Минимум вывода"
+                      fixed="вЂ”"
+                      percentLabel="РњРёРЅРёРјСѓРј РІС‹РІРѕРґР°"
                       comment={getRateReason("external:min_withdraw_usdt_trc20")}
                       onPercentChange={(value) =>
                         updateSetting("min_withdraw_usdt_trc20", value)
@@ -1221,9 +1288,9 @@ export default function RatesPage() {
             <div className="mt-8 rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-base font-semibold">История комментариев</div>
+                  <div className="text-base font-semibold">РСЃС‚РѕСЂРёСЏ РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ</div>
                   <div className="mt-1 text-sm text-muted">
-                    Дата, админ, какие поля менялись и какой комментарий был указан.
+                    Р”Р°С‚Р°, Р°РґРјРёРЅ, РєР°РєРёРµ РїРѕР»СЏ РјРµРЅСЏР»РёСЃСЊ Рё РєР°РєРѕР№ РєРѕРјРјРµРЅС‚Р°СЂРёР№ Р±С‹Р» СѓРєР°Р·Р°РЅ.
                   </div>
                 </div>
                 <button
@@ -1239,17 +1306,17 @@ export default function RatesPage() {
                 <table className="min-w-full text-left text-sm">
                   <thead className="sticky top-0 bg-white">
                     <tr className="text-xs uppercase tracking-wide text-muted">
-                      <th className="px-4 py-3">Дата</th>
-                      <th className="px-4 py-3">Админ</th>
-                      <th className="px-4 py-3">Изменения</th>
-                      <th className="px-4 py-3">Комментарий</th>
+                      <th className="px-4 py-3">Р”Р°С‚Р°</th>
+                      <th className="px-4 py-3">РђРґРјРёРЅ</th>
+                      <th className="px-4 py-3">РР·РјРµРЅРµРЅРёСЏ</th>
+                      <th className="px-4 py-3">РљРѕРјРјРµРЅС‚Р°СЂРёР№</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currencyHistoryLoading ? (
                       <tr>
                         <td className="px-4 py-6 text-muted" colSpan={4}>
-                          Загрузка истории...
+                          Р—Р°РіСЂСѓР·РєР° РёСЃС‚РѕСЂРёРё...
                         </td>
                       </tr>
                     ) : rateHistoryRows.length ? (
@@ -1265,14 +1332,14 @@ export default function RatesPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3 max-w-[18rem] whitespace-pre-line break-words text-muted">
-                            {row.comment || "—"}
+                            {row.comment || "Комментарий не указан"}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
                         <td className="px-4 py-6 text-muted" colSpan={4}>
-                          История пока пустая.
+                          РСЃС‚РѕСЂРёСЏ РїРѕРєР° РїСѓСЃС‚Р°СЏ.
                         </td>
                       </tr>
                     )}
@@ -1287,7 +1354,7 @@ export default function RatesPage() {
                 onClick={saveRates}
                 disabled={saving}
               >
-                {saving ? "Сохранение..." : "Сохранить тарифы"}
+                {saving ? "РЎРѕС…СЂР°РЅРµРЅРёРµ..." : "РЎРѕС…СЂР°РЅРёС‚СЊ С‚Р°СЂРёС„С‹"}
               </button>
             </div>
           </Card>
@@ -1297,3 +1364,4 @@ export default function RatesPage() {
     </>
   );
 }
+
