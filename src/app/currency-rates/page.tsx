@@ -201,6 +201,26 @@ function GridValue({
   );
 }
 
+function Card({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="card rounded-2xl border border-soft bg-[var(--card)] p-5 shadow-sm">
+      <div className="border-b border-soft pb-4">
+        <div className="text-lg font-semibold">{title}</div>
+        {subtitle ? <div className="mt-1 text-sm text-muted">{subtitle}</div> : null}
+      </div>
+      <div className="pt-5">{children}</div>
+    </section>
+  );
+}
+
 export default function CurrencyRatesPage() {
   const [settings, setSettings] = useState<AdminSettings>(EMPTY_SETTINGS);
   const [originalSettings, setOriginalSettings] = useState<AdminSettings>(EMPTY_SETTINGS);
