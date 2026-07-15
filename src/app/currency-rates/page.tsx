@@ -209,16 +209,18 @@ export default function CurrencyRatesPage() {
   const [rateHistoryRows, setRateHistoryRows] = useState<RateHistoryRow[]>([]);
   const [admins, setAdmins] = useState<AdminOption[]>([]);
 
-  function normalizeLoadedSettings(input: AdminSettings): AdminSettings {
+  function normalizeLoadedSettings(input?: Partial<AdminSettings> | null): AdminSettings {
+    const safe = input ?? EMPTY_SETTINGS;
     const buyRate =
-      input.usd_buy_rate?.trim() || input.esom_per_usd?.trim() || "0";
+      safe.usd_buy_rate?.trim() || safe.esom_per_usd?.trim() || "0";
     const sellRate =
-      input.usd_sell_rate?.trim() || input.esom_per_usd?.trim() || buyRate;
+      safe.usd_sell_rate?.trim() || safe.esom_per_usd?.trim() || buyRate;
     return {
-      ...input,
+      ...EMPTY_SETTINGS,
+      ...safe,
       usd_buy_rate: buyRate,
       usd_sell_rate: sellRate,
-      esom_per_usd: input.esom_per_usd?.trim() || buyRate,
+      esom_per_usd: safe.esom_per_usd?.trim() || buyRate,
     };
   }
 
@@ -283,7 +285,9 @@ export default function CurrencyRatesPage() {
           sortDir: "desc",
         });
         if (!alive) return;
-        setRateHistoryRows(extractCurrencyHistory(Array.isArray(logs.items) ? logs.items : []));
+        setRateHistoryRows(
+          extractCurrencyHistory(Array.isArray(logs?.items) ? logs.items : []),
+        );
       } catch {
         if (!alive) return;
         setRateHistoryRows([]);
@@ -381,7 +385,9 @@ export default function CurrencyRatesPage() {
           sortBy: "createdAt",
           sortDir: "desc",
         });
-        setRateHistoryRows(extractCurrencyHistory(logs.items));
+        setRateHistoryRows(
+          extractCurrencyHistory(Array.isArray(logs?.items) ? logs.items : []),
+        );
       } catch {
         setRateHistoryRows([]);
       }
