@@ -2,26 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
-import {
-  getAdminActionLogs,
-  getAdmins,
-  getAntifraudRules,
-  updateAntifraudRule,
-  type AdminActionLog,
-  type AntiFraudRule,
-  type AntiFraudRuleUpdate,
-} from "@/lib/api";
+import { getAdminActionLogs, getAdmins, type AdminActionLog } from "@/lib/api";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
 
-type RuleField = "period_days" | "threshold_som" | "min_count" | "percent_threshold";
-
-type RuleDraft = {
-  enabled: boolean;
-  period_days: string;
-  threshold_som: string;
-  min_count: string;
-  percent_threshold: string;
-};
+type ActiveSource = "api" | "urls" | "file";
 
 type AdminOption = {
   id: string;
@@ -29,125 +13,130 @@ type AdminOption = {
   login: string;
 };
 
-type RuleMeta = {
+type AmlSettingsDraft = {
+  api: string;
+  urls: string;
+  fileName: string;
+  activeSources: ActiveSource[];
+};
+
+type HistoryRow = {
+  date: string;
+  user: string;
+  action: string;
+  changed: string;
+  comment: string;
+  ip: string;
+};
+
+const SETTINGS_STORAGE_KEY = "aml-rules:settings:v2";
+const LEGACY_STORAGE_KEY = "aml-rules:stubs:v1";
+
+const ACTIVE_SOURCE_OPTIONS: Array<{
+  key: ActiveSource;
   title: string;
-  description: string;
-  fields: Array<{
-    key: RuleField;
-    label: string;
-    type: "number" | "percent";
-    hint?: string;
-  }>;
-};
+  hint: string;
+}> = [
+  {
+    key: "api",
+    title: "API",
+    hint: "Подключение к внешнему API-источнику",
+  },
+  {
+    key: "urls",
+    title: "URL-список",
+    hint: "Список адресов для проверки",
+  },
+  {
+    key: "file",
+    title: "Файл",
+    hint: "Загрузка файла с данными",
+  },
+];
 
-const RULE_META: Record<string, RuleMeta> = {
-  FIAT_ANY_GE_1M: {
-    title: "Любая операция с фиатом",
-    description: "Срабатывает, если операция в сомах превышает порог.",
-    fields: [
-      { key: "threshold_som", label: "Порог, СОМ", type: "number" },
-    ],
-  },
-  ONE_TIME_GE_8M: {
-    title: "Разовая крупная сделка",
-    description: "Следит за единоразовыми крупными суммами.",
-    fields: [
-      { key: "threshold_som", label: "Сумма сделки, СОМ", type: "number" },
-    ],
-  },
-  FREQUENT_OPS_3_30D_EACH_GE_100K: {
-    title: "Частые операции",
-    description: "Отслеживает много операций за период с минимальным порогом по каждой.",
-    fields: [
-      { key: "min_count", label: "Количество операций", type: "number" },
-      { key: "period_days", label: "Период, дней", type: "number" },
-      {
-        key: "threshold_som",
-        label: "Минимум одной операции, СОМ",
-        type: "number",
-      },
-    ],
-  },
-  WITHDRAW_AFTER_LARGE_INFLOW: {
-    title: "Вывод после крупного притока",
-    description: "Срабатывает при выводе после недавнего крупного поступления.",
-    fields: [
-      {
-        key: "percent_threshold",
-        label: "Процент от притока, %",
-        type: "percent",
-      },
-      {
-        key: "threshold_som",
-        label: "Порог входящего платежа, СОМ",
-        type: "number",
-      },
-      { key: "period_days", label: "Период, дней", type: "number" },
-    ],
-  },
-  SPLITTING_TOTAL_14D_GE_1M: {
-    title: "Дробление суммы",
-    description: "Отслеживает дробление операций в рамках периода.",
-    fields: [
-      { key: "threshold_som", label: "Сумма, СОМ", type: "number" },
-      { key: "period_days", label: "Период, дней", type: "number" },
-    ],
-  },
-  THIRD_PARTY_DEPOSITS_3_30D_TOTAL_GE_1M: {
-    title: "Внесения третьими лицами",
-    description: "Отслеживает пополнения от разных людей на один счёт.",
-    fields: [
-      { key: "min_count", label: "Количество лиц", type: "number" },
-      { key: "period_days", label: "Период, дней", type: "number" },
-      { key: "threshold_som", label: "Общая сумма, СОМ", type: "number" },
-    ],
-  },
-  AFTER_INACTIVITY_6M: {
-    title: "Активность после паузы",
-    description: "Срабатывает после длительной неактивности аккаунта.",
-    fields: [
-      { key: "period_days", label: "Период неактивности, дней", type: "number" },
-    ],
-  },
-  MANY_SENDERS_TO_ONE_10_PER_MONTH: {
-    title: "Много отправителей на один счёт",
-    description: "Считает количество разных отправителей за период.",
-    fields: [
-      { key: "min_count", label: "Количество физлиц", type: "number" },
-      { key: "period_days", label: "Период, дней", type: "number" },
-    ],
-  },
-};
+const DEFAULT_ACTIVE_SOURCES: ActiveSource[] = ["api", "urls", "file"];
 
-const SOURCES_STORAGE_KEY = "aml-rules:sources:v1";
-
-function toDraftValue(value: unknown): string {
-  if (value == null || value === "") return "";
-  return String(value);
+function toText(value: unknown): string {
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) return value.map(toText).filter(Boolean).join(", ");
+  if (typeof value === "object") {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "";
+    }
+  }
+  return "";
 }
 
-function createDraft(rule: AntiFraudRule): RuleDraft {
-  return {
-    enabled: Boolean(rule.enabled),
-    period_days: toDraftValue(rule.period_days),
-    threshold_som: toDraftValue(rule.threshold_som),
-    min_count: toDraftValue(rule.min_count),
-    percent_threshold: toDraftValue(rule.percent_threshold),
-  };
+function parseJsonLike(value: unknown): unknown {
+  if (value == null) return null;
+  if (typeof value !== "string") return value;
+  const text = value.trim();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return value;
+  }
 }
 
-function parseNumber(value: string): number | undefined {
-  const normalized = value.trim().replace(/\s+/g, "").replace(",", ".");
-  if (!normalized) return undefined;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : undefined;
+function unwrapDetails(value: unknown): Record<string, unknown> | null {
+  const parsed = parseJsonLike(value);
+  if (!parsed || typeof parsed !== "object") return null;
+  return parsed as Record<string, unknown>;
 }
 
-function sameNumber(a: unknown, b: string): boolean {
-  const left = parseNumber(toDraftValue(a));
-  const right = parseNumber(b);
-  if (left == null && right == null) return true;
-  return left === right;
+function unwrapBody(details: unknown): Record<string, unknown> | null {
+  const parsed = unwrapDetails(details);
+  if (!parsed) return null;
+  const body = parsed.body ?? parsed.data ?? parsed.payload ?? parsed;
+  if (!body || typeof body !== "object") return null;
+  return body as Record<string, unknown>;
+}
+
+function findValueDeep(
+  value: unknown,
+  wantedKeys: string[],
+  seen = new Set<unknown>(),
+  depth = 0,
+): unknown {
+  if (value == null || depth > 6) return undefined;
+  if (typeof value !== "object") return undefined;
+  if (seen.has(value)) return undefined;
+  seen.add(value);
+
+  const wanted = new Set(wantedKeys.map((key) => key.toLowerCase()));
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findValueDeep(item, wantedKeys, seen, depth + 1);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+
+  const obj = value as Record<string, unknown>;
+  for (const [key, entry] of Object.entries(obj)) {
+    if (wanted.has(key.toLowerCase()) && entry != null && toText(entry).trim()) {
+      return entry;
+    }
+  }
+
+  for (const entry of Object.values(obj)) {
+    const found = findValueDeep(entry, wantedKeys, seen, depth + 1);
+    if (found !== undefined) return found;
+  }
+
+  return undefined;
+}
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString("ru-RU");
 }
 
 function normalizeSources(raw: string): string[] {
@@ -165,144 +154,169 @@ function normalizeSources(raw: string): string[] {
   return result;
 }
 
-function formatDate(value: string): string {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "—";
-  return date.toLocaleString("ru-RU");
-}
-
-function formatAmlChangeLabel(key: string, value: unknown, ruleName: string): string {
-  const text = formatValue(value);
-  switch (key) {
-    case "enabled":
-      return Boolean(value)
-        ? `${ruleName ? `\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430: ${ruleName}` : "\u0412\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430"}`
-        : `${ruleName ? `\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430: ${ruleName}` : "\u041e\u0442\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u0430"}`;
-    case "period_days":
-      return `\u041f\u0435\u0440\u0438\u043e\u0434 \u043d\u0430\u0431\u043b\u044e\u0434\u0435\u043d\u0438\u044f: ${text} \u0434\u043d.`;
-    case "threshold_som":
-      return `\u041f\u043e\u0440\u043e\u0433 \u0441\u0443\u043c\u043c\u044b: ${text} \u0441\u043e\u043c`;
-    case "min_count":
-      return `\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0439: ${text}`;
-    case "percent_threshold":
-      return `\u041f\u043e\u0440\u043e\u0433 \u043f\u0440\u043e\u0446\u0435\u043d\u0442\u0430: ${text}%`;
-    default:
-      return `${getRuleLabel(key)}: ${text}`;
-  }
-}
-
-function formatChangedFields(details: any): string {
-  const rawBody = details?.body ?? details?.data ?? details;
-  if (!rawBody || typeof rawBody !== "object") return "\u2014";
-  const body = rawBody as Record<string, unknown>;
-  const ruleName = String(
-    body.name ?? body.title ?? body.rule_name ?? body.ruleName ?? body.key ?? "",
-  ).trim();
-  const entries = Object.entries(body).filter(
-    ([key, value]) =>
-      key !== "comment" &&
-      key !== "reason" &&
-      value != null &&
-      String(value).trim() !== "",
+function normalizeActiveSources(raw: unknown): ActiveSource[] {
+  if (!Array.isArray(raw)) return DEFAULT_ACTIVE_SOURCES;
+  const result = raw.filter(
+    (item): item is ActiveSource =>
+      item === "api" || item === "urls" || item === "file",
   );
-  if (!entries.length) return "\u2014";
-  return entries
-    .map(([key, value]) => formatAmlChangeLabel(key, value, ruleName))
-    .filter(Boolean)
-    .join("; ");
+  return result.length ? result : DEFAULT_ACTIVE_SOURCES;
 }
 
-function extractComment(details: any): string {
-  const rawBody = details?.body ?? details?.data ?? details;
-  if (!rawBody || typeof rawBody !== "object") return "\u2014";
-  const comment =
-    (rawBody as Record<string, unknown>).comment ??
-    (rawBody as Record<string, unknown>).reason ??
-    "";
-  return String(comment || "\u2014");
+function activeSourceLabel(source: ActiveSource): string {
+  switch (source) {
+    case "api":
+      return "API";
+    case "urls":
+      return "URL-список";
+    case "file":
+      return "Файл";
+  }
 }
 
-function formatValue(value: unknown): string {
+function activeSourceChipLabel(source: ActiveSource): string {
+  switch (source) {
+    case "api":
+      return "API";
+    case "urls":
+      return "URL";
+    case "file":
+      return "Файл";
+  }
+}
 
-  if (value == null) return "—";
-  if (typeof value === "boolean") return value ? "Да" : "Нет";
-  if (typeof value === "number") return Number(value).toLocaleString("ru-RU");
-  if (Array.isArray(value)) return value.map(formatValue).join(", ");
-  if (typeof value === "object") {
+function sourceSummary(activeSources: ActiveSource[]): string {
+  return activeSources.map(activeSourceChipLabel).join(", ");
+}
+
+function buildHistorySummary(details: unknown): string {
+  const body = unwrapBody(details);
+  if (!body) return "Изменений нет";
+
+  const summary =
+    toText(body.summary) ||
+    toText(body.changed) ||
+    toText(body.change) ||
+    toText(body.description);
+  if (summary.trim()) return summary;
+
+  const parts: string[] = [];
+  const activeSources = Array.isArray(body.activeSources)
+    ? normalizeActiveSources(body.activeSources)
+    : [];
+
+  if (activeSources.length) {
+    parts.push(`Активно: ${sourceSummary(activeSources)}`);
+  }
+
+  const api = toText(body.api).trim();
+  if (api) {
+    parts.push(`API: ${api.slice(0, 80)}`);
+  }
+
+  const urls = body.urls;
+  if (Array.isArray(urls)) {
+    const normalized = urls.map((item) => toText(item).trim()).filter(Boolean);
+    if (normalized.length) {
+      parts.push(`URL: ${normalized.length} шт.`);
+    }
+  } else {
+    const text = toText(urls).trim();
+    if (text) {
+      parts.push(`URL: ${text.slice(0, 80)}`);
+    }
+  }
+
+  const fileName = toText(body.fileName).trim();
+  if (fileName) {
+    parts.push(`Файл: ${fileName}`);
+  }
+
+  if (parts.length) return parts.join(" | ");
+  return "Изменений нет";
+}
+
+function extractComment(details: unknown): string {
+  const body = unwrapBody(details) ?? unwrapDetails(details);
+  if (!body) return "Комментарий не указан";
+
+  const comment = findValueDeep(body, ["comment", "reason", "note", "message"]);
+  const text = toText(comment).trim();
+  return text || "Комментарий не указан";
+}
+
+function buildAmlSummary(settings: AmlSettingsDraft): string {
+  const parts: string[] = [];
+  const active = settings.activeSources.length
+    ? sourceSummary(settings.activeSources)
+    : "ничего";
+
+  parts.push(`Активно: ${active}`);
+
+  if (settings.api.trim()) {
+    parts.push(`API: ${settings.api.trim().slice(0, 60)}`);
+  }
+
+  const urls = normalizeSources(settings.urls);
+  if (urls.length) {
+    parts.push(`URL: ${urls.length} шт.`);
+  }
+
+  if (settings.fileName.trim()) {
+    parts.push(`Файл: ${settings.fileName.trim()}`);
+  }
+
+  return parts.join(" | ");
+}
+
+function loadStoredSettings(): AmlSettingsDraft | null {
+  if (typeof window === "undefined") return null;
+
+  const keys = [SETTINGS_STORAGE_KEY, LEGACY_STORAGE_KEY];
+  for (const key of keys) {
     try {
-      return JSON.stringify(value);
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      return {
+        api: toText(parsed.api),
+        urls: Array.isArray(parsed.urls)
+          ? parsed.urls.map((item) => toText(item)).join("\n")
+          : toText(parsed.urls),
+        fileName: toText(parsed.fileName),
+        activeSources: normalizeActiveSources(parsed.activeSources),
+      };
     } catch {
-      return "—";
+      // Ignore malformed cache and fall through to defaults.
     }
   }
-  return String(value);
-}
 
-function getRuleLabel(key: string): string {
-  return RULE_META[key]?.title || key;
-}
-
-function getRuleDescription(key: string): string {
-  return RULE_META[key]?.description || "Настройка правила антифрода.";
-}
-
-function getRuleFields(key: string): RuleMeta["fields"] {
-  return RULE_META[key]?.fields || [];
-}
-
-function buildUpdatePayload(
-  rule: AntiFraudRule,
-  draft: RuleDraft,
-): AntiFraudRuleUpdate {
-  const payload: AntiFraudRuleUpdate = {};
-  if (Boolean(rule.enabled) !== draft.enabled) payload.enabled = draft.enabled;
-  if (!sameNumber(rule.period_days, draft.period_days)) {
-    const num = parseNumber(draft.period_days);
-    if (num != null) payload.period_days = num.toString();
-  }
-  if (!sameNumber(rule.threshold_som, draft.threshold_som)) {
-    const num = parseNumber(draft.threshold_som);
-    if (num != null) payload.threshold_som = num.toString();
-  }
-  if (!sameNumber(rule.min_count, draft.min_count)) {
-    const num = parseNumber(draft.min_count);
-    if (num != null) payload.min_count = num.toString();
-  }
-  if (!sameNumber(rule.percent_threshold, draft.percent_threshold)) {
-    const num = parseNumber(draft.percent_threshold);
-    if (num != null) payload.percent_threshold = num.toString();
-  }
-  return payload;
-}
-
-function isRuleDirty(rule: AntiFraudRule, draft: RuleDraft): boolean {
-  if (Boolean(rule.enabled) !== draft.enabled) return true;
-  if (!sameNumber(rule.period_days, draft.period_days)) return true;
-  if (!sameNumber(rule.threshold_som, draft.threshold_som)) return true;
-  if (!sameNumber(rule.min_count, draft.min_count)) return true;
-  if (!sameNumber(rule.percent_threshold, draft.percent_threshold)) return true;
-  return false;
-}
-
-function validateDraft(rule: AntiFraudRule, draft: RuleDraft): string | null {
-  const fields = getRuleFields(rule.key);
-  for (const field of fields) {
-    const value = draft[field.key];
-    if (!value.trim()) return `Заполните поле "${field.label}"`;
-    const num = parseNumber(value);
-    if (num == null) return `Поле "${field.label}" должно быть числом`;
-    if (num < 0) return `Поле "${field.label}" должно быть не меньше 0`;
-    if (field.type === "percent" && (num < 0 || num > 100)) {
-      return `Поле "${field.label}" должно быть от 0 до 100`;
-    }
-  }
   return null;
+}
+
+function isSourceEnabled(
+  activeSources: ActiveSource[],
+  source: ActiveSource,
+): boolean {
+  return activeSources.includes(source);
+}
+
+function readSettingsSnapshot(settings: AmlSettingsDraft): AmlSettingsDraft {
+  return {
+    api: settings.api.trim(),
+    urls: settings.urls,
+    fileName: settings.fileName.trim(),
+    activeSources: [...settings.activeSources],
+  };
 }
 
 export default function AmlRulesPage() {
   const [apiDraft, setApiDraft] = useState("");
   const [urlDraft, setUrlDraft] = useState("");
   const [fileName, setFileName] = useState("");
+  const [activeSources, setActiveSources] = useState<ActiveSource[]>(
+    DEFAULT_ACTIVE_SOURCES,
+  );
   const [commentOpen, setCommentOpen] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -317,17 +331,14 @@ export default function AmlRulesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem("aml-rules:stubs:v1") || "";
-      if (raw) {
-        const parsed = JSON.parse(raw) as Record<string, unknown>;
-        setApiDraft(String(parsed.api ?? ""));
-        setUrlDraft(String(parsed.urls ?? ""));
-        setFileName(String(parsed.fileName ?? ""));
-      }
-    } catch {
-      // Keep empty defaults when local storage is unavailable.
+    const stored = loadStoredSettings();
+    if (stored) {
+      setApiDraft(stored.api);
+      setUrlDraft(stored.urls);
+      setFileName(stored.fileName);
+      setActiveSources(stored.activeSources);
     }
+
     void loadAdmins();
     void loadHistory();
   }, []);
@@ -359,7 +370,7 @@ export default function AmlRulesPage() {
         limit: 50,
         sortBy: "createdAt",
         sortDir: "desc",
-        actionQuery: "antifraud/rules",
+        actionQuery: "antifraud",
       });
       setHistory(res.items);
     } catch (e) {
@@ -378,27 +389,22 @@ export default function AmlRulesPage() {
     return map;
   }, [admins]);
 
-  const urlLines = useMemo(() => normalizeSources(urlDraft), [urlDraft]);
-
-  const historyExportRows = useMemo(
+  const historyExportRows = useMemo<HistoryRow[]>(
     () =>
-      history.map((item) => {
-        const details = parseDetails(item.details);
-        return {
-          date: item.createdAt,
-          user:
-            adminLookup.get(String(item.admin_id)) ||
-            (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`),
-          action: item.action,
-          changed: formatChangedFields(details),
-          comment: extractComment(details),
-          ip: item.ip,
-        };
-      }),
+      history.map((item) => ({
+        date: item.createdAt,
+        user:
+          adminLookup.get(String(item.admin_id)) ||
+          (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`),
+        action: item.action,
+        changed: buildHistorySummary(item.details),
+        comment: extractComment(item.details),
+        ip: item.ip,
+      })),
     [adminLookup, history],
   );
 
-  async function saveStubSettings(comment: string) {
+  async function saveSettings(comment: string) {
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -406,22 +412,31 @@ export default function AmlRulesPage() {
     try {
       const commentText = comment.trim();
       if (!commentText) {
-        throw new Error("Укажите комментарий, на каком основании меняются поля AML");
+        throw new Error("Укажите комментарий, на каком основании меняются AML-настройки");
       }
-      const payload = {
-        api: apiDraft.trim(),
-        urls: urlLines,
-        fileName: fileName.trim(),
-      };
-      window.localStorage.setItem("aml-rules:stubs:v1", JSON.stringify(payload));
-      const summary = [
-        apiDraft.trim() ? `API: ${apiDraft.trim()}` : "",
-        urlLines.length ? `URL: ${urlLines.length}` : "",
-        fileName.trim() ? `FILE: ${fileName.trim()}` : "",
-      ]
-        .filter(Boolean)
-        .join(" | ") || "AML обновлены";
 
+      const snapshot = readSettingsSnapshot({
+        api: apiDraft,
+        urls: urlDraft,
+        fileName,
+        activeSources,
+      });
+
+      if (!snapshot.activeSources.length) {
+        throw new Error("Выберите хотя бы один активный источник");
+      }
+
+      const payload = {
+        api: snapshot.api,
+        urls: normalizeSources(snapshot.urls),
+        fileName: snapshot.fileName,
+        activeSources: snapshot.activeSources,
+      };
+
+      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload));
+      window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(payload));
+
+      const summary = buildAmlSummary(snapshot);
       const synthetic: AdminActionLog = {
         id: Date.now(),
         admin_id: 0,
@@ -429,10 +444,9 @@ export default function AmlRulesPage() {
         action: "AML settings updated",
         details: JSON.stringify({
           body: {
-            api: apiDraft.trim(),
-            urls: urlLines,
-            fileName: fileName.trim(),
+            ...payload,
             comment: commentText,
+            reason: commentText,
             summary,
           },
         }),
@@ -440,15 +454,15 @@ export default function AmlRulesPage() {
       };
 
       setHistory((prev) => [synthetic, ...prev]);
-      setSuccess("AML сохранены");
+      setSuccess("AML-настройки сохранены");
       setCommentDraft("");
       setCommentOpen(false);
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Не удалось сохранить AML",
+        e instanceof Error ? e.message : "Не удалось сохранить AML-настройки",
       );
       if (e instanceof Error && !e.message.trim()) {
-        setCommentError("Укажите комментарий, на каком основании меняются поля AML");
+        setCommentError("Укажите комментарий, на каком основании меняются AML-настройки");
       }
     } finally {
       setSaving(false);
@@ -478,10 +492,20 @@ export default function AmlRulesPage() {
     }
   }
 
+  function toggleSource(source: ActiveSource) {
+    setActiveSources((prev) =>
+      prev.includes(source)
+        ? prev.filter((item) => item !== source)
+        : [...prev, source],
+    );
+  }
+
+  const selectedSourceLabels = activeSources.map(activeSourceLabel);
+
   return (
     <div className="flex-1 min-h-0 overflow-auto pb-8">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
-        <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
           <div className="grid gap-4 border-b border-soft px-5 py-5">
             <div>
               <div className="flex flex-wrap items-center gap-2">
@@ -489,14 +513,13 @@ export default function AmlRulesPage() {
                   AML
                 </span>
                 <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
-                  Поля: API, URL-список и файл
+                  API, URL и файл
                 </span>
               </div>
-              <h1 className="mt-3 text-2xl font-semibold">
-                AML
-              </h1>
+              <h1 className="mt-3 text-2xl font-semibold">AML</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-                Здесь пока три поля: API, URL-список и файл. После сохранения ниже обновится история.
+                Здесь выбираются активные источники AML и хранятся комментарии к изменениям.
+                После сохранения новая запись сразу попадёт в историю ниже.
               </p>
             </div>
 
@@ -530,73 +553,119 @@ export default function AmlRulesPage() {
           )}
         </section>
 
-        <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
           <div className="grid gap-4 border-b border-soft px-5 py-4">
-            <div className="text-lg font-semibold">Поля AML</div>
+            <div className="text-lg font-semibold">Настройки AML</div>
             <div className="text-sm text-muted">
-              Здесь пока только поля для ввода. Логику правил из control пока не трогаем.
+              Слева можно отметить, какие источники сейчас активны. Справа находятся поля
+              для их значений.
             </div>
           </div>
-          <div className="grid gap-4 p-5">
-            <label className="grid gap-1">
-              <span className="text-xs text-muted">
-                Вставить API
-              </span>
-              <input
-                className="ui-input"
-                value={apiDraft}
-                onChange={(e) => setApiDraft(e.target.value)}
-                placeholder="https://api.example.com/aml"
-              />
-            </label>
 
-            <label className="grid gap-1">
-              <span className="text-xs text-muted">
-                Вставить URL-ы
-              </span>
-              <textarea
-                className="ui-input min-h-36 resize-y leading-6"
-                value={urlDraft}
-                onChange={(e) => setUrlDraft(e.target.value)}
-                placeholder={[
-                  "https://example.com/aml-source-1",
-                  "https://example.com/aml-source-2",
-                ].join("\n")}
-              />
-              <div className="text-xs text-muted">
-                {urlLines.length
-                  ? `Всего URL: ${urlLines.length}`
-                  : "Список URL пока пуст"}
-              </div>
-            </label>
+          <div className="grid gap-5 p-5 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <aside className="rounded-3xl border border-soft bg-[var(--bg-soft)] p-4">
+              <div className="text-lg font-semibold">Активные источники</div>
+              <p className="mt-2 text-sm leading-6 text-muted">
+                Отметьте галочками то, что сейчас используется. Можно включить один источник
+                или сразу несколько.
+              </p>
 
-            <label className="grid gap-1">
-              <span className="text-xs text-muted">
-                Вставить файл
-              </span>
-              <input
-                className="ui-input"
-                type="file"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  setFileName(file ? file.name : "");
-                }}
-              />
-              <div className="text-xs text-muted">
-                {fileName ? `${"Выбрано"}: ${fileName}` : "Файл пока не выбран"}
+              <div className="mt-4 space-y-3">
+                {ACTIVE_SOURCE_OPTIONS.map((option) => (
+                  <label
+                    key={option.key}
+                    className="flex cursor-pointer items-start gap-3 rounded-2xl border border-soft bg-[var(--card)] px-4 py-3 transition-colors hover:border-[var(--accent)]/40"
+                  >
+                    <input
+                      type="checkbox"
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-[var(--accent)] focus:ring-[var(--accent)]"
+                      checked={isSourceEnabled(activeSources, option.key)}
+                      onChange={() => toggleSource(option.key)}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{option.title}</span>
+                      <span className="mt-1 block text-xs leading-5 text-muted">
+                        {option.hint}
+                      </span>
+                    </span>
+                  </label>
+                ))}
               </div>
-            </label>
+
+              <div className="mt-4 rounded-2xl border border-soft bg-[var(--card)] px-4 py-3">
+                <div className="text-xs uppercase tracking-wide text-muted">
+                  Сейчас активно
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedSourceLabels.length ? (
+                    selectedSourceLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
+                      >
+                        {label}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted">Ничего не выбрано</span>
+                  )}
+                </div>
+              </div>
+            </aside>
+
+            <div className="grid gap-4">
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Вставить API</span>
+                <input
+                  className="ui-input"
+                  value={apiDraft}
+                  onChange={(e) => setApiDraft(e.target.value)}
+                  placeholder="https://api.example.com/aml"
+                />
+              </label>
+
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Вставить URL-ы</span>
+                <textarea
+                  className="ui-input min-h-40 resize-y leading-6"
+                  value={urlDraft}
+                  onChange={(e) => setUrlDraft(e.target.value)}
+                  placeholder={[
+                    "https://example.com/aml-source-1",
+                    "https://example.com/aml-source-2",
+                  ].join("\n")}
+                />
+                <div className="text-xs text-muted">
+                  {normalizeSources(urlDraft).length
+                    ? `Всего URL: ${normalizeSources(urlDraft).length}`
+                    : "Список URL пока пуст"}
+                </div>
+              </label>
+
+              <label className="grid gap-1">
+                <span className="text-xs text-muted">Вставить файл</span>
+                <input
+                  className="ui-input"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    setFileName(file ? file.name : "");
+                  }}
+                />
+                <div className="text-xs text-muted">
+                  {fileName ? `Выбрано: ${fileName}` : "Файл пока не выбран"}
+                </div>
+              </label>
+            </div>
           </div>
         </section>
 
-        <section className="card rounded-3xl border border-soft shadow-sm overflow-hidden">
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
           <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
             <div>
-              <div className="text-lg font-semibold">
-                История AML
-              </div>
+              <div className="text-lg font-semibold">История AML</div>
               <div className="mt-1 text-sm text-muted">
-                Дата, кто изменил, что поменял и комментарий.
+                Показываются изменения, комментарии и кто именно вносил правки.
               </div>
             </div>
             <button
@@ -608,39 +677,27 @@ export default function AmlRulesPage() {
               {historyExporting === "csv" ? "CSV..." : "CSV"}
             </button>
           </div>
-          <div className="max-h-[560px] overflow-auto">
+
+          <div className="max-h-[620px] overflow-auto">
             {historyLoading ? (
-              <div className="p-5 text-sm text-muted">
-                Загрузка истории...
-              </div>
+              <div className="p-5 text-sm text-muted">Загрузка истории...</div>
             ) : historyError ? (
               <div className="p-5 text-sm text-red-600">{historyError}</div>
             ) : history.length ? (
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[1080px] text-sm">
                 <thead className="sticky top-0 z-[1] bg-[var(--card)] text-left text-xs font-semibold uppercase tracking-wide text-muted">
                   <tr className="border-b border-soft">
-                    <th className="px-5 py-3">
-                      Дата
-                    </th>
-                    <th className="px-5 py-3">
-                      Пользователь
-                    </th>
-                    <th className="px-5 py-3">
-                      Что поменял
-                    </th>
-                    <th className="px-5 py-3">
-                      Комментарий
-                    </th>
+                    <th className="px-5 py-3">Дата</th>
+                    <th className="px-5 py-3">Пользователь</th>
+                    <th className="px-5 py-3">Что поменял</th>
+                    <th className="px-5 py-3">Комментарий</th>
                   </tr>
                 </thead>
                 <tbody>
                   {history.map((item) => {
                     const adminLabel =
                       adminLookup.get(String(item.admin_id)) ||
-                      (item.admin_id === 0
-                        ? "Локально"
-                        : `Админ #${item.admin_id}`);
-                    const details = parseDetails(item.details);
+                      (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`);
                     return (
                       <tr
                         key={item.id}
@@ -654,13 +711,13 @@ export default function AmlRulesPage() {
                           <div className="text-xs text-muted">{item.action}</div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="max-w-[520px] break-words text-sm leading-6">
-                            {formatChangedFields(details)}
+                          <div className="max-w-[620px] whitespace-pre-wrap break-words text-sm leading-6">
+                            {buildHistorySummary(item.details)}
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="max-w-[360px] break-words text-sm leading-6 text-muted">
-                            {extractComment(details)}
+                          <div className="max-w-[420px] whitespace-pre-wrap break-words text-sm leading-6 text-muted">
+                            {extractComment(item.details)}
                           </div>
                         </td>
                       </tr>
@@ -669,9 +726,7 @@ export default function AmlRulesPage() {
                 </tbody>
               </table>
             ) : (
-              <div className="p-5 text-sm text-muted">
-                Пока нет истории AML.
-              </div>
+              <div className="p-5 text-sm text-muted">Пока нет истории AML.</div>
             )}
           </div>
         </section>
@@ -693,7 +748,7 @@ export default function AmlRulesPage() {
 
           <label className="block text-sm">
             <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
-              На каком основании меняются поля
+              На каком основании меняются настройки
             </span>
             <textarea
               className="ui-input min-h-32 w-full resize-y leading-6"
@@ -702,7 +757,7 @@ export default function AmlRulesPage() {
                 setCommentDraft(e.target.value);
                 if (commentError) setCommentError(null);
               }}
-              placeholder="Например: обновление AML-полей по требованию комплаенса"
+              placeholder="Например: обновление AML-источников по распоряжению compliance"
             />
           </label>
 
@@ -727,10 +782,10 @@ export default function AmlRulesPage() {
               className="btn btn-primary h-10"
               onClick={() => {
                 if (!commentDraft.trim()) {
-                  setCommentError("Укажите комментарий, на каком основании меняются поля AML");
+                  setCommentError("Укажите комментарий, на каком основании меняются AML-настройки");
                   return;
                 }
-                void saveStubSettings(commentDraft);
+                void saveSettings(commentDraft);
               }}
             >
               Сохранить
@@ -740,15 +795,4 @@ export default function AmlRulesPage() {
       </Modal>
     </div>
   );
-}
-
-function parseDetails(value: any): any {
-
-  if (value == null) return null;
-  if (typeof value !== "string") return value;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return value;
-  }
 }
