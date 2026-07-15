@@ -405,19 +405,6 @@ function extractControlHistory(
     );
 }
 
-function buildRuleSnapshotPayload(rule: AntiFraudRule, draft: RuleDraft): AntiFraudRuleUpdate {
-  const payload: AntiFraudRuleUpdate = {
-    enabled: draft.enabled,
-  };
-  if (draft.period_days.trim()) payload.period_days = String(parseNumber(draft.period_days));
-  if (draft.threshold_som.trim()) payload.threshold_som = String(parseNumber(draft.threshold_som));
-  if (draft.min_count.trim()) payload.min_count = String(parseNumber(draft.min_count));
-  if (draft.percent_threshold.trim()) {
-    payload.percent_threshold = String(parseNumber(draft.percent_threshold));
-  }
-  return payload;
-}
-
 export default function ControlPage() {
   const [selectedCategory, setSelectedCategory] = useState<TariffCategory>("K1");
   const [rules, setRules] = useState<AntiFraudRule[]>([]);
@@ -570,7 +557,7 @@ export default function ControlPage() {
         await updateAntifraudRule(
           rule.key,
           {
-            ...buildRuleSnapshotPayload(rule, draft),
+            ...payload,
             comment: nonEmptyComment,
           },
           selectedCategory,
