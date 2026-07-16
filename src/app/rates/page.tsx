@@ -14,6 +14,7 @@ import {
   TariffSetting,
 } from "@/lib/api";
 import { exportRows } from "@/lib/exporters";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 import { AdminSettings, CustomerResidency, TariffCategory } from "@/types";
 
 type TariffGridRow =
@@ -453,7 +454,7 @@ function GridValue({
   comment,
   onCommentChange,
   commentLabel = "Комментарий",
-  commentPlaceholder = "Почему меняется значение",
+  commentPlaceholder = COMMENT_PROMPT,
   suffix,
   placeholder = "0",
   disabled = false,
@@ -1091,15 +1092,15 @@ export default function RatesPage() {
     }
     const missing = rateCommentKeys.find((key) => !getRateReason(key).trim());
     if (missing) {
-      setError(`Укажите комментарий для поля: ${RATE_HISTORY_LABELS[missing] || missing}`);
+      setError(COMMENT_REQUIRED_MESSAGE);
       return;
     }
     await persistRates();
   }
 
-  async function exportCurrencyHistoryCsv() {
+  async function exportCurrencyHistory(format: "csv" | "pdf") {
     await exportRows({
-      format: "csv",
+      format,
       fileBaseName: "rates_comments_history",
       title: "История комментариев и изменений тарифов",
       columns: [
@@ -1134,7 +1135,7 @@ export default function RatesPage() {
       (item) => !getRateReason(item.key).trim(),
     );
     if (missingItem) {
-      setError(`Укажите комментарий для поля: ${missingItem.label}`);
+      setError(COMMENT_REQUIRED_MESSAGE);
       return;
     }
     await persistRates();
@@ -1293,10 +1294,18 @@ export default function RatesPage() {
                 <button
                   className="btn h-9 px-3"
                   type="button"
-                  onClick={exportCurrencyHistoryCsv}
+                  onClick={() => void exportCurrencyHistory("csv")}
                   disabled={!rateHistoryRows.length}
                 >
                   CSV
+                </button>
+                <button
+                  className="btn h-9 px-3"
+                  type="button"
+                  onClick={() => void exportCurrencyHistory("pdf")}
+                  disabled={!rateHistoryRows.length}
+                >
+                  PDF
                 </button>
               </div>
               <div className="mt-4 max-h-[320px] overflow-auto rounded-2xl border border-soft bg-white/70">

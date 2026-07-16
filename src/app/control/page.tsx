@@ -12,6 +12,7 @@ import {
   type AntiFraudRuleUpdate,
 } from "@/lib/api";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 import type { TariffCategory } from "@/types";
 
 type RuleField = "period_days" | "threshold_som" | "min_count" | "percent_threshold";
@@ -839,6 +840,38 @@ export default function ControlPage() {
             >
               {historyExporting === "csv" ? "CSV..." : "CSV"}
             </button>
+            <button
+              type="button"
+              className="btn h-10 px-4"
+              onClick={async () => {
+                if (!historyRows.length || historyExporting) return;
+                setHistoryExporting("pdf");
+                try {
+                  await exportRows({
+                    format: "pdf",
+                    fileBaseName: "antifraud_history",
+                    title: "История изменений финконтроля",
+                    columns: [
+                      {
+                        header: "Дата",
+                        getValue: (row: ControlHistoryRow) =>
+                          new Date(row.createdAt).toLocaleString("ru-RU"),
+                      },
+                      { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
+                      { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
+                      { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
+                      { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
+                    ],
+                    rows: historyRows,
+                  });
+                } finally {
+                  setHistoryExporting(null);
+                }
+              }}
+              disabled={!historyRows.length || Boolean(historyExporting)}
+            >
+              {historyExporting === "pdf" ? "PDF..." : "PDF"}
+            </button>
           </div>
           <div className="max-h-[460px] overflow-auto">
             {historyLoading ? (
@@ -908,7 +941,7 @@ export default function ControlPage() {
                 setCommentDraft(e.target.value);
                 if (commentError) setCommentError(null);
               }}
-              placeholder="Например: обновление параметров финконтроля по распоряжению комплаенса"
+              placeholder={COMMENT_PROMPT}
             />
           </label>
 
@@ -933,7 +966,7 @@ export default function ControlPage() {
               className="btn btn-primary h-10"
               onClick={async () => {
                 if (!commentDraft.trim()) {
-                  setCommentError("Укажите комментарий");
+                  setCommentError(COMMENT_REQUIRED_MESSAGE);
                   return;
                 }
                 await saveChanges(commentDraft);

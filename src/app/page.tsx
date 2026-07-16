@@ -6,6 +6,7 @@ import Modal from "../components/Modal";
 import UserDetails from "../components/UserDetails";
 import { useCallback, useState } from "react";
 import { formatAmount2, formatAmount6 } from "@/lib/format";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 import {
   CustomerResidency,
   TariffCategory,
@@ -309,13 +310,13 @@ function EditUserInline({
         e.preventDefault();
         setErr(null);
         if (statusChanged && !trimmedStatusComment) {
-          const message = "Укажите причину изменения статуса";
+          const message = COMMENT_REQUIRED_MESSAGE;
           setStatusCommentError(message);
           setErr(message);
           return;
         }
         if (statusChanged && !statusComment.trim()) {
-          setErr("Укажите причину изменения статуса");
+          setErr(COMMENT_REQUIRED_MESSAGE);
           return;
         }
         setSubmitting(true);
@@ -416,7 +417,7 @@ function EditUserInline({
             aria-invalid={Boolean(statusCommentError)}
             value={statusComment}
             onChange={(e) => handleStatusCommentChange(e.target.value)}
-            placeholder="Укажите причину изменения статуса"
+            placeholder={COMMENT_PROMPT}
           />
           {statusCommentError ? (
             <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>

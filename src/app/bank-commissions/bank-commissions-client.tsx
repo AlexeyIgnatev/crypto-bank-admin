@@ -17,6 +17,7 @@ import {
   type AdminActionLog,
 } from "@/lib/api";
 import { exportRows } from "@/lib/exporters";
+import { COMMENT_PROMPT } from "@/lib/commentPrompt";
 import {
   AdminSettings,
   BankCommissionBalanceSlot,
@@ -705,11 +706,13 @@ function CommissionSplitPanel({
 function HistoryPanel({
   rows,
   loading,
-  onExportCsv,
+  onExportHistory,
+  exporting,
 }: {
   rows: CommissionHistoryRow[];
   loading: boolean;
-  onExportCsv: () => Promise<void>;
+  onExportHistory: (format: "csv" | "pdf") => Promise<void>;
+  exporting: "csv" | "pdf" | null;
 }) {
   return (
     <SectionCard
@@ -720,9 +723,24 @@ function HistoryPanel({
         <div className="text-sm text-muted">
           {loading ? "Загрузка истории..." : `Записей: ${rows.length}`}
         </div>
-        <button className="btn h-10 px-4" type="button" onClick={onExportCsv}>
-          Скачать CSV
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="btn h-10 px-4"
+            type="button"
+            onClick={() => onExportHistory("csv")}
+            disabled={!rows.length || Boolean(exporting)}
+          >
+            {exporting === "csv" ? "CSV..." : "CSV"}
+          </button>
+          <button
+            className="btn h-10 px-4"
+            type="button"
+            onClick={() => onExportHistory("pdf")}
+            disabled={!rows.length || Boolean(exporting)}
+          >
+            {exporting === "pdf" ? "PDF..." : "PDF"}
+          </button>
+        </div>
       </div>
       <div className="mt-4 max-h-[420px] overflow-auto rounded-2xl border border-soft">
         <table className="min-w-full text-left text-sm">
@@ -796,7 +814,7 @@ function CommentModal({
           className="ui-input mt-4 min-h-[140px] w-full resize-none"
           value={comment}
           onChange={(e) => onCommentChange(e.target.value)}
-          placeholder="Например: обновили комиссию для тестового сценария"
+          placeholder={COMMENT_PROMPT}
         />
         <div className="mt-4 flex justify-end gap-3">
           <button className="btn h-10 px-4" type="button" onClick={onClose}>
@@ -831,6 +849,7 @@ export default function BankCommissionsClient() {
   const [success, setSuccess] = useState<string | null>(null);
   const [historyRows, setHistoryRows] = useState<CommissionHistoryRow[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyExporting, setHistoryExporting] = useState<"csv" | "pdf" | null>(null);
   const [adminNames, setAdminNames] = useState<Record<string, string>>({});
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saveComment, setSaveComment] = useState("");
@@ -1099,22 +1118,27 @@ export default function BankCommissionsClient() {
     }
   }
 
-  async function handleExportHistoryCsv() {
-    await exportRows({
-      format: "csv",
-      fileBaseName: "bank-commission-history",
-      title: "Bank commission changes",
-      columns: [
-        { header: "Дата", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
-        { header: "Админ", getValue: (row: CommissionHistoryRow) => row.adminName },
-        {
-          header: "Изменения",
-          getValue: (row: CommissionHistoryRow) => row.changes,
-        },
-        { header: "Комментарий", getValue: (row: CommissionHistoryRow) => row.comment },
-      ],
-      rows: historyRows,
-    });
+  async function handleExportHistory(format: "csv" | "pdf") {
+    setHistoryExporting(format);
+    try {
+      await exportRows({
+        format,
+        fileBaseName: "bank-commission-history",
+        title: "Bank commission changes",
+        columns: [
+          { header: "Дата", getValue: (row: CommissionHistoryRow) => formatDateTime(row.createdAt) },
+          { header: "Админ", getValue: (row: CommissionHistoryRow) => row.adminName },
+          {
+            header: "Изменения",
+            getValue: (row: CommissionHistoryRow) => row.changes,
+          },
+          { header: "Комментарий", getValue: (row: CommissionHistoryRow) => row.comment },
+        ],
+        rows: historyRows,
+      });
+    } finally {
+      setHistoryExporting(null);
+    }
   }
 
   function renderManagedField({
@@ -1323,11 +1347,12 @@ export default function BankCommissionsClient() {
           </div>
         </SectionCard>
 
-        <HistoryPanel
-          rows={historyRows}
-          loading={historyLoading}
-          onExportCsv={handleExportHistoryCsv}
-        />
+      <HistoryPanel
+        rows={historyRows}
+        loading={historyLoading}
+          onExportHistory={handleExportHistory}
+          exporting={historyExporting}
+      />
 
         <div className="flex flex-wrap items-center justify-end gap-3">
           <button className="btn h-10 px-4" type="button" onClick={refreshBalances}>

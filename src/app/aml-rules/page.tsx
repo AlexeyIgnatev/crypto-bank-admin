@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import { getAdminActionLogs, getAdmins, type AdminActionLog } from "@/lib/api";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 
 type ActiveSource = "api" | "urls" | "file";
 
@@ -495,7 +496,7 @@ export default function AmlRulesPage() {
     try {
       const commentText = comment.trim();
       if (!commentText) {
-        throw new Error("Укажите комментарий, на каком основании меняются AML-настройки");
+        throw new Error(COMMENT_REQUIRED_MESSAGE);
       }
 
       const previous = loadStoredSettings() ?? {
@@ -558,19 +559,19 @@ export default function AmlRulesPage() {
         e instanceof Error ? e.message : "Не удалось сохранить AML-настройки",
       );
       if (e instanceof Error && !e.message.trim()) {
-        setCommentError("Укажите комментарий, на каком основании меняются AML-настройки");
+        setCommentError(COMMENT_REQUIRED_MESSAGE);
       }
     } finally {
       setSaving(false);
     }
   }
 
-  async function exportHistoryCsv() {
+  async function exportHistory(format: "csv" | "pdf") {
     if (!historyExportRows.length || historyExporting) return;
-    setHistoryExporting("csv");
+    setHistoryExporting(format);
     try {
       await exportRows({
-        format: "csv",
+        format,
         fileBaseName: "aml_history",
         title: "AML история",
         columns: [
@@ -767,10 +768,18 @@ export default function AmlRulesPage() {
             <button
               className="btn h-10 px-3"
               type="button"
-              onClick={exportHistoryCsv}
-              disabled={!historyExportRows.length || historyExporting === "csv"}
+              onClick={() => exportHistory("csv")}
+              disabled={!historyExportRows.length || Boolean(historyExporting)}
             >
               {historyExporting === "csv" ? "CSV..." : "CSV"}
+            </button>
+            <button
+              className="btn h-10 px-3"
+              type="button"
+              onClick={() => exportHistory("pdf")}
+              disabled={!historyExportRows.length || Boolean(historyExporting)}
+            >
+              {historyExporting === "pdf" ? "PDF..." : "PDF"}
             </button>
           </div>
 
@@ -853,7 +862,7 @@ export default function AmlRulesPage() {
                 setCommentDraft(e.target.value);
                 if (commentError) setCommentError(null);
               }}
-              placeholder="Например: обновление AML-источников по распоряжению compliance"
+              placeholder={COMMENT_PROMPT}
             />
           </label>
 
@@ -878,7 +887,7 @@ export default function AmlRulesPage() {
               className="btn btn-primary h-10"
               onClick={() => {
                 if (!commentDraft.trim()) {
-                  setCommentError("Укажите комментарий, на каком основании меняются AML-настройки");
+                  setCommentError(COMMENT_REQUIRED_MESSAGE);
                   return;
                 }
                 void saveSettings(commentDraft);

@@ -8,6 +8,7 @@ import {
   type AdminActionLog,
 } from "@/lib/api";
 import { exportRows } from "@/lib/exporters";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 import { AdminSettings } from "@/types";
 
 type ReasonMap = Record<string, string>;
@@ -165,7 +166,7 @@ function GridValue({
   onChange,
   comment,
   onCommentChange,
-  commentPlaceholder = "Почему меняется значение",
+  commentPlaceholder = COMMENT_PROMPT,
   placeholder = "0",
 }: {
   label: string;
@@ -462,15 +463,15 @@ export default function CurrencyRatesPage() {
       (key) => !getRateReason(key).trim(),
     );
     if (missing) {
-      setError(`Укажите комментарий для поля: ${missing === "rate:usd_buy_rate" ? "Курс покупки USD" : "Курс продажи USD"}`);
+      setError(COMMENT_REQUIRED_MESSAGE);
       return;
     }
     await persistRates();
   }
 
-  async function exportCurrencyHistoryCsv() {
+  async function exportCurrencyHistory(format: "csv" | "pdf") {
     await exportRows({
-      format: "csv",
+      format,
       fileBaseName: "currency_rates_history",
       title: "История изменений курсов валют",
       columns: [
@@ -530,7 +531,7 @@ export default function CurrencyRatesPage() {
               comment={getRateReason("rate:usd_buy_rate")}
               onCommentChange={(value) => updateReasonDraft("rate:usd_buy_rate", value)}
               placeholder="0"
-              commentPlaceholder="Например: изменение курса по распоряжению финансового отдела"
+              commentPlaceholder={COMMENT_PROMPT}
             />
             <GridValue
               label="Курс продажи USD"
@@ -539,7 +540,7 @@ export default function CurrencyRatesPage() {
               comment={getRateReason("rate:usd_sell_rate")}
               onCommentChange={(value) => updateReasonDraft("rate:usd_sell_rate", value)}
               placeholder="0"
-              commentPlaceholder="Например: изменение курса продажи после пересчёта"
+              commentPlaceholder={COMMENT_PROMPT}
             />
           </div>
           <div className="mt-5 flex justify-end">
@@ -564,10 +565,18 @@ export default function CurrencyRatesPage() {
             <button
               className="btn h-9 px-3"
               type="button"
-              onClick={exportCurrencyHistoryCsv}
+              onClick={() => void exportCurrencyHistory("csv")}
               disabled={!rateHistoryRows.length}
             >
               CSV
+            </button>
+            <button
+              className="btn h-9 px-3"
+              type="button"
+              onClick={() => void exportCurrencyHistory("pdf")}
+              disabled={!rateHistoryRows.length}
+            >
+              PDF
             </button>
           </div>
           <div className="mt-4 max-h-[320px] overflow-auto rounded-2xl border border-soft bg-white/70">

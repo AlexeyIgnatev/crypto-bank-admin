@@ -5,6 +5,7 @@ import UsersTable from "../../components/UsersTable";
 import Modal from "../../components/Modal";
 import UserDetailsCard from "../../components/UserDetails";
 import { exportRows, type ExportFormat } from "@/lib/exporters";
+import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
 import {
   createUser,
   deleteUser,
@@ -450,7 +451,7 @@ function EditUserForm({
         event.preventDefault();
         setErr(null);
         if (statusChanged && !trimmedStatusComment) {
-          setErr("Укажите причину изменения статуса");
+          setErr(COMMENT_REQUIRED_MESSAGE);
           return;
         }
         setSubmitting(true);
@@ -640,7 +641,7 @@ function UserFormFields({
             aria-invalid={Boolean(statusCommentError)}
             value={statusComment || ""}
             onChange={(event) => onStatusComment(event.target.value)}
-            placeholder="Укажите причину изменения статуса"
+            placeholder={COMMENT_PROMPT}
           />
           {statusCommentError ? (
             <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>
@@ -780,12 +781,12 @@ function UserStatusHistorySection({
     };
   });
 
-  async function exportStatusHistoryCsv() {
+  async function exportStatusHistory(format: "csv" | "pdf") {
     if (!statusHistoryRows.length || statusHistoryExporting) return;
-    setStatusHistoryExporting("csv");
+    setStatusHistoryExporting(format);
     try {
       await exportRows({
-        format: "csv",
+        format,
         fileBaseName: `user_status_history_${userId}`,
         title: `История статуса пользователя ${userFullName}`,
         columns: [
@@ -818,10 +819,18 @@ function UserStatusHistorySection({
         <button
           type="button"
           className="btn h-9"
-          disabled={!statusHistoryRows.length || statusHistoryExporting === "csv"}
-          onClick={exportStatusHistoryCsv}
+          disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+          onClick={() => exportStatusHistory("csv")}
         >
           {statusHistoryExporting === "csv" ? "CSV..." : "Скачать CSV"}
+        </button>
+        <button
+          type="button"
+          className="btn h-9"
+          disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+          onClick={() => exportStatusHistory("pdf")}
+        >
+          {statusHistoryExporting === "pdf" ? "PDF..." : "Скачать PDF"}
         </button>
       </div>
       <div className="max-h-64 overflow-auto px-4 py-3">
