@@ -200,6 +200,18 @@ const RATE_HISTORY_KEYS = [
   "min_withdraw_usdt_trc20",
 ] as const;
 
+function historyReasonKeyForRate(key: (typeof RATE_HISTORY_KEYS)[number]) {
+  switch (key) {
+    case "usdt_trade_fee_pct":
+    case "usdt_withdraw_fee_fixed":
+      return "external:usdt_trade_fee_pct";
+    case "min_withdraw_usdt_trc20":
+      return "external:min_withdraw_usdt_trc20";
+    default:
+      return `rate:${key}`;
+  }
+}
+
 function normalizeHistoryValue(value: unknown): string {
   return normalizeDecimalInput(String(value ?? ""));
 }
@@ -342,7 +354,7 @@ function extractRateHistory(logs: AdminActionLog[]): RateHistoryRow[] {
         : `${label}: ${previous} \u2192 ${current}`;
       changes.push(changeText.replace(/\s+/g, " ").trim());
 
-      const reason = String(reasons[`rate:${key}`] ?? "").trim();
+      const reason = String(reasons[historyReasonKeyForRate(key)] ?? "").trim();
       if (reason) commentParts.push(`${label}: ${reason}`);
     }
 
