@@ -6,49 +6,44 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const wallet = url.searchParams.get("wallet")?.trim() || "tron-wallet";
-  const providedPk = url.searchParams.get("privateKey")?.trim().replace(/^0x/, "");
-  const providedCustomerIdRaw = url.searchParams.get("customerId")?.trim() || "";
   const { TronWeb } = await import("tronweb");
-  const fixedAddressByWallet: Record<string, string> = {
-    "tron-wallet": "TRVh3EuuWTkCfECfXM77SGZZZQwJT49WBm",
-    "tron-wallet1": "TAkrzNdEsCbiHwBXzTKX72NLkoLtXh1SFv",
+  const presets: Record<
+    string,
+    { address: string; privateKey: string; customerId: number }
+  > = {
+    "tron-wallet": {
+      address: "TRVh3EuuWTkCfECfXM77SGZZZQwJT49WBm",
+      privateKey: "275857fc71f175075d7703bffd5018be7f3e196fb95a2c528dd060aaa3f96bf2",
+      customerId: 922686094,
+    },
+    "tron-wallet1": {
+      address: "TT1DfhAby43Xya5pR4XYKRhy93gSFWByXg",
+      privateKey: "7dd79b709f1a056c6a794b6be343dd6b61c9cc4ba7400ca15814ad2d31ffdb08",
+      customerId: 944629427,
+    },
   };
-  const fixedAddress = fixedAddressByWallet[wallet] || fixedAddressByWallet["tron-wallet"];
-  const privateKey = /^[a-fA-F0-9]{64}$/.test(providedPk || "") ? providedPk : "";
-  const address = privateKey ? TronWeb.address.fromPrivateKey(privateKey) : fixedAddress;
+  const preset = presets[wallet] || presets["tron-wallet"];
+  const privateKey = preset.privateKey;
+  const address = TronWeb.address.fromPrivateKey(privateKey);
 
-  const customerId = Number(providedCustomerIdRaw);
-  let registeredCustomerId: number | null = null;
-  if (privateKey) {
-    try {
-      const registerRes = await fetch(`${API_BASE}/users/browser-wallet`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          Number.isInteger(customerId) && customerId > 0
-            ? {
-                customer_id: customerId,
-                private_key: privateKey,
-                address,
-              }
-            : {
-                private_key: privateKey,
-                address,
-              },
-        ),
-        cache: "no-store",
-      });
-      const registerData = await registerRes.json().catch(() => ({}));
-      registeredCustomerId =
-        Number(registerData?.customer_id || registerData?.customerId || 0) ||
-        null;
-    } catch {}
-  }
+  try {
+    const registerRes = await fetch(`${API_BASE}/users/browser-wallet`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer_id: preset.customerId,
+        private_key: privateKey,
+        address,
+      }),
+      cache: "no-store",
+    });
+    await registerRes.json().catch(() => ({}));
+  } catch {}
 
   return NextResponse.json({
     privateKey,
     address,
     rpcUrl: "http://192.168.255.121:8090",
-    customerId: registeredCustomerId || (customerId > 0 ? customerId : null),
+    customerId: preset.customerId,
   });
 }
