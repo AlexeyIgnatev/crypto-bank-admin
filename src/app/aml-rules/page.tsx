@@ -765,22 +765,24 @@ export default function AmlRulesPage() {
                 Показываются изменения, комментарии и кто именно вносил правки.
               </div>
             </div>
-            <button
-              className="btn h-10 px-3"
-              type="button"
-              onClick={() => exportHistory("csv")}
-              disabled={!historyExportRows.length || Boolean(historyExporting)}
-            >
-              {historyExporting === "csv" ? "CSV..." : "CSV"}
-            </button>
-            <button
-              className="btn h-10 px-3"
-              type="button"
-              onClick={() => exportHistory("pdf")}
-              disabled={!historyExportRows.length || Boolean(historyExporting)}
-            >
-              {historyExporting === "pdf" ? "PDF..." : "PDF"}
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                className="btn h-10 px-3"
+                type="button"
+                onClick={() => exportHistory("csv")}
+                disabled={!historyExportRows.length || Boolean(historyExporting)}
+              >
+                {historyExporting === "csv" ? "CSV..." : "CSV"}
+              </button>
+              <button
+                className="btn h-10 px-3"
+                type="button"
+                onClick={() => exportHistory("pdf")}
+                disabled={!historyExportRows.length || Boolean(historyExporting)}
+              >
+                {historyExporting === "pdf" ? "PDF..." : "PDF"}
+              </button>
+            </div>
           </div>
 
           <div className="max-h-[620px] overflow-auto">

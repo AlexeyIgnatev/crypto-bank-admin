@@ -816,22 +816,24 @@ function UserStatusHistorySection({
             Последние изменения статуса и комментарии к ним.
           </div>
         </div>
-        <button
-          type="button"
-          className="btn h-9"
-          disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
-          onClick={() => exportStatusHistory("csv")}
-        >
-          {statusHistoryExporting === "csv" ? "CSV..." : "Скачать CSV"}
-        </button>
-        <button
-          type="button"
-          className="btn h-9"
-          disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
-          onClick={() => exportStatusHistory("pdf")}
-        >
-          {statusHistoryExporting === "pdf" ? "PDF..." : "Скачать PDF"}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            className="btn h-9"
+            disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+            onClick={() => exportStatusHistory("csv")}
+          >
+            {statusHistoryExporting === "csv" ? "CSV..." : "Скачать CSV"}
+          </button>
+          <button
+            type="button"
+            className="btn h-9"
+            disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+            onClick={() => exportStatusHistory("pdf")}
+          >
+            {statusHistoryExporting === "pdf" ? "PDF..." : "Скачать PDF"}
+          </button>
+        </div>
       </div>
       <div className="max-h-64 overflow-auto px-4 py-3">
         {statusHistoryLoading ? (

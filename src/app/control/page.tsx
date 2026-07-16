@@ -808,70 +808,72 @@ export default function ControlPage() {
                 Краткие изменения по правилам финконтроля с комментариями администратора.
               </div>
             </div>
-            <button
-              type="button"
-              className="btn h-10 px-4"
-              onClick={async () => {
-                if (!historyRows.length || historyExporting) return;
-                setHistoryExporting("csv");
-                try {
-                  await exportRows({
-                    format: "csv",
-                    fileBaseName: "antifraud_history",
-                    title: "История изменений финконтроля",
-                    columns: [
-                      {
-                        header: "Дата",
-                        getValue: (row: ControlHistoryRow) =>
-                          new Date(row.createdAt).toLocaleString("ru-RU"),
-                      },
-                      { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
-                      { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
-                      { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
-                      { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
-                    ],
-                    rows: historyRows,
-                  });
-                } finally {
-                  setHistoryExporting(null);
-                }
-              }}
-              disabled={!historyRows.length || Boolean(historyExporting)}
-            >
-              {historyExporting === "csv" ? "CSV..." : "CSV"}
-            </button>
-            <button
-              type="button"
-              className="btn h-10 px-4"
-              onClick={async () => {
-                if (!historyRows.length || historyExporting) return;
-                setHistoryExporting("pdf");
-                try {
-                  await exportRows({
-                    format: "pdf",
-                    fileBaseName: "antifraud_history",
-                    title: "История изменений финконтроля",
-                    columns: [
-                      {
-                        header: "Дата",
-                        getValue: (row: ControlHistoryRow) =>
-                          new Date(row.createdAt).toLocaleString("ru-RU"),
-                      },
-                      { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
-                      { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
-                      { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
-                      { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
-                    ],
-                    rows: historyRows,
-                  });
-                } finally {
-                  setHistoryExporting(null);
-                }
-              }}
-              disabled={!historyRows.length || Boolean(historyExporting)}
-            >
-              {historyExporting === "pdf" ? "PDF..." : "PDF"}
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                className="btn h-10 px-4"
+                onClick={async () => {
+                  if (!historyRows.length || historyExporting) return;
+                  setHistoryExporting("csv");
+                  try {
+                    await exportRows({
+                      format: "csv",
+                      fileBaseName: "antifraud_history",
+                      title: "История изменений финконтроля",
+                      columns: [
+                        {
+                          header: "Дата",
+                          getValue: (row: ControlHistoryRow) =>
+                            new Date(row.createdAt).toLocaleString("ru-RU"),
+                        },
+                        { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
+                        { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
+                        { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
+                        { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
+                      ],
+                      rows: historyRows,
+                    });
+                  } finally {
+                    setHistoryExporting(null);
+                  }
+                }}
+                disabled={!historyRows.length || Boolean(historyExporting)}
+              >
+                {historyExporting === "csv" ? "CSV..." : "CSV"}
+              </button>
+              <button
+                type="button"
+                className="btn h-10 px-4"
+                onClick={async () => {
+                  if (!historyRows.length || historyExporting) return;
+                  setHistoryExporting("pdf");
+                  try {
+                    await exportRows({
+                      format: "pdf",
+                      fileBaseName: "antifraud_history",
+                      title: "История изменений финконтроля",
+                      columns: [
+                        {
+                          header: "Дата",
+                          getValue: (row: ControlHistoryRow) =>
+                            new Date(row.createdAt).toLocaleString("ru-RU"),
+                        },
+                        { header: "Админ", getValue: (row: ControlHistoryRow) => row.adminName },
+                        { header: "Изменения", getValue: (row: ControlHistoryRow) => row.changes },
+                        { header: "Комментарий", getValue: (row: ControlHistoryRow) => row.comment },
+                        { header: "IP", getValue: (row: ControlHistoryRow) => row.ip },
+                      ],
+                      rows: historyRows,
+                    });
+                  } finally {
+                    setHistoryExporting(null);
+                  }
+                }}
+                disabled={!historyRows.length || Boolean(historyExporting)}
+              >
+                {historyExporting === "pdf" ? "PDF..." : "PDF"}
+              </button>
+            </div>
           </div>
           <div className="max-h-[460px] overflow-auto">
             {historyLoading ? (

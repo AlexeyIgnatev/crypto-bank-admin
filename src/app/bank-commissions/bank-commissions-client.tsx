@@ -723,7 +723,7 @@ function HistoryPanel({
         <div className="text-sm text-muted">
           {loading ? "Загрузка истории..." : `Записей: ${rows.length}`}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-0.5">
           <button
             className="btn h-10 px-4"
             type="button"

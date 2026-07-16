@@ -562,22 +562,24 @@ export default function CurrencyRatesPage() {
                 Дата, админ, изменения и комментарий по курсу покупки и продажи USD.
               </div>
             </div>
-            <button
-              className="btn h-9 px-3"
-              type="button"
-              onClick={() => void exportCurrencyHistory("csv")}
-              disabled={!rateHistoryRows.length}
-            >
-              CSV
-            </button>
-            <button
-              className="btn h-9 px-3"
-              type="button"
-              onClick={() => void exportCurrencyHistory("pdf")}
-              disabled={!rateHistoryRows.length}
-            >
-              PDF
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                className="btn h-9 px-3"
+                type="button"
+                onClick={() => void exportCurrencyHistory("csv")}
+                disabled={!rateHistoryRows.length}
+              >
+                CSV
+              </button>
+              <button
+                className="btn h-9 px-3"
+                type="button"
+                onClick={() => void exportCurrencyHistory("pdf")}
+                disabled={!rateHistoryRows.length}
+              >
+                PDF
+              </button>
+            </div>
           </div>
           <div className="mt-4 max-h-[320px] overflow-auto rounded-2xl border border-soft bg-white/70">
             <table className="min-w-full text-left text-sm">

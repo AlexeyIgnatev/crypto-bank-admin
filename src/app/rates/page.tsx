@@ -602,7 +602,7 @@ function TariffGridRowCard({
           className="ui-input min-h-[72px] resize-y"
           value={comment || ""}
           onChange={(e) => onCommentChange?.(e.target.value)}
-          placeholder="Почему меняется тариф"
+          placeholder={COMMENT_PROMPT}
         />
       </div>
     </div>
@@ -1303,22 +1303,24 @@ export default function RatesPage() {
                     Дата, админ, какие поля менялись и какой комментарий был указан.
                   </div>
                 </div>
-                <button
-                  className="btn h-9 px-3"
-                  type="button"
-                  onClick={() => void exportCurrencyHistory("csv")}
-                  disabled={!rateHistoryRows.length}
-                >
-                  CSV
-                </button>
-                <button
-                  className="btn h-9 px-3"
-                  type="button"
-                  onClick={() => void exportCurrencyHistory("pdf")}
-                  disabled={!rateHistoryRows.length}
-                >
-                  PDF
-                </button>
+            <div className="flex items-center gap-0.5">
+                  <button
+                    className="btn h-9 px-3"
+                    type="button"
+                    onClick={() => void exportCurrencyHistory("csv")}
+                    disabled={!rateHistoryRows.length}
+                  >
+                    CSV
+                  </button>
+                  <button
+                    className="btn h-9 px-3"
+                    type="button"
+                    onClick={() => void exportCurrencyHistory("pdf")}
+                    disabled={!rateHistoryRows.length}
+                  >
+                    PDF
+                  </button>
+                </div>
               </div>
               <div className="mt-4 max-h-[320px] overflow-auto rounded-2xl border border-soft bg-white/70">
                 <table className="min-w-full text-left text-sm">
