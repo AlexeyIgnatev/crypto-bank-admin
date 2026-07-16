@@ -9,6 +9,7 @@ function formatUsdt(value: number) {
 type TronWalletPageProps = {
   storageKey: string;
   customerIdKey: string;
+  walletId: string;
   title: string;
   badgeLabel: string;
   subtitle: string;
@@ -17,6 +18,7 @@ type TronWalletPageProps = {
 export default function TronWalletPage({
   storageKey,
   customerIdKey,
+  walletId,
   title,
   badgeLabel,
   subtitle,
@@ -66,28 +68,28 @@ export default function TronWalletPage({
         const savedPk = localStorage.getItem(storageKey);
         const savedCustomerId = localStorage.getItem(customerIdKey);
         const initUrl = savedPk
-          ? `/api/tron-wallet/init?privateKey=${encodeURIComponent(savedPk)}${
+          ? `/api/tron-wallet/init?wallet=${encodeURIComponent(walletId)}&privateKey=${encodeURIComponent(savedPk)}${
               savedCustomerId ? `&customerId=${encodeURIComponent(savedCustomerId)}` : ""
             }`
-          : "/api/tron-wallet/init";
+          : `/api/tron-wallet/init?wallet=${encodeURIComponent(walletId)}`;
         const initRes = await fetch(initUrl, { cache: "no-store" });
         const initData = await initRes.json().catch(() => ({}));
         const pk = String(initData?.privateKey || savedPk || "");
         const addr = String(initData?.address || "");
         const nextCustomerId = String(initData?.customerId || savedCustomerId || "");
 
-        if (!pk) {
-          throw new Error("Не удалось создать тестовый кошелёк");
+        if (pk) {
+          localStorage.setItem(storageKey, pk);
+        } else {
+          localStorage.removeItem(storageKey);
         }
-
-        localStorage.setItem(storageKey, pk);
         if (nextCustomerId) localStorage.setItem(customerIdKey, nextCustomerId);
 
         setPrivateKey(pk);
         setAddress(addr);
         setCustomerId(nextCustomerId);
         if (initData?.rpcUrl) setRpcUrl(String(initData.rpcUrl));
-        setMessage(savedPk ? "Загружен сохранённый тестовый кошелёк" : "Создан новый тестовый кошелёк");
+        setMessage(savedPk ? "Загружен сохранённый тестовый кошелёк" : "Используется фиксированный кошелёк");
 
         if (addr || nextCustomerId) {
           await refreshBalance(addr, nextCustomerId);
@@ -187,18 +189,25 @@ export default function TronWalletPage({
               <button
                 type="button"
                 className="rounded-full bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!customerId || !transferAddress || !transferAmount}
+                disabled={!transferAddress || !transferAmount}
                 onClick={async () => {
                   try {
                     setTransferStatus("Отправляю...");
+                    const payload: {
+                      customer_id?: number;
+                      address: string;
+                      amount: number;
+                    } = {
+                      address: transferAddress.trim(),
+                      amount: Number(transferAmount),
+                    };
+                    if (customerId) {
+                      payload.customer_id = Number(customerId);
+                    }
                     const res = await fetch("/api/tron-wallet/transfer", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        customer_id: Number(customerId),
-                        address: transferAddress.trim(),
-                        amount: Number(transferAmount),
-                      }),
+                      body: JSON.stringify(payload),
                     });
                     const data = await res.json().catch(() => ({}));
                     if (!res.ok) {
