@@ -61,6 +61,8 @@ export default function StatementsPage() {
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Transaction[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [autoLoaded, setAutoLoaded] = useState(false);
+  const [hasPrefill, setHasPrefill] = useState(false);
 
   const selectedItems = useMemo(
     () => items.filter((item) => selectedIds.has(item.id)),
@@ -80,6 +82,21 @@ export default function StatementsPage() {
   useEffect(() => {
     setSelectedIds(new Set());
   }, [items]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const fio = params.get("fio") || "";
+    const phone = params.get("phone") || "";
+    const wallet = params.get("wallet") || "";
+    const nextAsset = params.get("asset") || "SALAM";
+
+    setFioSearch(fio);
+    setPhoneSearch(phone);
+    setWalletSearch(wallet);
+    setAsset(nextAsset);
+    setHasPrefill(Boolean(fio || phone || wallet));
+    setAutoLoaded(false);
+  }, []);
 
   async function load() {
     const terms = [fioSearch.trim(), phoneSearch.trim(), walletSearch.trim()].filter(Boolean);
@@ -122,6 +139,13 @@ export default function StatementsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!hasPrefill || autoLoaded) return;
+    if (!fioSearch.trim() && !phoneSearch.trim() && !walletSearch.trim()) return;
+    void load().finally(() => setAutoLoaded(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fioSearch, phoneSearch, walletSearch, asset, hasPrefill]);
 
   function toggleSelected(id: string) {
     setSelectedIds((prev) => {

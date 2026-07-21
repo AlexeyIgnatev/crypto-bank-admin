@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { User } from "../types";
 import { formatAmount6 } from "@/lib/format";
 
@@ -24,6 +25,7 @@ export default function UserDetails({
   onDelete: () => void;
 }) {
   const total = user.balances.COM + user.balances.SALAM + user.balances.USDT;
+  const statementsHref = `/statements?fio=${encodeURIComponent(user.fullName)}&phone=${encodeURIComponent(user.phone)}&asset=SALAM`;
 
   return (
     <div className="space-y-3 text-sm">
@@ -52,7 +54,14 @@ export default function UserDetails({
         label="Резидентство"
         value={user.residency === "NON_RESIDENT" ? "Нерезидент" : "Резидент"}
       />
-
+      <div className="pt-2">
+        <Link
+          className="btn btn-success h-11 w-full text-center text-base font-semibold"
+          href={statementsHref}
+        >
+          Выписка пользователя
+        </Link>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <div className="text-muted">Балансы</div>
@@ -100,9 +109,17 @@ export default function UserDetails({
         <button className="btn h-9 w-full" onClick={onClose}>
           Закрыть
         </button>
-        <button className="btn btn-info h-9 w-full" onClick={onEdit}>
-          Редактировать
-        </button>
+        <div className="space-y-2">
+          <button className="btn btn-info h-9 w-full" onClick={onEdit}>
+            Редактировать
+          </button>
+          <Link
+            className="btn btn-success h-11 w-full text-center text-base font-semibold"
+            href={statementsHref}
+          >
+            Выписка пользователя
+          </Link>
+        </div>
         <button className="btn btn-danger h-9 w-full" onClick={onDelete}>
           Удалить
         </button>
