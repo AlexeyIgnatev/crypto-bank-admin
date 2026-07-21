@@ -23,6 +23,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/support": "Техподдержка",
   "/push": "Push-уведомления",
   "/faq": "FAQ",
+  "/terms": "Термины",
 };
 
 export default function AppShell({ children }: { children: React.ReactNode }) {

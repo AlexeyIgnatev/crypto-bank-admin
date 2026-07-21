@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { faqSections } from "@/lib/faq";
 
 export default function FAQ() {
+  const visibleSections = faqSections.filter((section) => section.id !== "terms");
+
   useEffect(() => {
     const scrollToHash = () => {
       const hash = window.location.hash.replace("#", "");
@@ -45,7 +47,7 @@ export default function FAQ() {
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            {faqSections.map((section) => (
+            {visibleSections.map((section) => (
               <Link
                 key={section.id}
                 href={`/faq#${section.id}`}
@@ -58,7 +60,7 @@ export default function FAQ() {
         </header>
 
         <div className="space-y-4">
-          {faqSections.map((section) => (
+          {visibleSections.map((section) => (
             <section
               id={section.id}
               key={section.id}

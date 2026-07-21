@@ -19,6 +19,7 @@ const allItems = [
   { href: "/control-cases", label: "Кейсы фин контроля", icon: "🛡️" },
   { href: "/logs", label: "Логи", icon: "🧾" },
   { href: "/faq", label: "FAQ", icon: "❓" },
+  { href: "/terms", label: "Термины", icon: "🔤" },
   { href: "/support", label: "Техподдержка", icon: "💬" },
   { href: "/push", label: "Push-уведомления", icon: "🔔" },
 ];
@@ -30,9 +31,9 @@ function allowedByRole(role?: string): string[] {
     case "UID":
       return allItems.map((i) => i.href);
     case "UIT":
-      return ["/admins", "/aml-rules", "/faq", "/support", "/push"];
+      return ["/admins", "/aml-rules", "/faq", "/terms", "/support", "/push"];
     case "SKK":
-      return ["/control-cases", "/aml-rules", "/faq", "/support", "/push"];
+      return ["/control-cases", "/aml-rules", "/faq", "/terms", "/support", "/push"];
     case "UDBO":
     case "UBUIO":
       return [
@@ -42,6 +43,7 @@ function allowedByRole(role?: string): string[] {
         "/bank-commissions",
         "/aml-rules",
         "/faq",
+        "/terms",
         "/support",
         "/push",
       ];
@@ -53,11 +55,12 @@ function allowedByRole(role?: string): string[] {
         "/bank-commissions",
         "/aml-rules",
         "/faq",
+        "/terms",
         "/support",
         "/push",
       ];
     default:
-      return ["/aml-rules", "/support", "/push", "/faq"];
+      return ["/aml-rules", "/support", "/push", "/faq", "/terms"];
   }
 }
 
