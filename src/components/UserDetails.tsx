@@ -59,7 +59,7 @@ export default function UserDetails({
           className="btn btn-success h-11 w-full text-center text-base font-semibold"
           href={statementsHref}
         >
-          Выписка пользователя
+          История транзакций
         </Link>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -113,12 +113,6 @@ export default function UserDetails({
           <button className="btn btn-info h-9 w-full" onClick={onEdit}>
             Редактировать
           </button>
-          <Link
-            className="btn btn-success h-11 w-full text-center text-base font-semibold"
-            href={statementsHref}
-          >
-            Выписка пользователя
-          </Link>
         </div>
         <button className="btn btn-danger h-9 w-full" onClick={onDelete}>
           Удалить
