@@ -34,7 +34,7 @@ function mapCurrency(x?: string): string {
     case "SOM":
       return "COM";
     case "ESOM":
-      return "SALAM";
+      return "Салам";
     case "USDT_TRC20":
       return "USDT TRC20";
     default:
@@ -65,7 +65,9 @@ function mapDisplayToAssetOld(x: string): string {
   switch (x) {
     case "COM":
       return "SOM";
+    case "Салам":
     case "SALAM":
+    case "САЛАМ":
       return "ESOM";
     case "USDT":
     case "USDT TRC20":
@@ -653,7 +655,7 @@ export async function getTransactionsStats(params: {
   const mapCurrencyToDisplay = (x?: string) => {
     const display = mapCurrency(x);
     if (display === "COM") return "СОМ";
-    if (display === "SALAM") return "САЛАМ";
+    if (display === "SALAM" || display === "САЛАМ" || display === "Салам") return "Салам";
     return display;
   };
   const totalSum = Number(summary.total_sum_som ?? 0);
@@ -779,7 +781,7 @@ function mapAssetToDisplay(x?: string): string {
     case "SOM":
       return "COM";
     case "ESOM":
-      return "SALAM";
+      return "Салам";
     case "USDT_TRC20":
       return "USDT TRC20";
     default:
@@ -790,7 +792,9 @@ function mapDisplayToAssetDisplayHelper(x?: string): string {
   switch (x) {
     case "COM":
       return "SOM";
+    case "Салам":
     case "SALAM":
+    case "САЛАМ":
       return "ESOM";
     case "USDT":
     case "USDT TRC20":

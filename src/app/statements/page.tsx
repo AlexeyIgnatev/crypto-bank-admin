@@ -8,7 +8,7 @@ import { Transaction } from "@/types";
 
 const ASSET_OPTIONS = [
   { label: "СОМ", value: "SOM" },
-  { label: "SALAM", value: "SALAM" },
+  { label: "Салам", value: "SALAM" },
   { label: "USDT TRC20", value: "USDT" },
 ] as const;
 

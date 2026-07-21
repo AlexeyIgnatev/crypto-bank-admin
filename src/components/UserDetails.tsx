@@ -59,7 +59,7 @@ export default function UserDetails({
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>COM</div>
             <div className="text-right">{formatAmount6(user.balances.COM)}</div>
-            <div>SALAM</div>
+            <div>Салам</div>
             <div className="text-right">{formatAmount6(user.balances.SALAM)}</div>
             <div>USDT TRC20</div>
             <div className="text-right">{formatAmount6(user.balances.USDT)}</div>

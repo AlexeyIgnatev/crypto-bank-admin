@@ -53,22 +53,22 @@ type AdminOption = {
 };
 
 const TARIFF_GRID_ROWS: TariffGridRow[] = [
-  { kind: "tariff", operation: "SOM_TO_ESOM", label: "Конвертация СОМ в SALAM" },
-  { kind: "tariff", operation: "ESOM_TO_SOM", label: "Конвертация SALAM в СОМ" },
+  { kind: "tariff", operation: "SOM_TO_ESOM", label: "Конвертация СОМ в Салам" },
+  { kind: "tariff", operation: "ESOM_TO_SOM", label: "Конвертация Салам в СОМ" },
   {
     kind: "tariff",
     operation: "WALLET_TRANSFER_ESOM",
-    label: "Перевод SALAM между пользователями",
+    label: "Перевод Салам между пользователями",
   },
   {
     kind: "tariff",
     operation: "ESOM_TO_USDT_TRC20",
-    label: "Конвертация SALAM в USDT TRC20",
+    label: "Конвертация Салам в USDT TRC20",
   },
   {
     kind: "tariff",
     operation: "USDT_TRC20_TO_ESOM",
-    label: "Конвертация USDT TRC20 в SALAM",
+    label: "Конвертация USDT TRC20 в Салам",
   },
   {
     kind: "tariff",
@@ -86,14 +86,14 @@ const TARIFF_GRID_ROWS: TariffGridRow[] = [
 ];
 
 const RATE_ROW_HINTS: Record<string, string> = {
-  SOM_TO_ESOM: "Здесь назначается комиссия за конвертацию SOM в SALAM.",
-  ESOM_TO_SOM: "Здесь назначается комиссия за конвертацию SALAM в SOM.",
+  SOM_TO_ESOM: "Здесь назначается комиссия за конвертацию SOM в Салам.",
+  ESOM_TO_SOM: "Здесь назначается комиссия за конвертацию Салам в SOM.",
   WALLET_TRANSFER_ESOM:
-    "Здесь назначается комиссия за внутренний перевод банка между пользователями в валюте SALAM.",
+    "Здесь назначается комиссия за внутренний перевод банка между пользователями в валюте Салам.",
   ESOM_TO_USDT_TRC20:
-    "Здесь назначается комиссия за конвертацию SALAM в USDT TRC20.",
+    "Здесь назначается комиссия за конвертацию Салам в USDT TRC20.",
   USDT_TRC20_TO_ESOM:
-    "Здесь назначается комиссия за конвертацию USDT TRC20 в SALAM.",
+    "Здесь назначается комиссия за конвертацию USDT TRC20 в Салам.",
   WALLET_TRANSFER_USDT_TRC20:
     "Здесь назначается комиссия за внутренний перевод банка между пользователями в USDT TRC20.",
   external_usdt:
@@ -228,11 +228,11 @@ function historyLabelForRates(key: string): string {
   if (key.startsWith("tariff:")) {
     const operation = key.slice("tariff:".length) as TariffOperation;
     const map: Record<string, string> = {
-      SOM_TO_ESOM: "\u0421\u041e\u041c \u0432 SALAM",
-      ESOM_TO_SOM: "SALAM \u0432 \u0421\u041e\u041c",
-      WALLET_TRANSFER_ESOM: "\u0412\u043d\u0443\u0442\u0440. SALAM",
-      ESOM_TO_USDT_TRC20: "SALAM \u0432 USDT",
-      USDT_TRC20_TO_ESOM: "USDT \u0432 SALAM",
+      SOM_TO_ESOM: "\u0421\u041e\u041c \u0432 \u0421\u0430\u043b\u0430\u043c",
+      ESOM_TO_SOM: "\u0421\u0430\u043b\u0430\u043c \u0432 \u0421\u041e\u041c",
+      WALLET_TRANSFER_ESOM: "\u0412\u043d\u0443\u0442\u0440. \u0421\u0430\u043b\u0430\u043c",
+      ESOM_TO_USDT_TRC20: "\u0421\u0430\u043b\u0430\u043c \u0432 USDT",
+      USDT_TRC20_TO_ESOM: "USDT \u0432 \u0421\u0430\u043b\u0430\u043c",
       WALLET_TRANSFER_USDT_TRC20: "\u0412\u043d\u0443\u0442\u0440. USDT",
     };
     return map[operation] || rateHistoryLabelForKey(key);

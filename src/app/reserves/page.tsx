@@ -136,16 +136,16 @@ export default function ReservesPage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             <MetricCard
-              label="Основной баланс SALAM"
-              value={`${fmtAmount(Math.abs(reserves.salamBalance))} SALAM`}
+              label="Основной баланс Салам"
+              value={`${fmtAmount(Math.abs(reserves.salamBalance))} Салам`}
             />
             <MetricCard
-              label="Объём транзакций SALAM за сегодня"
-              value={`${fmtAmount(reserves.salamSpentToday)} SALAM`}
+              label="Объём транзакций Салам за сегодня"
+              value={`${fmtAmount(reserves.salamSpentToday)} Салам`}
             />
             <MetricCard
-              label="Объём транзакций SALAM за всё время"
-              value={`${fmtAmount(reserves.salamSpentTotal)} SALAM`}
+              label="Объём транзакций Салам за всё время"
+              value={`${fmtAmount(reserves.salamSpentTotal)} Салам`}
             />
           </div>
         </section>

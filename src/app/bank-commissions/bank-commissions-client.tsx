@@ -263,7 +263,7 @@ function buildBankCommissionChangeSummaryShort(
       ? "\u0421\u0447\u0451\u0442 \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
       : null,
     current.central_bank_salam_wallet !== prev.central_bank_salam_wallet
-      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a \u0421\u0430\u043b\u0430\u043c \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
       : null,
     current.central_bank_usdt_wallet !== prev.central_bank_usdt_wallet
       ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0426\u0411: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
@@ -272,7 +272,7 @@ function buildBankCommissionChangeSummaryShort(
       ? "\u0421\u0447\u0451\u0442 \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
       : null,
     current.bank_salam_wallet !== prev.bank_salam_wallet
-      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a SALAM \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
+      ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a \u0421\u0430\u043b\u0430\u043c \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
       : null,
     current.bank_usdt_wallet !== prev.bank_usdt_wallet
       ? "\u041a\u043e\u0448\u0451\u043b\u0451\u043a USDT \u0431\u0430\u043d\u043a\u0430: \u0438\u0437\u043c\u0435\u043d\u0451\u043d"
@@ -1263,12 +1263,12 @@ export default function BankCommissionsClient() {
                 placeholder: "Введите номер счета",
               })}
               {renderManagedField({
-                label: "Кошелёк SALAM",
+                label: "Кошелёк Салам",
                 value: settings.central_bank_salam_wallet,
                 slot: balances.central_bank.salam_wallet,
                 fieldKey: "central_bank_salam_wallet",
                 onChange: (value) => updateSetting("central_bank_salam_wallet", value),
-                placeholder: "Введите адрес кошелька SALAM",
+                placeholder: "Введите адрес кошелька Салам",
               })}
               {renderManagedField({
                 label: "Кошелёк USDT",
@@ -1296,12 +1296,12 @@ export default function BankCommissionsClient() {
                 placeholder: "Введите номер счета",
               })}
               {renderManagedField({
-                label: "Кошелёк SALAM",
+                label: "Кошелёк Салам",
                 value: settings.bank_salam_wallet,
                 slot: balances.bank.salam_wallet,
                 fieldKey: "bank_salam_wallet",
                 onChange: (value) => updateSetting("bank_salam_wallet", value),
-                placeholder: "Введите адрес кошелька SALAM",
+                placeholder: "Введите адрес кошелька Салам",
               })}
               {renderManagedField({
                 label: "Кошелёк USDT",
@@ -1317,7 +1317,7 @@ export default function BankCommissionsClient() {
 
         <SectionCard
           title="Партнеры"
-          subtitle="Здесь хранится один набор реквизитов партнера: счет СОМ, кошелёк SALAM и кошелёк USDT TRC20."
+          subtitle="Здесь хранится один набор реквизитов партнера: счет СОМ, кошелёк Салам и кошелёк USDT TRC20."
         >
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
             {renderManagedField({
@@ -1329,12 +1329,12 @@ export default function BankCommissionsClient() {
               placeholder: "Введите номер счета",
             })}
             {renderManagedField({
-              label: "Кошелёк SALAM",
+              label: "Кошелёк Салам",
               value: partner.salam_wallet,
               slot: partnerBalance?.salam_wallet || null,
               fieldKey: "partner_salam_wallet",
               onChange: (value) => updatePartner({ salam_wallet: value }),
-              placeholder: "Введите адрес кошелька SALAM",
+              placeholder: "Введите адрес кошелька Салам",
             })}
             {renderManagedField({
               label: "Кошелёк USDT TRC20",

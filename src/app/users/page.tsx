@@ -161,7 +161,7 @@ export default function UsersPage() {
               row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "—",
           },
           { header: "COM", getValue: (row) => row.balances.COM },
-          { header: "SALAM", getValue: (row) => row.balances.SALAM },
+          { header: "Салам", getValue: (row) => row.balances.SALAM },
           { header: "USDT TRC20", getValue: (row) => row.balances.USDT },
         ],
         rows,

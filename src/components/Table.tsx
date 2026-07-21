@@ -127,7 +127,7 @@ export default function Table({
 
   const availableCurrencies = [
     { value: "COM", label: "COM" },
-    { value: "SALAM", label: "SALAM" },
+    { value: "SALAM", label: "Салам" },
     { value: "USDT", label: "USDT TRC20" },
   ];
 
