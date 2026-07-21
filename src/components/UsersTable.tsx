@@ -210,6 +210,7 @@ export default function UsersTable({
           <colgroup>
             <col className="w-[72px]" />
             <col className="w-[140px]" />
+            <col className="w-[110px]" />
             <col className="w-[320px]" />
             <col className="w-[180px]" />
             <col className="w-[260px]" />
@@ -223,6 +224,11 @@ export default function UsersTable({
               <Th>
                 <div className="flex items-center gap-1">
                   <span className="px-1">ID клиента ABS</span>
+                </div>
+              </Th>
+              <Th>
+                <div className="flex items-center gap-1">
+                  <span className="px-1">Категория</span>
                 </div>
               </Th>
               <Th onClick={() => toggleSort("fullName")}>
@@ -336,6 +342,7 @@ export default function UsersTable({
           <colgroup>
             <col className="w-[72px]" />
             <col className="w-[140px]" />
+            <col className="w-[110px]" />
             <col className="w-[320px]" />
             <col className="w-[180px]" />
             <col className="w-[260px]" />
@@ -360,6 +367,11 @@ export default function UsersTable({
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {u.absClientId || u.id}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="inline-flex rounded-full border border-black/10 bg-black/5 px-2 py-1 text-xs font-medium uppercase tracking-wide text-muted dark:border-white/10 dark:bg-white/10">
+                      {u.tariffCategory}
+                    </span>
                   </td>
                   <td className="px-4 py-3 whitespace-pre-wrap">
                     {u.fullName}
