@@ -289,17 +289,16 @@ export default function Sidebar() {
               return (
                 <Link key={it.href} href={it.href} className="block">
                   <div
-                    className={`mx-2 flex items-center rounded-xl px-3 py-2 text-sm font-medium transition-all ${
+                    className={`group mx-2 flex items-center rounded-xl px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                       open ? "gap-3 justify-start" : "justify-center"
-                    } ${active ? "text-white shadow-sm" : "opacity-90 hover:opacity-100"}`}
-                    style={
+                    } ${
                       active
-                        ? { background: "linear-gradient(135deg, var(--primary), var(--primary-strong))" }
-                        : {}
-                    }
+                        ? "bg-[color-mix(in_srgb,var(--primary)_12%,var(--sidebar-bg))] text-[color:var(--primary)] shadow-[inset_3px_0_0_var(--primary)]"
+                        : "text-[color:var(--sidebar-fg)] hover:bg-[color-mix(in_srgb,var(--primary)_10%,var(--sidebar-bg))] hover:text-[color:var(--primary)]"
+                    } active:bg-[color-mix(in_srgb,var(--primary)_16%,var(--sidebar-bg))] active:text-[color:var(--primary)] focus-within:text-[color:var(--primary)]`}
                     title={it.label}
                   >
-                    <span className={`${open ? "w-5" : ""} flex items-center justify-center ${active ? "text-white" : "text-[color:var(--primary)]"}`}>
+                    <span className={`${open ? "w-5" : ""} flex items-center justify-center text-[color:var(--primary)]`}>
                       <SidebarIcon name={it.icon} />
                     </span>
                     {open && <span className="flex-1 min-w-0 truncate">{it.label}</span>}

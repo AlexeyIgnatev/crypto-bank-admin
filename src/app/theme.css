@@ -65,7 +65,7 @@ html.theme-switching textarea::placeholder {
 .border-soft { border-color: var(--border-soft); }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-hover); }
-.hover-surface:hover { background: color-mix(in srgb, var(--foreground) 8%, transparent); }
+.hover-surface:hover { background: color-mix(in srgb, var(--primary) 10%, var(--background)); }
 
 .ui-input {
   width: 100%;
