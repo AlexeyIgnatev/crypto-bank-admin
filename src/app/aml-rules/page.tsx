@@ -3,900 +3,464 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import { getAdminActionLogs, getAdmins, type AdminActionLog } from "@/lib/api";
-import { exportRows, type ExportFormat } from "@/lib/exporters";
 import { COMMENT_PROMPT, COMMENT_REQUIRED_MESSAGE } from "@/lib/commentPrompt";
+import { exportRows, type ExportFormat } from "@/lib/exporters";
 
 type ActiveSource = "api" | "urls" | "file";
-
-type AdminOption = {
-  id: string;
-  label: string;
-  login: string;
-};
-
-type AmlSettingsDraft = {
-  api: string;
-  urls: string;
-  fileName: string;
-  activeSources: ActiveSource[];
-};
-
-type AmlSettingsSnapshot = {
+type WalletRule = { address: string; reason: string };
+type AmlSettings = {
   api: string;
   urls: string[];
   fileName: string;
   activeSources: ActiveSource[];
+  fileRules: WalletRule[];
+  blockedWallets: WalletRule[];
 };
 
-type HistoryRow = {
-  date: string;
-  user: string;
-  action: string;
-  changed: string;
-  comment: string;
-  ip: string;
+const EMPTY_SETTINGS: AmlSettings = {
+  api: "",
+  urls: [],
+  fileName: "",
+  activeSources: ["urls"],
+  fileRules: [],
+  blockedWallets: [],
 };
 
-const SETTINGS_STORAGE_KEY = "aml-rules:settings:v2";
-const LEGACY_STORAGE_KEY = "aml-rules:stubs:v1";
-
-const ACTIVE_SOURCE_OPTIONS: Array<{
+const SOURCE_OPTIONS: Array<{
   key: ActiveSource;
   title: string;
-  hint: string;
+  description: string;
 }> = [
-  {
-    key: "api",
-    title: "API",
-    hint: "Подключение к внешнему API-источнику",
-  },
-  {
-    key: "urls",
-    title: "URL-список",
-    hint: "Список адресов для проверки",
-  },
-  {
-    key: "file",
-    title: "Файл",
-    hint: "Загрузка файла с данными",
-  },
+  { key: "api", title: "API", description: "Один API-адрес с AML-правилами" },
+  { key: "urls", title: "URL", description: "Одна или несколько ссылок на JSON" },
+  { key: "file", title: "Файл", description: "Локальный JSON-файл с правилами" },
 ];
 
-const DEFAULT_ACTIVE_SOURCES: ActiveSource[] = ["api", "urls", "file"];
-
-function toText(value: unknown): string {
-  if (value == null) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) return value.map(toText).filter(Boolean).join(", ");
-  if (typeof value === "object") {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return "";
-    }
-  }
-  return "";
+function normalizeUrls(value: string): string[] {
+  return [...new Set(value.split(/[\n,;]+/).map((item) => item.trim()).filter(Boolean))];
 }
 
-function parseJsonLike(value: unknown): unknown {
-  if (value == null) return null;
-  if (typeof value !== "string") return value;
-  const text = value.trim();
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return value;
-  }
-}
-
-function unwrapDetails(value: unknown): Record<string, unknown> | null {
-  const parsed = parseJsonLike(value);
-  if (!parsed || typeof parsed !== "object") return null;
-  return parsed as Record<string, unknown>;
-}
-
-function unwrapBody(details: unknown): Record<string, unknown> | null {
-  const parsed = unwrapDetails(details);
-  if (!parsed) return null;
-  const body = parsed.body ?? parsed.data ?? parsed.payload ?? parsed;
-  if (!body || typeof body !== "object") return null;
-  return body as Record<string, unknown>;
-}
-
-function findValueDeep(
-  value: unknown,
-  wantedKeys: string[],
-  seen = new Set<unknown>(),
-  depth = 0,
-): unknown {
-  if (value == null || depth > 6) return undefined;
-  if (typeof value !== "object") return undefined;
-  if (seen.has(value)) return undefined;
-  seen.add(value);
-
-  const wanted = new Set(wantedKeys.map((key) => key.toLowerCase()));
-
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const found = findValueDeep(item, wantedKeys, seen, depth + 1);
-      if (found !== undefined) return found;
-    }
-    return undefined;
-  }
-
-  const obj = value as Record<string, unknown>;
-  for (const [key, entry] of Object.entries(obj)) {
-    if (wanted.has(key.toLowerCase()) && entry != null && toText(entry).trim()) {
-      return entry;
-    }
-  }
-
-  for (const entry of Object.values(obj)) {
-    const found = findValueDeep(entry, wantedKeys, seen, depth + 1);
-    if (found !== undefined) return found;
-  }
-
-  return undefined;
-}
-
-function formatDate(value: string): string {
+function formatDate(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("ru-RU");
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString("ru-RU");
 }
 
-function normalizeSources(raw: string): string[] {
-  const tokens = raw
-    .split(/[\n,;]+/g)
-    .map((item) => item.trim())
-    .filter(Boolean);
-  const result: string[] = [];
-  const seen = new Set<string>();
-  for (const token of tokens) {
-    if (seen.has(token)) continue;
-    seen.add(token);
-    result.push(token);
-  }
-  return result;
-}
-
-function normalizeActiveSources(raw: unknown): ActiveSource[] {
-  if (!Array.isArray(raw)) return DEFAULT_ACTIVE_SOURCES;
-  const result = raw.filter(
-    (item): item is ActiveSource =>
-      item === "api" || item === "urls" || item === "file",
-  );
-  return result.length ? result : DEFAULT_ACTIVE_SOURCES;
-}
-
-function activeSourceLabel(source: ActiveSource): string {
-  switch (source) {
-    case "api":
-      return "API";
-    case "urls":
-      return "URL-список";
-    case "file":
-      return "Файл";
-  }
-}
-
-function activeSourceChipLabel(source: ActiveSource): string {
-  switch (source) {
-    case "api":
-      return "API";
-    case "urls":
-      return "URL";
-    case "file":
-      return "Файл";
-  }
-}
-
-function sourceSummary(activeSources: ActiveSource[]): string {
-  return activeSources.map(activeSourceChipLabel).join(", ");
-}
-
-function buildHistorySummary(details: unknown): string {
-  const body = unwrapBody(details);
-  if (!body) return "—";
-
-  const changesRaw = body.changes ?? body.diff ?? body.changedFields ?? body.changes_list;
-  if (Array.isArray(changesRaw)) {
-    const changes = changesRaw
-      .map((entry) => toText(entry).trim())
-      .filter(Boolean);
-    return changes.length ? changes.join("\n") : "—";
-  }
-
-  if (changesRaw && typeof changesRaw === "object") {
-    const entries = Object.entries(changesRaw as Record<string, unknown>)
-      .map(([key, value]) => {
-        if (!value || typeof value !== "object") return "";
-        const typed = value as Record<string, unknown>;
-        const before = toText(typed.before ?? typed.from).trim();
-        const after = toText(typed.after ?? typed.to).trim();
-        if (before === after) return "";
-        return `${formatAmlFieldLabel(key as keyof AmlSettingsSnapshot)}: ${before || "—"} -> ${after || "—"}`;
-      })
-      .filter(Boolean);
-    return entries.length ? entries.join("\n") : "—";
-  }
-
-  const beforeBody = unwrapDetails(body.before);
-  const afterBody = unwrapDetails(body.after);
-  if (beforeBody && afterBody) {
-    const changes = buildAmlChanges(
-      {
-        api: toText(beforeBody.api),
-        urls: Array.isArray(beforeBody.urls)
-          ? beforeBody.urls.map((item) => toText(item).trim()).filter(Boolean)
-          : normalizeSources(toText(beforeBody.urls)),
-        fileName: toText(beforeBody.fileName),
-        activeSources: normalizeActiveSources(beforeBody.activeSources),
-      },
-      {
-        api: toText(afterBody.api),
-        urls: Array.isArray(afterBody.urls)
-          ? afterBody.urls.map((item) => toText(item).trim()).filter(Boolean)
-          : normalizeSources(toText(afterBody.urls)),
-        fileName: toText(afterBody.fileName),
-        activeSources: normalizeActiveSources(afterBody.activeSources),
-      },
-    );
-    return changes.length ? changes.join("\n") : "—";
-  }
-
-  return "—";
-}
-
-function extractComment(details: unknown): string {
-  const body = unwrapBody(details) ?? unwrapDetails(details);
-  if (!body) return "Комментарий не указан";
-
-  const comment = findValueDeep(body, ["comment", "reason", "note", "message"]);
-  const text = toText(comment).trim();
-  return text || "Комментарий не указан";
-}
-
-function buildAmlSummary(settings: AmlSettingsDraft): string {
-  const parts: string[] = [];
-  const active = settings.activeSources.length
-    ? sourceSummary(settings.activeSources)
-    : "ничего";
-
-  parts.push(`Активно: ${active}`);
-
-  if (settings.api.trim()) {
-    parts.push(`API: ${settings.api.trim().slice(0, 60)}`);
-  }
-
-  const urls = normalizeSources(settings.urls);
-  if (urls.length) {
-    parts.push(`URL: ${urls.length} шт.`);
-  }
-
-  if (settings.fileName.trim()) {
-    parts.push(`Файл: ${settings.fileName.trim()}`);
-  }
-
-  return parts.join(" | ");
-}
-
-function loadStoredSettings(): AmlSettingsDraft | null {
-  if (typeof window === "undefined") return null;
-
-  const keys = [SETTINGS_STORAGE_KEY, LEGACY_STORAGE_KEY];
-  for (const key of keys) {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (!raw) continue;
-      const parsed = JSON.parse(raw) as Record<string, unknown>;
+function parseRules(payload: unknown): WalletRule[] {
+  const root = payload as Record<string, unknown> | null;
+  const raw = Array.isArray(payload)
+    ? payload
+    : Array.isArray(root?.wallets)
+      ? root.wallets
+      : Array.isArray(root?.rules)
+        ? root.rules
+        : [];
+  return raw
+    .map((item) => {
+      const value = item as Record<string, unknown>;
       return {
-        api: toText(parsed.api),
-        urls: Array.isArray(parsed.urls)
-          ? parsed.urls.map((item) => toText(item)).join("\n")
-          : toText(parsed.urls),
-        fileName: toText(parsed.fileName),
-        activeSources: normalizeActiveSources(parsed.activeSources),
+        address: String(value.address ?? value.wallet ?? value.wallet_address ?? "").trim(),
+        reason: String(value.reason ?? value.description ?? value.comment ?? "").trim(),
       };
-    } catch {
-      // Ignore malformed cache and fall through to defaults.
-    }
-  }
-
-  return null;
+    })
+    .filter((item) => item.address && item.reason);
 }
 
-function isSourceEnabled(
-  activeSources: ActiveSource[],
-  source: ActiveSource,
-): boolean {
-  return activeSources.includes(source);
-}
-
-function readSettingsSnapshot(settings: AmlSettingsDraft): AmlSettingsDraft {
-  return {
-    api: settings.api.trim(),
-    urls: settings.urls,
-    fileName: settings.fileName.trim(),
-    activeSources: [...settings.activeSources],
-  };
-}
-
-function readSettingsValue(settings: AmlSettingsDraft): AmlSettingsSnapshot {
-  return {
-    api: settings.api.trim(),
-    urls: normalizeSources(settings.urls),
-    fileName: settings.fileName.trim(),
-    activeSources: [...settings.activeSources],
-  };
-}
-
-function sameTextArray(left: string[], right: string[]): boolean {
-  if (left.length !== right.length) return false;
-  return left.every((item, index) => item === right[index]);
-}
-
-function formatAmlValue(value: string | string[]): string {
-  if (Array.isArray(value)) {
-    return value.length ? value.join(", ") : "—";
-  }
-  const text = value.trim();
-  return text || "—";
-}
-
-function formatAmlFieldLabel(field: keyof AmlSettingsSnapshot): string {
-  switch (field) {
-    case "api":
-      return "API";
-    case "urls":
-      return "URL";
-    case "fileName":
-      return "Файл";
-    case "activeSources":
-      return "Активные источники";
+function detailsBody(details: unknown): Record<string, unknown> {
+  try {
+    const parsed = typeof details === "string" ? JSON.parse(details) : details;
+    const body = (parsed as Record<string, unknown>)?.body;
+    return ((body && typeof body === "object" ? body : parsed) ?? {}) as Record<
+      string,
+      unknown
+    >;
+  } catch {
+    return {};
   }
 }
 
-function buildAmlChanges(
-  previous: AmlSettingsSnapshot,
-  next: AmlSettingsSnapshot,
-): string[] {
-  const changes: string[] = [];
+function historyChanges(item: AdminActionLog): string {
+  const body = detailsBody(item.details);
+  const blocked = (body.blockedWallets ?? body.blocked_wallets) as unknown;
+  if (Array.isArray(blocked)) return `Загружено адресов: ${blocked.length}`;
+  const sources = body.activeSources ?? body.active_sources;
+  if (Array.isArray(sources)) return `Активные источники: ${sources.join(", ")}`;
+  return "Настройки AML изменены";
+}
 
-  if (previous.api !== next.api) {
-    changes.push(
-      `${formatAmlFieldLabel("api")}: ${formatAmlValue(previous.api)} -> ${formatAmlValue(next.api)}`,
-    );
-  }
-
-  if (!sameTextArray(previous.urls, next.urls)) {
-    changes.push(
-      `${formatAmlFieldLabel("urls")}: ${formatAmlValue(previous.urls)} -> ${formatAmlValue(next.urls)}`,
-    );
-  }
-
-  if (previous.fileName !== next.fileName) {
-    changes.push(
-      `${formatAmlFieldLabel("fileName")}: ${formatAmlValue(previous.fileName)} -> ${formatAmlValue(next.fileName)}`,
-    );
-  }
-
-  const previousSources = [...previous.activeSources].sort().join(",");
-  const nextSources = [...next.activeSources].sort().join(",");
-  if (previousSources !== nextSources) {
-    changes.push(
-      `${formatAmlFieldLabel("activeSources")}: ${formatAmlValue(previous.activeSources.map(activeSourceChipLabel))} -> ${formatAmlValue(next.activeSources.map(activeSourceChipLabel))}`,
-    );
-  }
-
-  return changes;
+function historyComment(item: AdminActionLog): string {
+  const body = detailsBody(item.details);
+  return String(body.comment ?? body.reason ?? "Комментарий не указан");
 }
 
 export default function AmlRulesPage() {
-  const [apiDraft, setApiDraft] = useState("");
+  const [settings, setSettings] = useState<AmlSettings>(EMPTY_SETTINGS);
   const [urlDraft, setUrlDraft] = useState("");
-  const [fileName, setFileName] = useState("");
-  const [activeSources, setActiveSources] = useState<ActiveSource[]>(
-    DEFAULT_ACTIVE_SOURCES,
-  );
-  const [commentOpen, setCommentOpen] = useState(false);
-  const [commentDraft, setCommentDraft] = useState("");
-  const [commentError, setCommentError] = useState<string | null>(null);
-  const [admins, setAdmins] = useState<AdminOption[]>([]);
-  const [history, setHistory] = useState<AdminActionLog[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
-  const [historyError, setHistoryError] = useState<string | null>(null);
-  const [historyExporting, setHistoryExporting] =
-    useState<ExportFormat | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [comment, setComment] = useState("");
+  const [history, setHistory] = useState<AdminActionLog[]>([]);
+  const [adminNames, setAdminNames] = useState<Map<string, string>>(new Map());
+  const [exporting, setExporting] = useState<ExportFormat | null>(null);
 
-  useEffect(() => {
-    const stored = loadStoredSettings();
-    if (stored) {
-      setApiDraft(stored.api);
-      setUrlDraft(stored.urls);
-      setFileName(stored.fileName);
-      setActiveSources(stored.activeSources);
-    }
-
-    void loadAdmins();
-    void loadHistory();
-  }, []);
-
-  async function loadAdmins() {
-    try {
-      const res = await getAdmins({ limit: 500, offset: 0 });
-      setAdmins(
-        res.items.map((admin) => ({
-          id: admin.id,
-          label:
-            [admin.lastName, admin.firstName].filter(Boolean).join(" ") ||
-            admin.login ||
-            `#${admin.id}`,
-          login: admin.login,
-        })),
-      );
-    } catch {
-      setAdmins([]);
-    }
+  async function loadSettings() {
+    const res = await fetch("/api/antifraud/aml-settings", { cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || "Не удалось загрузить настройки AML");
+    const next = { ...EMPTY_SETTINGS, ...data } as AmlSettings;
+    setSettings(next);
+    setUrlDraft(
+      next.urls?.length
+        ? next.urls.join("\n")
+        : `${window.location.origin}/aml-test-rules.json`,
+    );
   }
 
   async function loadHistory() {
-    setHistoryLoading(true);
-    setHistoryError(null);
-    try {
-      const res = await getAdminActionLogs({
+    const [logs, admins] = await Promise.all([
+      getAdminActionLogs({
         offset: 0,
-        limit: 50,
+        limit: 100,
         sortBy: "createdAt",
         sortDir: "desc",
-        actionQuery: "antifraud",
-      });
-      setHistory(res.items);
-    } catch (e) {
-      setHistoryError(
-        e instanceof Error ? e.message : "Не удалось загрузить историю",
-      );
-      setHistory([]);
-    } finally {
-      setHistoryLoading(false);
+        actionQuery: "aml-settings",
+      }),
+      getAdmins({ offset: 0, limit: 500 }),
+    ]);
+    setHistory(logs.items);
+    setAdminNames(
+      new Map(
+        admins.items.map((admin) => [
+          String(admin.id),
+          [admin.lastName, admin.firstName].filter(Boolean).join(" ") ||
+            admin.login ||
+            `Админ #${admin.id}`,
+        ]),
+      ),
+    );
+  }
+
+  useEffect(() => {
+    void Promise.all([loadSettings(), loadHistory().catch(() => undefined)])
+      .catch((reason) => setError(reason instanceof Error ? reason.message : String(reason)))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function toggleSource(source: ActiveSource) {
+    setSettings((current) => ({
+      ...current,
+      activeSources: current.activeSources.includes(source)
+        ? current.activeSources.filter((item) => item !== source)
+        : [...current.activeSources, source],
+    }));
+  }
+
+  async function readFile(file?: File) {
+    if (!file) {
+      setSettings((current) => ({ ...current, fileName: "", fileRules: [] }));
+      return;
+    }
+    try {
+      const rules = parseRules(JSON.parse(await file.text()));
+      if (!rules.length) throw new Error("В файле нет корректных AML-правил");
+      setSettings((current) => ({
+        ...current,
+        fileName: file.name,
+        fileRules: rules,
+      }));
+      setError("");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Не удалось прочитать файл");
     }
   }
 
-  const adminLookup = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const admin of admins) map.set(admin.id, admin.label);
-    return map;
-  }, [admins]);
-
-  const historyExportRows = useMemo<HistoryRow[]>(
-    () =>
-      history.map((item) => ({
-        date: item.createdAt,
-        user:
-          adminLookup.get(String(item.admin_id)) ||
-          (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`),
-        action: item.action,
-        changed: buildHistorySummary(item.details),
-        comment: extractComment(item.details),
-        ip: item.ip,
-      })),
-    [adminLookup, history],
-  );
-
-  async function saveSettings(comment: string) {
+  async function save() {
+    if (!comment.trim()) {
+      setError(COMMENT_REQUIRED_MESSAGE);
+      return;
+    }
     setSaving(true);
-    setError(null);
-    setSuccess(null);
-    setCommentError(null);
+    setError("");
+    setSuccess("");
     try {
-      const commentText = comment.trim();
-      if (!commentText) {
-        throw new Error(COMMENT_REQUIRED_MESSAGE);
-      }
-
-      const previous = loadStoredSettings() ?? {
-        api: "",
-        urls: "",
-        fileName: "",
-        activeSources: DEFAULT_ACTIVE_SOURCES,
-      };
-      const draft = {
-        api: apiDraft,
-        urls: urlDraft,
-        fileName,
-        activeSources,
-      };
-      const snapshot = readSettingsSnapshot(draft);
-      const changes = buildAmlChanges(
-        readSettingsValue(previous),
-        readSettingsValue(draft),
-      );
-
-      if (!snapshot.activeSources.length) {
-        throw new Error("Выберите хотя бы один активный источник");
-      }
-      if (!changes.length) {
-        throw new Error("Нет изменений для сохранения");
-      }
-
       const payload = {
-        api: snapshot.api,
-        urls: normalizeSources(snapshot.urls),
-        fileName: snapshot.fileName,
-        activeSources: snapshot.activeSources,
+        api: settings.api.trim(),
+        urls: normalizeUrls(urlDraft),
+        fileName: settings.fileName,
+        activeSources: settings.activeSources,
+        fileRules: settings.fileRules,
+        comment: comment.trim(),
       };
-
-      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(payload));
-      window.localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(payload));
-
-      const synthetic: AdminActionLog = {
-        id: Date.now(),
-        admin_id: 0,
-        ip: "local",
-        action: "AML settings updated",
-        details: JSON.stringify({
-          body: {
-            ...payload,
-            comment: commentText,
-            reason: commentText,
-            changes,
-          },
-        }),
-        createdAt: new Date().toISOString(),
-      };
-
-      setHistory((prev) => [synthetic, ...prev]);
-      setSuccess("AML-настройки сохранены");
-      setCommentDraft("");
-      setCommentOpen(false);
-    } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Не удалось сохранить AML-настройки",
-      );
-      if (e instanceof Error && !e.message.trim()) {
-        setCommentError(COMMENT_REQUIRED_MESSAGE);
+      const res = await fetch("/api/antifraud/aml-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const message = Array.isArray(data?.message)
+          ? data.message.join("; ")
+          : data?.message;
+        throw new Error(message || "Не удалось сохранить AML");
       }
+      const next = { ...EMPTY_SETTINGS, ...data } as AmlSettings;
+      setSettings(next);
+      setUrlDraft(next.urls.join("\n"));
+      setSuccess(`AML сохранён. Заблокированных адресов: ${next.blockedWallets.length}`);
+      setComment("");
+      setCommentOpen(false);
+      await loadHistory().catch(() => undefined);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
       setSaving(false);
     }
   }
 
+  const historyRows = useMemo(
+    () =>
+      history.map((item) => ({
+        date: formatDate(item.createdAt),
+        admin:
+          adminNames.get(String(item.admin_id)) ||
+          (item.admin_id ? `Админ #${item.admin_id}` : "Система"),
+        changes: historyChanges(item),
+        comment: historyComment(item),
+      })),
+    [adminNames, history],
+  );
+
   async function exportHistory(format: "csv" | "pdf") {
-    if (!historyExportRows.length || historyExporting) return;
-    setHistoryExporting(format);
+    setExporting(format);
     try {
       await exportRows({
         format,
         fileBaseName: "aml_history",
-        title: "AML история",
+        title: "История AML",
         columns: [
-          { header: "Дата", getValue: (row) => formatDate(row.date) },
-          { header: "Пользователь", getValue: (row) => row.user },
-          { header: "Действие", getValue: (row) => row.action },
-          { header: "Что поменял", getValue: (row) => row.changed },
+          { header: "Дата", getValue: (row) => row.date },
+          { header: "Администратор", getValue: (row) => row.admin },
+          { header: "Изменения", getValue: (row) => row.changes },
           { header: "Комментарий", getValue: (row) => row.comment },
-          { header: "IP", getValue: (row) => row.ip },
         ],
-        rows: historyExportRows,
+        rows: historyRows,
       });
     } finally {
-      setHistoryExporting(null);
+      setExporting(null);
     }
   }
 
-  function toggleSource(source: ActiveSource) {
-    setActiveSources((prev) =>
-      prev.includes(source)
-        ? prev.filter((item) => item !== source)
-        : [...prev, source],
-    );
-  }
-
-  const selectedSourceLabels = activeSources.map(activeSourceLabel);
-
   return (
-    <div className="flex-1 min-h-0 overflow-auto pb-8">
+    <div className="min-h-0 flex-1 overflow-auto pb-10">
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 px-4">
-        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
-          <div className="grid gap-4 border-b border-soft px-5 py-5">
+        <section className="card rounded-3xl border border-soft p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
-                  AML
-                </span>
-                <span className="inline-flex rounded-full border border-soft bg-[var(--bg-soft)] px-3 py-1 text-xs text-muted">
-                  API, URL и файл
-                </span>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">
+                Проверка внешних кошельков
               </div>
-              <h1 className="mt-3 text-2xl font-semibold">AML</h1>
+              <h1 className="mt-2 text-2xl font-semibold">AML</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-                Здесь выбираются активные источники AML и хранятся комментарии к изменениям.
-                После сохранения новая запись сразу попадёт в историю ниже.
+                Выберите источники, укажите API, URL или JSON-файл и сохраните.
+                Списки загружаются при сохранении, поэтому перевод проверяется без задержки.
               </p>
             </div>
-
-            <div className="flex flex-col gap-3 lg:items-end">
-              <button
-                className="btn btn-primary h-11 w-full lg:w-auto"
-                disabled={saving}
-                onClick={() => {
-                  setCommentError(null);
-                  setCommentOpen(true);
-                }}
-              >
-                {saving ? "Сохранение..." : "Сохранить"}
-              </button>
-            </div>
+            <button
+              className="btn btn-primary h-11"
+              disabled={loading || saving}
+              onClick={() => setCommentOpen(true)}
+            >
+              {saving ? "Сохранение..." : "Сохранить"}
+            </button>
           </div>
-
-          {(error || success) && (
-            <div className="border-b border-soft px-5 py-3">
-              {error ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
-                  {error}
-                </div>
-              ) : null}
-              {!error && success ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200">
-                  {success}
-                </div>
-              ) : null}
-            </div>
-          )}
+          {error ? <div className="mt-4 rounded-2xl bg-red-50 p-3 text-sm text-red-700">{error}</div> : null}
+          {success ? <div className="mt-4 rounded-2xl bg-emerald-50 p-3 text-sm text-emerald-700">{success}</div> : null}
         </section>
 
-        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
-          <div className="grid gap-4 border-b border-soft px-5 py-4">
-            <div className="text-lg font-semibold">Настройки AML</div>
-            <div className="text-sm text-muted">
-              Слева можно отметить, какие источники сейчас активны. Справа находятся поля
-              для их значений.
-            </div>
-          </div>
-
-          <div className="grid gap-5 p-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-            <aside className="rounded-3xl border border-soft bg-[var(--bg-soft)] p-4">
-              <div className="text-lg font-semibold">Активные источники</div>
-              <p className="mt-2 text-sm leading-6 text-muted">
-                Отметьте галочками то, что сейчас используется. Можно включить один источник
-                или сразу несколько.
+        <section className="card rounded-3xl border border-soft p-5 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Тестовый AML-набор</h2>
+              <p className="mt-1 text-sm text-muted">
+                Откройте кошелёк, укажите внутренний USDT-адрес клиента банка и
+                выполните перевод. После сохранения URL операция будет отклонена
+                до отправки в блокчейн и появится в кейсах финконтроля.
               </p>
+            </div>
+            <a
+              className="btn h-10"
+              href="/aml-test-rules.json"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Открыть JSON
+            </a>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <a
+              className="rounded-2xl border border-soft p-4 transition-colors hover:border-red-300 hover:bg-red-50/60"
+              href="/tron-wallet2"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className="text-sm font-semibold">Внешний кошелёк AML №1</span>
+              <span className="mt-2 block font-mono text-xs text-muted">
+                TEYMgT9qm4eGtidZFvgyHgWQ754MiXMNo5
+              </span>
+              <span className="mt-2 block text-xs text-red-600">
+                Спонсорство терроризма
+              </span>
+            </a>
+            <a
+              className="rounded-2xl border border-soft p-4 transition-colors hover:border-red-300 hover:bg-red-50/60"
+              href="/tron-wallet3"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className="text-sm font-semibold">Внешний кошелёк AML №2</span>
+              <span className="mt-2 block font-mono text-xs text-muted">
+                TApidQ7qtmV1HfvnfCoK3vydmpTeE127bk
+              </span>
+              <span className="mt-2 block text-xs text-red-600">
+                Санкционный список
+              </span>
+            </a>
+          </div>
+        </section>
 
+        <section className="card rounded-3xl border border-soft p-5 shadow-sm">
+          <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
+            <aside className="rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
+              <h2 className="font-semibold">Активные источники</h2>
               <div className="mt-4 space-y-3">
-                {ACTIVE_SOURCE_OPTIONS.map((option) => (
-                  <label
-                    key={option.key}
-                    className="flex cursor-pointer items-start gap-3 rounded-2xl border border-soft bg-[var(--card)] px-4 py-3 transition-colors hover:border-[var(--accent)]/40"
-                  >
+                {SOURCE_OPTIONS.map((source) => (
+                  <label key={source.key} className="flex cursor-pointer gap-3 rounded-xl border border-soft bg-[var(--card)] p-3">
                     <input
                       type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border-gray-300 text-[var(--accent)] focus:ring-[var(--accent)]"
-                      checked={isSourceEnabled(activeSources, option.key)}
-                      onChange={() => toggleSource(option.key)}
+                      className="mt-1 h-4 w-4 accent-red-600"
+                      checked={settings.activeSources.includes(source.key)}
+                      onChange={() => toggleSource(source.key)}
                     />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium">{option.title}</span>
-                      <span className="mt-1 block text-xs leading-5 text-muted">
-                        {option.hint}
-                      </span>
+                    <span>
+                      <span className="block text-sm font-medium">{source.title}</span>
+                      <span className="mt-1 block text-xs text-muted">{source.description}</span>
                     </span>
                   </label>
                 ))}
               </div>
-
-              <div className="mt-4 rounded-2xl border border-soft bg-[var(--card)] px-4 py-3">
-                <div className="text-xs uppercase tracking-wide text-muted">
-                  Сейчас активно
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedSourceLabels.length ? (
-                    selectedSourceLabels.map((label) => (
-                      <span
-                        key={label}
-                        className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
-                      >
-                        {label}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm text-muted">Ничего не выбрано</span>
-                  )}
-                </div>
-              </div>
             </aside>
 
-            <div className="grid gap-4">
-              <label className="grid gap-1">
-                <span className="text-xs text-muted">Вставить API</span>
+            <div className="grid content-start gap-4">
+              <label className="grid gap-2 text-sm">
+                <span className="font-medium">API</span>
                 <input
                   className="ui-input"
-                  value={apiDraft}
-                  onChange={(e) => setApiDraft(e.target.value)}
-                  placeholder="https://api.example.com/aml"
+                  value={settings.api}
+                  onChange={(event) =>
+                    setSettings((current) => ({ ...current, api: event.target.value }))
+                  }
+                  placeholder="https://example.com/api/aml"
                 />
               </label>
-
-              <label className="grid gap-1">
-                <span className="text-xs text-muted">Вставить URL-ы</span>
+              <label className="grid gap-2 text-sm">
+                <span className="font-medium">URL-источники, каждый с новой строки</span>
                 <textarea
-                  className="ui-input min-h-40 resize-y leading-6"
+                  className="ui-input min-h-36 resize-y font-mono text-sm"
                   value={urlDraft}
-                  onChange={(e) => setUrlDraft(e.target.value)}
-                  placeholder={[
-                    "https://example.com/aml-source-1",
-                    "https://example.com/aml-source-2",
-                  ].join("\n")}
+                  onChange={(event) => setUrlDraft(event.target.value)}
+                  placeholder="http://192.168.255.121:46346/aml-test-rules.json"
                 />
-                <div className="text-xs text-muted">
-                  {normalizeSources(urlDraft).length
-                    ? `Всего URL: ${normalizeSources(urlDraft).length}`
-                    : "Список URL пока пуст"}
-                </div>
               </label>
-
-              <label className="grid gap-1">
-                <span className="text-xs text-muted">Вставить файл</span>
-                <input
-                  className="ui-input"
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    setFileName(file ? file.name : "");
-                  }}
-                />
-                <div className="text-xs text-muted">
-                  {fileName ? `Выбрано: ${fileName}` : "Файл пока не выбран"}
-                </div>
+              <label className="grid gap-2 text-sm">
+                <span className="font-medium">JSON-файл</span>
+                <input className="ui-input" type="file" accept=".json,application/json" onChange={(event) => void readFile(event.target.files?.[0])} />
+                <span className="text-xs text-muted">
+                  {settings.fileName
+                    ? `${settings.fileName}: ${settings.fileRules.length} адресов`
+                    : "Файл не выбран"}
+                </span>
               </label>
             </div>
+          </div>
+        </section>
+
+        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft px-5 py-4">
+            <div>
+              <h2 className="text-lg font-semibold">Загруженные AML-адреса</h2>
+              <p className="mt-1 text-sm text-muted">
+                Эти адреса сейчас блокируются при переводе на внутренний кошелёк банка.
+              </p>
+            </div>
+            <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-semibold text-red-700">
+              {settings.blockedWallets.length}
+            </span>
+          </div>
+          <div className="max-h-72 overflow-auto">
+            {settings.blockedWallets.length ? (
+              <table className="w-full min-w-[760px] text-sm">
+                <thead className="sticky top-0 bg-[var(--card)] text-left text-muted">
+                  <tr><th className="px-5 py-3">Кошелёк</th><th className="px-5 py-3">Причина</th></tr>
+                </thead>
+                <tbody>
+                  {settings.blockedWallets.map((rule) => (
+                    <tr key={rule.address} className="border-t border-soft">
+                      <td className="px-5 py-3 font-mono">{rule.address}</td>
+                      <td className="px-5 py-3">{rule.reason}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-5 text-sm text-muted">Список пока пуст.</div>
+            )}
           </div>
         </section>
 
         <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
           <div className="flex items-center justify-between gap-3 border-b border-soft px-5 py-4">
-            <div>
-              <div className="text-lg font-semibold">История AML</div>
-              <div className="mt-1 text-sm text-muted">
-                Показываются изменения, комментарии и кто именно вносил правки.
-              </div>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <button
-                className="btn h-10 px-3"
-                type="button"
-                onClick={() => exportHistory("csv")}
-                disabled={!historyExportRows.length || Boolean(historyExporting)}
-              >
-                {historyExporting === "csv" ? "CSV..." : "CSV"}
-              </button>
-              <button
-                className="btn h-10 px-3"
-                type="button"
-                onClick={() => exportHistory("pdf")}
-                disabled={!historyExportRows.length || Boolean(historyExporting)}
-              >
-                {historyExporting === "pdf" ? "PDF..." : "PDF"}
-              </button>
+            <h2 className="text-lg font-semibold">История AML</h2>
+            <div className="flex gap-1">
+              <button className="btn h-9 px-3" disabled={!historyRows.length || !!exporting} onClick={() => void exportHistory("csv")}>CSV</button>
+              <button className="btn h-9 px-3" disabled={!historyRows.length || !!exporting} onClick={() => void exportHistory("pdf")}>PDF</button>
             </div>
           </div>
-
-          <div className="max-h-[620px] overflow-auto">
-            {historyLoading ? (
-              <div className="p-5 text-sm text-muted">Загрузка истории...</div>
-            ) : historyError ? (
-              <div className="p-5 text-sm text-red-600">{historyError}</div>
-            ) : history.length ? (
-              <table className="w-full min-w-[1080px] text-sm">
-                <thead className="sticky top-0 z-[1] bg-[var(--card)] text-left text-xs font-semibold uppercase tracking-wide text-muted">
-                  <tr className="border-b border-soft">
-                    <th className="px-5 py-3">Дата</th>
-                    <th className="px-5 py-3">Пользователь</th>
-                    <th className="px-5 py-3">Что поменял</th>
-                    <th className="px-5 py-3">Комментарий</th>
+          <div className="max-h-[520px] overflow-auto">
+            <table className="w-full min-w-[900px] text-sm">
+              <thead className="sticky top-0 bg-[var(--card)] text-left text-muted">
+                <tr><th className="px-5 py-3">Дата</th><th className="px-5 py-3">Администратор</th><th className="px-5 py-3">Изменения</th><th className="px-5 py-3">Комментарий</th></tr>
+              </thead>
+              <tbody>
+                {historyRows.map((row, index) => (
+                  <tr key={`${row.date}-${index}`} className="border-t border-soft">
+                    <td className="whitespace-nowrap px-5 py-3">{row.date}</td>
+                    <td className="px-5 py-3">{row.admin}</td>
+                    <td className="px-5 py-3">{row.changes}</td>
+                    <td className="px-5 py-3">{row.comment}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {history.map((item) => {
-                    const adminLabel =
-                      adminLookup.get(String(item.admin_id)) ||
-                      (item.admin_id === 0 ? "Локально" : `Админ #${item.admin_id}`);
-                    return (
-                      <tr
-                        key={item.id}
-                        className="border-b border-black/10 transition-colors last:border-b-0 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
-                      >
-                        <td className="px-5 py-4 whitespace-nowrap text-muted">
-                          {formatDate(item.createdAt)}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="font-medium">{adminLabel}</div>
-                          <div className="text-xs text-muted">{item.action}</div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="max-w-[620px] whitespace-pre-wrap break-words text-sm leading-6">
-                            {buildHistorySummary(item.details)}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="max-w-[420px] whitespace-pre-wrap break-words text-sm leading-6 text-muted">
-                            {extractComment(item.details)}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              <div className="p-5 text-sm text-muted">Пока нет истории AML.</div>
-            )}
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
 
-      <Modal
-        open={commentOpen}
-        onClose={() => {
-          setCommentOpen(false);
-          setCommentError(null);
-          setCommentDraft("");
-        }}
-        title="Комментарий к изменению AML"
-      >
+      <Modal open={commentOpen} onClose={() => setCommentOpen(false)} title="Комментарий к изменению AML">
         <div className="space-y-4">
-          <div className="rounded-2xl border border-soft bg-[var(--bg-soft)] px-4 py-3 text-sm text-muted">
-            Комментарий обязателен и попадёт в историю изменений.
-          </div>
-
-          <label className="block text-sm">
-            <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted">
-              На каком основании меняются настройки
-            </span>
+          <label className="grid gap-2 text-sm">
+            <span>Укажите приказ, по которому меняете AML</span>
             <textarea
-              className="ui-input min-h-32 w-full resize-y leading-6"
-              value={commentDraft}
-              onChange={(e) => {
-                setCommentDraft(e.target.value);
-                if (commentError) setCommentError(null);
-              }}
+              className="ui-input min-h-28 resize-y"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
               placeholder={COMMENT_PROMPT}
             />
           </label>
-
-          {commentError ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
-              {commentError}
-            </div>
-          ) : null}
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className="btn h-10"
-              onClick={() => {
-                setCommentOpen(false);
-                setCommentError(null);
-                setCommentDraft("");
-              }}
-            >
-              Отмена
-            </button>
-            <button
-              className="btn btn-primary h-10"
-              onClick={() => {
-                if (!commentDraft.trim()) {
-                  setCommentError(COMMENT_REQUIRED_MESSAGE);
-                  return;
-                }
-                void saveSettings(commentDraft);
-              }}
-            >
-              Сохранить
-            </button>
+          <div className="flex justify-end gap-2">
+            <button className="btn" onClick={() => setCommentOpen(false)}>Отмена</button>
+            <button className="btn btn-primary" disabled={saving} onClick={() => void save()}>Сохранить</button>
           </div>
         </div>
       </Modal>

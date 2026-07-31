@@ -21,6 +21,16 @@ export async function GET(req: Request) {
       privateKey: "7dd79b709f1a056c6a794b6be343dd6b61c9cc4ba7400ca15814ad2d31ffdb08",
       customerId: 944629427,
     },
+    "tron-wallet2": {
+      address: "TEYMgT9qm4eGtidZFvgyHgWQ754MiXMNo5",
+      privateKey: "9e5902ced393abc6939c5a77018fa54d1d92b4c23c58ace04ee42a4374db98fc",
+      customerId: 944629428,
+    },
+    "tron-wallet3": {
+      address: "TApidQ7qtmV1HfvnfCoK3vydmpTeE127bk",
+      privateKey: "d9b8862864a6ffe9d82e85c054952af45049b4dc130bf49499a0f477aa085b0d",
+      customerId: 944629429,
+    },
   };
   const preset = presets[wallet] || presets["tron-wallet"];
   const privateKey = preset.privateKey;

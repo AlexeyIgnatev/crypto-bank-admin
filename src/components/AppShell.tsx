@@ -29,7 +29,12 @@ const PAGE_TITLES: Record<string, string> = {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login";
-  const isStandalonePage = pathname === "/tron-wallet" || pathname === "/tron-wallet1";
+  const isStandalonePage = [
+    "/tron-wallet",
+    "/tron-wallet1",
+    "/tron-wallet2",
+    "/tron-wallet3",
+  ].includes(pathname);
 
   if (isAuthPage) {
     return (
