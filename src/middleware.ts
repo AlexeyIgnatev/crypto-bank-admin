@@ -5,6 +5,7 @@ const PUBLIC_PATHS = [
   "/login",
   "/_next",
   "/favicon.ico",
+  "/aml-test-rules.json",
   "/api/auth",
   "/api/auth/login",
   "/api/auth/refresh",
