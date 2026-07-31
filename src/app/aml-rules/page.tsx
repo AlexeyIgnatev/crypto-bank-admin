@@ -280,57 +280,6 @@ export default function AmlRulesPage() {
         </section>
 
         <section className="card rounded-3xl border border-soft p-5 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold">Тестовый AML-набор</h2>
-              <p className="mt-1 text-sm text-muted">
-                Откройте кошелёк, укажите внутренний USDT-адрес клиента банка и
-                выполните перевод. После сохранения URL операция будет отклонена
-                до отправки в блокчейн и появится в кейсах финконтроля.
-              </p>
-            </div>
-            <a
-              className="btn h-10"
-              href="/aml-test-rules.json"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Открыть JSON
-            </a>
-          </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <a
-              className="rounded-2xl border border-soft p-4 transition-colors hover:border-red-300 hover:bg-red-50/60"
-              href="/tron-wallet2"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="text-sm font-semibold">Внешний кошелёк AML №1</span>
-              <span className="mt-2 block font-mono text-xs text-muted">
-                TEYMgT9qm4eGtidZFvgyHgWQ754MiXMNo5
-              </span>
-              <span className="mt-2 block text-xs text-red-600">
-                Спонсорство терроризма
-              </span>
-            </a>
-            <a
-              className="rounded-2xl border border-soft p-4 transition-colors hover:border-red-300 hover:bg-red-50/60"
-              href="/tron-wallet3"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="text-sm font-semibold">Внешний кошелёк AML №2</span>
-              <span className="mt-2 block font-mono text-xs text-muted">
-                TApidQ7qtmV1HfvnfCoK3vydmpTeE127bk
-              </span>
-              <span className="mt-2 block text-xs text-red-600">
-                Санкционный список
-              </span>
-            </a>
-          </div>
-        </section>
-
-        <section className="card rounded-3xl border border-soft p-5 shadow-sm">
           <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
             <aside className="rounded-2xl border border-soft bg-[var(--bg-soft)] p-4">
               <h2 className="font-semibold">Активные источники</h2>
@@ -383,39 +332,6 @@ export default function AmlRulesPage() {
                 </span>
               </label>
             </div>
-          </div>
-        </section>
-
-        <section className="card overflow-hidden rounded-3xl border border-soft shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-soft px-5 py-4">
-            <div>
-              <h2 className="text-lg font-semibold">Загруженные AML-адреса</h2>
-              <p className="mt-1 text-sm text-muted">
-                Эти адреса сейчас блокируются при переводе на внутренний кошелёк банка.
-              </p>
-            </div>
-            <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-semibold text-red-700">
-              {settings.blockedWallets.length}
-            </span>
-          </div>
-          <div className="max-h-72 overflow-auto">
-            {settings.blockedWallets.length ? (
-              <table className="w-full min-w-[760px] text-sm">
-                <thead className="sticky top-0 bg-[var(--card)] text-left text-muted">
-                  <tr><th className="px-5 py-3">Кошелёк</th><th className="px-5 py-3">Причина</th></tr>
-                </thead>
-                <tbody>
-                  {settings.blockedWallets.map((rule) => (
-                    <tr key={rule.address} className="border-t border-soft">
-                      <td className="px-5 py-3 font-mono">{rule.address}</td>
-                      <td className="px-5 py-3">{rule.reason}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="p-5 text-sm text-muted">Список пока пуст.</div>
-            )}
           </div>
         </section>
 
