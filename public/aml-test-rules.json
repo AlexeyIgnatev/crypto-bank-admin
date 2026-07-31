@@ -1,7 +1,4 @@
-{
-  "version": 1,
-  "updated_at": "2026-07-31T12:00:00+03:00",
-  "wallets": [
+[
     {
       "address": "TEYMgT9qm4eGtidZFvgyHgWQ754MiXMNo5",
       "reason": "Подозрение на спонсорство терроризма"
@@ -10,5 +7,4 @@
       "address": "TApidQ7qtmV1HfvnfCoK3vydmpTeE127bk",
       "reason": "Адрес включён в санкционный список"
     }
-  ]
-}
+]
