@@ -53,6 +53,11 @@ type AdminOption = {
 };
 
 const TARIFF_GRID_ROWS: TariffGridRow[] = [
+  {
+    kind: "tariff",
+    operation: "WALLET_TRANSFER_SOM",
+    label: "Перевод СОМ между пользователями",
+  },
   { kind: "tariff", operation: "SOM_TO_ESOM", label: "Конвертация СОМ в Салам" },
   { kind: "tariff", operation: "ESOM_TO_SOM", label: "Конвертация Салам в СОМ" },
   {
@@ -86,6 +91,8 @@ const TARIFF_GRID_ROWS: TariffGridRow[] = [
 ];
 
 const RATE_ROW_HINTS: Record<string, string> = {
+  WALLET_TRANSFER_SOM:
+    "Здесь назначается комиссия за внутренний перевод СОМ между пользователями банка.",
   SOM_TO_ESOM: "Здесь назначается комиссия за конвертацию SOM в Салам.",
   ESOM_TO_SOM: "Здесь назначается комиссия за конвертацию Салам в SOM.",
   WALLET_TRANSFER_ESOM:
@@ -228,6 +235,7 @@ function historyLabelForRates(key: string): string {
   if (key.startsWith("tariff:")) {
     const operation = key.slice("tariff:".length) as TariffOperation;
     const map: Record<string, string> = {
+      WALLET_TRANSFER_SOM: "Внутр. СОМ",
       SOM_TO_ESOM: "\u0421\u041e\u041c \u0432 \u0421\u0430\u043b\u0430\u043c",
       ESOM_TO_SOM: "\u0421\u0430\u043b\u0430\u043c \u0432 \u0421\u041e\u041c",
       WALLET_TRANSFER_ESOM: "\u0412\u043d\u0443\u0442\u0440. \u0421\u0430\u043b\u0430\u043c",

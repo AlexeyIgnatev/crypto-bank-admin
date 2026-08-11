@@ -18,6 +18,7 @@ export type TariffOperation =
   | "ESOM_TO_SOM"
   | "ESOM_TO_USDT_TRC20"
   | "USDT_TRC20_TO_ESOM"
+  | "WALLET_TRANSFER_SOM"
   | "WALLET_TRANSFER_ESOM"
   | "WALLET_TRANSFER_USDT_TRC20";
 
