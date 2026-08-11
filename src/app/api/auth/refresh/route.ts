@@ -8,7 +8,7 @@ type RefreshResponse = {
 };
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const refresh = cookieStore.get("refreshToken")?.value;
   if (!refresh) {
     return NextResponse.json({ message: "No refresh token" }, { status: 401 });

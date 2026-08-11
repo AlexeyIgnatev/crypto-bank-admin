@@ -144,6 +144,13 @@ const EMPTY_SETTINGS: AdminSettings = {
   central_bank_som_account: "",
   central_bank_salam_wallet: "",
   central_bank_usdt_wallet: "",
+  bank_commission_central_bank_pct: "0",
+  bank_commission_bank_pct: "0",
+  bank_commission_partners_pct: "0",
+  bank_commission_distribution_mode: "PERCENT",
+  bank_commission_central_bank_fixed: "0",
+  bank_commission_bank_fixed: "0",
+  bank_commission_partners_fixed: "0",
   bank_som_account: "",
   bank_salam_wallet: "",
   bank_usdt_wallet: "",
@@ -561,7 +568,7 @@ function TariffGridRowCard({
   fixed: string;
   comment?: string;
   onPercentChange?: (value: string) => void;
-  onFixedChange: (value: string) => void;
+  onFixedChange?: (value: string) => void;
   onCommentChange?: (value: string) => void;
   percentDisabled?: boolean;
   fixedDisabled?: boolean;
@@ -1031,7 +1038,7 @@ export default function RatesPage() {
         );
       }
 
-      const tariffsPayload = tariffChanged
+      const tariffsPayload: TariffSetting[] = tariffChanged
         ? currentTariffs.map((item) => ({
             category: item.category,
             residency: item.residency,
@@ -1039,7 +1046,7 @@ export default function RatesPage() {
             percent_fee: normalizeDecimalInput(item.percent_fee),
             fixed_fee: normalizeDecimalInput(item.fixed_fee),
           }))
-        : null;
+        : [];
 
       const savedSettings = await putAdminSettings(settingsPayload);
       const savedTariffs = tariffChanged ? await putTariffs(tariffsPayload) : null;

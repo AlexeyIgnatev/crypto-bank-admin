@@ -13,6 +13,7 @@ import {
   Transaction,
   TransactionStatus,
   User,
+  UserStatus,
 } from "../types";
 import { getUserById, updateUser } from "@/lib/api";
 

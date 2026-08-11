@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/airbnb.css";
 import { Russian } from "flatpickr/dist/l10n/ru.js";
-import { TransactionStatus, OperationType } from "@/types";
+import { Transaction, TransactionStatus, OperationType } from "@/types";
+import type { ReactElement } from "react";
 import { useEffect } from "react";
 import { getTransactions, getTransactionsStats } from "@/lib/api";
 import {
@@ -152,7 +153,19 @@ export default function TransactionsAnalytics() {
     points: { ts: number; label: string; value: number }[];
     totalSum: number;
     totalCount: number;
-  }>({ points: [], totalSum: 0, totalCount: 0 });
+    topCurrencyBySumLabel: string;
+    topCurrencyByCountLabel: string;
+    mostActiveDayLabel: string;
+    averageCheck: number;
+  }>({
+    points: [],
+    totalSum: 0,
+    totalCount: 0,
+    topCurrencyBySumLabel: "",
+    topCurrencyByCountLabel: "",
+    mostActiveDayLabel: "",
+    averageCheck: 0,
+  });
 
   useEffect(() => {
     setLoading(true);
@@ -272,7 +285,7 @@ export default function TransactionsAnalytics() {
                 ] as {
                   key: string;
                   label: string;
-                  icon: "som" | "usdt";
+                  icon: "som" | "usdt" | "btc" | "eth";
                 }[]
               ).map((opt) => (
                 <button
@@ -428,7 +441,7 @@ export default function TransactionsAnalytics() {
                       </svg>
                     ),
                   },
-                ] as { key: OperationType; label: string; svg: JSX.Element }[]
+                ] as { key: OperationType; label: string; svg: ReactElement }[]
               ).map((opt) => (
                 <button
                   key={opt.key}
@@ -560,7 +573,7 @@ function DateRange({
         <div className="text-xs text-muted mb-1">От</div>
         <Flatpickr
           className="ui-input w-full"
-          value={from ? new Date(from) : null}
+          value={from ? new Date(from) : undefined}
           options={{
             enableTime: true,
             dateFormat: "d.m.Y H:i",
@@ -574,7 +587,7 @@ function DateRange({
         <div className="text-xs text-muted mb-1">До</div>
         <Flatpickr
           className="ui-input w-full"
-          value={to ? new Date(to) : null}
+          value={to ? new Date(to) : undefined}
           options={{
             enableTime: true,
             dateFormat: "d.m.Y H:i",

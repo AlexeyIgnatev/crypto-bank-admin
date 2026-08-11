@@ -62,6 +62,13 @@ export default function AdminsPage() {
     }
   }
 
+  function reload() {
+    setError(null);
+    setData([]);
+    setOffset(0);
+    void fetchPage(0, true);
+  }
+
   useEffect(() => {
     setData([]);
     setOffset(0);

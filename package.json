@@ -10,25 +10,25 @@
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.12",
+    "exceljs": "^4.4.0",
     "flatpickr": "^4.6.13",
-    "next": "15.5.3",
+    "next": "^15.5.23",
     "pdfmake": "^0.3.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-flatpickr": "^4.0.11",
     "react-range": "^1.10.0",
-    "recharts": "^2.15.4",
-    "tronweb": "^6.4.0",
-    "xlsx": "^0.18.5"
+    "recharts": "^2.15.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdfmake": "^0.2.12",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.3",
+    "eslint-config-next": "^15.5.23",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

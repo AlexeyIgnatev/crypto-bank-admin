@@ -51,6 +51,17 @@ function downloadText(
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+function downloadBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
 function csvEscape(value: string): string {
   if (/[",\n\r;]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
   return value;
@@ -113,8 +124,8 @@ async function exportCsv<T>(opts: ExportOptions<T>): Promise<void> {
 }
 
 async function exportExcel<T>(opts: ExportOptions<T>): Promise<void> {
-  const XLSX = await import("xlsx");
-  const wb = XLSX.utils.book_new();
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.Workbook();
 
   const summaryRows: Array<{ Metric: string; Value: string | number }> = [];
   if (opts.periodLabel)
@@ -123,8 +134,12 @@ async function exportExcel<T>(opts: ExportOptions<T>): Promise<void> {
     summaryRows.push({ Metric: item.label, Value: item.value });
   }
   if (summaryRows.length) {
-    const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
-    XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+    const summarySheet = workbook.addWorksheet("Summary");
+    summarySheet.columns = [
+      { header: "Metric", key: "Metric", width: 32 },
+      { header: "Value", key: "Value", width: 48 },
+    ];
+    summarySheet.addRows(summaryRows);
   }
 
   const dataRows = opts.rows.map((row, index) => {
@@ -135,9 +150,20 @@ async function exportExcel<T>(opts: ExportOptions<T>): Promise<void> {
     return out;
   });
 
-  const wsData = XLSX.utils.json_to_sheet(dataRows);
-  XLSX.utils.book_append_sheet(wb, wsData, "Data");
-  XLSX.writeFile(wb, stampFileName(opts.fileBaseName, "xlsx"));
+  const dataSheet = workbook.addWorksheet("Data");
+  dataSheet.columns = opts.columns.map((column) => ({
+    header: column.header,
+    key: column.header,
+    width: Math.max(16, Math.min(48, column.header.length + 8)),
+  }));
+  dataSheet.addRows(dataRows);
+  const buffer = await workbook.xlsx.writeBuffer();
+  downloadBlob(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    stampFileName(opts.fileBaseName, "xlsx"),
+  );
 }
 
 async function exportPdf<T>(opts: ExportOptions<T>): Promise<void> {
@@ -152,7 +178,7 @@ async function exportPdf<T>(opts: ExportOptions<T>): Promise<void> {
   body.push(opts.columns.map((c) => ({ text: c.header, bold: true })));
   opts.rows.forEach((row, index) => {
     body.push(
-      opts.columns.map((c) => String(normalizeCell(c.getValue(row, index)))) ,
+      opts.columns.map((c) => String(normalizeCell(c.getValue(row, index)))),
     );
   });
 

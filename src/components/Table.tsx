@@ -798,7 +798,7 @@ export default function Table({
             <div className="header-dd p-2 w-[260px]">
               <div className="text-sm mb-1 font-medium">Дата от</div>
               <Flatpickr
-                value={dateFrom ? new Date(dateFrom) : null}
+                value={dateFrom ? new Date(dateFrom) : undefined}
                 options={{
                   enableTime: true,
                   dateFormat: "d.m.Y H:i",
@@ -812,7 +812,7 @@ export default function Table({
               />
               <div className="text-sm mb-1 mt-3 font-medium">Дата до</div>
               <Flatpickr
-                value={dateTo ? new Date(dateTo) : null}
+                value={dateTo ? new Date(dateTo) : undefined}
                 options={{
                   enableTime: true,
                   dateFormat: "d.m.Y H:i",

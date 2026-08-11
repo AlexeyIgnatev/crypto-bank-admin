@@ -14,8 +14,11 @@ function withCookies(
   return res;
 }
 
-export async function PATCH(_: Request, ctx: { params: { id: string } }) {
-  const id = ctx.params.id;
+export async function PATCH(
+  _: Request,
+  ctx: { params: Promise<{ id: string }> },
+) {
+  const { id } = await ctx.params;
   const upstream = await upstreamFetch(
     `/antifraud/cases/${encodeURIComponent(id)}/approve`,
     { method: "PATCH" },

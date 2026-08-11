@@ -1,59 +1,72 @@
 import { NextResponse } from "next/server";
-import { API_BASE } from "@/lib/config";
+import { upstreamFetch } from "@/lib/http";
 
 export const runtime = "nodejs";
 
 export async function GET(req: Request) {
+  const adminResponse = await upstreamFetch("/admin-management/me", {
+    method: "GET",
+  });
+  const admin = await adminResponse.json().catch(() => null);
+  if (!adminResponse.ok || admin?.role !== "SUPER_ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const url = new URL(req.url);
   const wallet = url.searchParams.get("wallet")?.trim() || "tron-wallet";
-  const { TronWeb } = await import("tronweb");
-  const presets: Record<
-    string,
-    { address: string; privateKey: string; customerId: number }
-  > = {
-    "tron-wallet": {
-      address: "TRVh3EuuWTkCfECfXM77SGZZZQwJT49WBm",
-      privateKey: "275857fc71f175075d7703bffd5018be7f3e196fb95a2c528dd060aaa3f96bf2",
-      customerId: 922686094,
-    },
-    "tron-wallet1": {
-      address: "TT1DfhAby43Xya5pR4XYKRhy93gSFWByXg",
-      privateKey: "7dd79b709f1a056c6a794b6be343dd6b61c9cc4ba7400ca15814ad2d31ffdb08",
-      customerId: 944629427,
-    },
-    "tron-wallet2": {
-      address: "TEYMgT9qm4eGtidZFvgyHgWQ754MiXMNo5",
-      privateKey: "9e5902ced393abc6939c5a77018fa54d1d92b4c23c58ace04ee42a4374db98fc",
-      customerId: 944629428,
-    },
-    "tron-wallet3": {
-      address: "TApidQ7qtmV1HfvnfCoK3vydmpTeE127bk",
-      privateKey: "d9b8862864a6ffe9d82e85c054952af45049b4dc130bf49499a0f477aa085b0d",
-      customerId: 944629429,
-    },
+  const suffixByWallet: Record<string, string> = {
+    "tron-wallet": "",
+    "tron-wallet1": "_1",
+    "tron-wallet2": "_2",
+    "tron-wallet3": "_3",
   };
-  const preset = presets[wallet] || presets["tron-wallet"];
-  const privateKey = preset.privateKey;
-  const address = TronWeb.address.fromPrivateKey(privateKey);
+  const suffix = suffixByWallet[wallet];
+  if (suffix === undefined) {
+    return NextResponse.json({ error: "Unknown wallet" }, { status: 404 });
+  }
 
-  try {
-    const registerRes = await fetch(`${API_BASE}/users/browser-wallet`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customer_id: preset.customerId,
-        private_key: privateKey,
-        address,
-      }),
-      cache: "no-store",
-    });
-    await registerRes.json().catch(() => ({}));
-  } catch {}
+  const privateKey =
+    process.env[`TRON_WALLET_PRIVATE_KEY${suffix}`]?.trim() || "";
+  const customerId = Number(process.env[`TRON_WALLET_CUSTOMER_ID${suffix}`]);
+  if (
+    !/^[0-9a-fA-F]{64}$/.test(privateKey) ||
+    !Number.isInteger(customerId) ||
+    customerId <= 0
+  ) {
+    return NextResponse.json(
+      { error: `Server wallet ${wallet} is not configured` },
+      { status: 503 },
+    );
+  }
+
+  const registerRes = await upstreamFetch("/users/browser-wallet", {
+    method: "POST",
+    body: JSON.stringify({
+      customer_id: customerId,
+      private_key: privateKey,
+    }),
+    cache: "no-store",
+  });
+  if (!registerRes.ok) {
+    const details = await registerRes.json().catch(() => ({}));
+    return NextResponse.json(
+      { error: "Wallet registration failed", details },
+      { status: registerRes.status },
+    );
+  }
+  const registeredWallet = await registerRes.json().catch(() => null);
+  const address = String(registeredWallet?.address || "");
+  if (!address) {
+    return NextResponse.json(
+      { error: "Wallet registration returned no address" },
+      { status: 502 },
+    );
+  }
 
   return NextResponse.json({
     privateKey,
     address,
     rpcUrl: "http://192.168.255.121:8090",
-    customerId: preset.customerId,
+    customerId,
   });
 }

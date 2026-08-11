@@ -10,6 +10,14 @@ services:
       - API_BASE=${API_BASE:-http://host.docker.internal:8000}
       - NEXT_PUBLIC_API_BASE=${NEXT_PUBLIC_API_BASE:-http://host.docker.internal:8000}
       - NODE_ENV=production
+      - TRON_WALLET_PRIVATE_KEY=${TRON_WALLET_PRIVATE_KEY}
+      - TRON_WALLET_CUSTOMER_ID=${TRON_WALLET_CUSTOMER_ID}
+      - TRON_WALLET_PRIVATE_KEY_1=${TRON_WALLET_PRIVATE_KEY_1}
+      - TRON_WALLET_CUSTOMER_ID_1=${TRON_WALLET_CUSTOMER_ID_1}
+      - TRON_WALLET_PRIVATE_KEY_2=${TRON_WALLET_PRIVATE_KEY_2}
+      - TRON_WALLET_CUSTOMER_ID_2=${TRON_WALLET_CUSTOMER_ID_2}
+      - TRON_WALLET_PRIVATE_KEY_3=${TRON_WALLET_PRIVATE_KEY_3}
+      - TRON_WALLET_CUSTOMER_ID_3=${TRON_WALLET_CUSTOMER_ID_3}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     # If your backend is also in compose, you can declare a depends_on

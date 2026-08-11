@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { upstreamFetch } from "@/lib/http";
+import { upstreamFetch, type UpstreamResponse } from "@/lib/http";
 
 function withCookies(
   upstream: UpstreamResponse,

@@ -247,7 +247,9 @@ function formatSummary(rule: AntiFraudRule, draft: RuleDraft): string {
 }
 
 function sortRules(rules: AntiFraudRule[]): AntiFraudRule[] {
-  const order = new Map(RULE_ORDER.map((key, index) => [key, index]));
+  const order = new Map<string, number>(
+    RULE_ORDER.map((key, index) => [key, index]),
+  );
   return [...rules].sort((a, b) => {
     const ai = order.get(a.key) ?? Number.MAX_SAFE_INTEGER;
     const bi = order.get(b.key) ?? Number.MAX_SAFE_INTEGER;
