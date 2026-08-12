@@ -12,6 +12,8 @@
 :root {
   --background: #f6f7f9;
   --foreground: #0f172a;
+  --font-geist-sans: "Noto Sans", "Segoe UI", sans-serif;
+  --font-geist-mono: "Noto Sans Mono", "Cascadia Mono", monospace;
 }
 
 :root.dark {
