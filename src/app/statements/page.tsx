@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getTransactions } from "@/lib/api";
 import { exportRows } from "@/lib/exporters";
+import { exportAccountStatement, AccountStatementEntry } from "@/lib/accountStatement";
 import { readableRejectionReason } from "@/lib/rejectionReason";
 import { Transaction } from "@/types";
+import Modal from "@/components/Modal";
 
 const ASSET_OPTIONS = [
   { label: "СОМ", value: "SOM" },
@@ -26,6 +28,8 @@ async function fetchAllByRole(params: {
   search: string;
   asset: string;
   role: "sender" | "receiver";
+  dateFrom?: string;
+  dateTo?: string;
 }): Promise<Transaction[]> {
   const items: Transaction[] = [];
   let offset = 0;
@@ -38,6 +42,8 @@ async function fetchAllByRole(params: {
       sortBy: "createdAt",
       sortDir: "desc",
       currencies: [params.asset],
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
     } as any);
 
     items.push(...res.items);
@@ -63,6 +69,18 @@ export default function StatementsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [autoLoaded, setAutoLoaded] = useState(false);
   const [hasPrefill, setHasPrefill] = useState(false);
+  const [statementOpen, setStatementOpen] = useState(false);
+  const [statementExporting, setStatementExporting] = useState(false);
+  const [statementOwner, setStatementOwner] = useState("");
+  const [statementAccount, setStatementAccount] = useState("");
+  const [statementDateFrom, setStatementDateFrom] = useState(() => {
+    const date = new Date();
+    date.setDate(1);
+    return date.toISOString().slice(0, 10);
+  });
+  const [statementDateTo, setStatementDateTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [statementClosingBalance, setStatementClosingBalance] = useState("0");
+  const [statementError, setStatementError] = useState<string | null>(null);
 
   const selectedItems = useMemo(
     () => items.filter((item) => selectedIds.has(item.id)),
@@ -217,6 +235,95 @@ export default function StatementsPage() {
     }
   }
 
+  function openAccountStatement() {
+    const owner = fioSearch.trim() || phoneSearch.trim();
+    const account = walletSearch.trim();
+    setStatementOwner(owner);
+    setStatementAccount(account);
+    setStatementError(null);
+    setStatementOpen(true);
+  }
+
+  async function createAccountStatement() {
+    const terms = [fioSearch.trim(), phoneSearch.trim(), walletSearch.trim()].filter(Boolean);
+    if (!terms.length) {
+      setStatementError("Сначала укажите пользователя в фильтрах выписки");
+      return;
+    }
+    if (!statementOwner.trim() || !statementAccount.trim()) {
+      setStatementError("Укажите владельца и номер счёта или кошелька");
+      return;
+    }
+    if (!statementDateFrom || !statementDateTo || statementDateFrom > statementDateTo) {
+      setStatementError("Проверьте период выписки");
+      return;
+    }
+
+    setStatementExporting(true);
+    setStatementError(null);
+    try {
+      const directions = new Map<string, { transaction: Transaction; outgoing: boolean }>();
+      for (const term of terms) {
+        const [sent, received] = await Promise.all([
+          fetchAllByRole({
+            search: term,
+            asset,
+            role: "sender",
+            dateFrom: `${statementDateFrom}T00:00:00.000`,
+            dateTo: `${statementDateTo}T23:59:59.999`,
+          }),
+          fetchAllByRole({
+            search: term,
+            asset,
+            role: "receiver",
+            dateFrom: `${statementDateFrom}T00:00:00.000`,
+            dateTo: `${statementDateTo}T23:59:59.999`,
+          }),
+        ]);
+        for (const transaction of received) {
+          if (!directions.has(transaction.id)) directions.set(transaction.id, { transaction, outgoing: false });
+        }
+        for (const transaction of sent) directions.set(transaction.id, { transaction, outgoing: true });
+      }
+
+      const entries: AccountStatementEntry[] = Array.from(directions.values())
+        .filter(({ transaction }) => transaction.status === "SUCCESS")
+        .sort((a, b) => Date.parse(a.transaction.createdAt) - Date.parse(b.transaction.createdAt))
+        .map(({ transaction, outgoing }) => {
+          const amount = Number(transaction.amount || 0);
+          const fee = Number(transaction.feeAmount || 0);
+          return {
+            date: new Date(transaction.createdAt).toLocaleDateString("ru-RU"),
+            document: transaction.id,
+            correspondent: outgoing ? transaction.recipient : transaction.sender,
+            group: transaction.kind || "Операция",
+            debit: outgoing ? amount + fee : 0,
+            credit: outgoing ? 0 : amount,
+            purpose:
+              transaction.comment ||
+              `${outgoing ? "Перевод получателю" : "Поступление от отправителя"} ${outgoing ? transaction.recipient : transaction.sender}`,
+          };
+        });
+
+      const currency = ASSET_OPTIONS.find((option) => option.value === asset);
+      await exportAccountStatement({
+        ownerName: statementOwner.trim(),
+        account: statementAccount.trim(),
+        currencyLabel: currency?.label || asset,
+        currencyCode: asset === "SOM" ? "417" : asset === "SALAM" ? "SALAM" : "USDT TRC20",
+        dateFrom: new Date(`${statementDateFrom}T00:00:00`).toLocaleDateString("ru-RU"),
+        dateTo: new Date(`${statementDateTo}T00:00:00`).toLocaleDateString("ru-RU"),
+        closingBalance: Number(statementClosingBalance.replace(",", ".")) || 0,
+        entries,
+      });
+      setStatementOpen(false);
+    } catch {
+      setStatementError("Не удалось сформировать выписку. Проверьте пользователя и период.");
+    } finally {
+      setStatementExporting(false);
+    }
+  }
+
   const hasAnySearch = Boolean(fioSearch.trim() || phoneSearch.trim() || walletSearch.trim());
 
   return (
@@ -264,9 +371,14 @@ export default function StatementsPage() {
             </select>
           </label>
 
-          <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
-            {loading ? "Загрузка..." : "Показать выписку"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button className="btn btn-primary h-10 px-5" onClick={load} disabled={loading}>
+              {loading ? "Загрузка..." : "Показать выписку"}
+            </button>
+            <button className="btn h-10 whitespace-nowrap px-5" onClick={openAccountStatement}>
+              Сделать выписку
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 text-xs text-muted">Фильтр ищет только по ФИО, телефону и кошельку, затем объединяет найденные операции.</div>
@@ -406,6 +518,44 @@ export default function StatementsPage() {
           </table>
         </div>
       </div>
+
+      <Modal open={statementOpen} onClose={() => setStatementOpen(false)} title="Сделать выписку по счёту">
+        <div className="grid gap-4">
+          <div className="rounded-lg border border-soft bg-[var(--background)] p-3 text-sm text-muted">
+            Будет сформирован файл Excel в банковском формате: реквизиты счёта, входящий остаток, дебет, кредит, обороты и исходящий остаток.
+          </div>
+          <label className="grid gap-1">
+            <span className="text-sm">Владелец счёта</span>
+            <input className="ui-input" value={statementOwner} onChange={(event) => setStatementOwner(event.target.value)} placeholder="Фамилия Имя Отчество" />
+          </label>
+          <label className="grid gap-1">
+            <span className="text-sm">Номер счёта или кошелька</span>
+            <input className="ui-input" value={statementAccount} onChange={(event) => setStatementAccount(event.target.value)} placeholder="1340... / 0x... / TR..." />
+          </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="grid gap-1">
+              <span className="text-sm">Дата начала</span>
+              <input className="ui-input" type="date" value={statementDateFrom} onChange={(event) => setStatementDateFrom(event.target.value)} />
+            </label>
+            <label className="grid gap-1">
+              <span className="text-sm">Дата окончания</span>
+              <input className="ui-input" type="date" value={statementDateTo} onChange={(event) => setStatementDateTo(event.target.value)} />
+            </label>
+          </div>
+          <label className="grid gap-1">
+            <span className="text-sm">Исходящий остаток на конец периода, {ASSET_OPTIONS.find((option) => option.value === asset)?.label}</span>
+            <input className="ui-input" inputMode="decimal" value={statementClosingBalance} onChange={(event) => setStatementClosingBalance(event.target.value)} placeholder="0,00" />
+            <span className="text-xs text-muted">Нужен для точного расчёта входящего остатка по операциям периода.</span>
+          </label>
+          {statementError && <div className="text-sm text-red-500">{statementError}</div>}
+          <div className="flex justify-end gap-2 border-t border-soft pt-4">
+            <button className="btn h-10 px-4" onClick={() => setStatementOpen(false)} disabled={statementExporting}>Отмена</button>
+            <button className="btn btn-primary h-10 px-5" onClick={() => void createAccountStatement()} disabled={statementExporting}>
+              {statementExporting ? "Формирование..." : "Скачать XLSX"}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
