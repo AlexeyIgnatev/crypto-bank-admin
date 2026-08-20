@@ -171,7 +171,10 @@ export default function SupportPage() {
                           {ticket.status === "OPEN" ? "OPEN" : "CLOSED"}
                         </span>
                       </div>
-                      <div className="text-xs text-muted mt-1">Клиент: {ticket.customerId}</div>
+                      <div className="text-xs text-muted mt-1">
+                        Клиент: {ticket.customerId}
+                        {ticket.customerName ? ` · ${ticket.customerName}` : ""}
+                      </div>
                       <div className="text-xs text-muted mt-1">Последнее: {new Date(ticket.lastMessageAt).toLocaleString()}</div>
                     </button>
                   </li>

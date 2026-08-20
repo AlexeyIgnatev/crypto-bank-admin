@@ -1205,6 +1205,7 @@ export async function getSupportTickets(params?: {
   const items: SupportTicket[] = rawItems.map((item: any) => ({
     id: Number(item.id),
     customerId: Number(item.customer_id),
+    customerName: item.customer_name ? String(item.customer_name) : null,
     status: (item.status || "OPEN") as SupportTicketStatus,
     createdAt: new Date(Number(item.created_at || 0)).toISOString(),
     lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),
@@ -1272,6 +1273,7 @@ export async function closeSupportTicket(
   return {
     id: Number(item.id),
     customerId: Number(item.customer_id),
+    customerName: item.customer_name ? String(item.customer_name) : null,
     status: (item.status || "CLOSED") as SupportTicketStatus,
     createdAt: new Date(Number(item.created_at || 0)).toISOString(),
     lastMessageAt: new Date(Number(item.last_message_at || 0)).toISOString(),

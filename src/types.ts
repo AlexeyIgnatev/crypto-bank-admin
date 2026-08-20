@@ -150,6 +150,7 @@ export type SupportMessageRole = "USER" | "ASSISTANT" | "ADMIN";
 export interface SupportTicket {
   id: number;
   customerId: number;
+  customerName: string | null;
   status: SupportTicketStatus;
   createdAt: string;
   lastMessageAt: string;
