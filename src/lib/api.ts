@@ -80,7 +80,8 @@ function mapDisplayToAssetOld(x: string): string {
 
 function toOptionalNumber(value: unknown): number | undefined {
   if (value == null) return undefined;
-  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : undefined;
   if (typeof value === "string" && value.trim() !== "") {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
@@ -416,11 +417,6 @@ export async function createUser(payload: {
 export async function updateUser(
   id: string | number,
   payload: Partial<{
-    firstName: string;
-    lastName: string;
-    middleName?: string;
-    phone: string;
-    email: string;
     status: "Активен" | "Заблокирован" | "Фин контроль";
     statusComment?: string;
     tariffCategory: TariffCategory;
@@ -428,11 +424,6 @@ export async function updateUser(
   }>,
 ) {
   const body: any = {
-    ...(payload.firstName != null ? { first_name: payload.firstName } : {}),
-    ...(payload.lastName != null ? { last_name: payload.lastName } : {}),
-    ...(payload.middleName != null ? { middle_name: payload.middleName } : {}),
-    ...(payload.phone != null ? { phone: payload.phone } : {}),
-    ...(payload.email != null ? { email: payload.email } : {}),
     ...(payload.status != null ? { status: payload.status } : {}),
     ...(payload.statusComment != null
       ? { status_comment: payload.statusComment }
@@ -656,7 +647,8 @@ export async function getTransactionsStats(params: {
   const mapCurrencyToDisplay = (x?: string) => {
     const display = mapCurrency(x);
     if (display === "COM") return "СОМ";
-    if (display === "SALAM" || display === "САЛАМ" || display === "Салам") return "Салам";
+    if (display === "SALAM" || display === "САЛАМ" || display === "Салам")
+      return "Салам";
     return display;
   };
   const totalSum = Number(summary.total_sum_som ?? 0);
@@ -1090,7 +1082,9 @@ export async function getTariffs(): Promise<TariffSetting[]> {
   if (!res.ok) {
     const body = await readErrorBody(res);
     throw new Error(
-      body ? `Failed to load tariffs: ${body}` : `Failed to load tariffs (HTTP ${res.status})`,
+      body
+        ? `Failed to load tariffs: ${body}`
+        : `Failed to load tariffs (HTTP ${res.status})`,
     );
   }
   return res.json();
@@ -1114,7 +1108,12 @@ export async function getAdminActionLogs(params: {
   sortDir?: "asc" | "desc";
   createdFrom?: string;
   createdTo?: string;
-}): Promise<{ items: AdminActionLog[]; total: number; offset: number; limit: number }> {
+}): Promise<{
+  items: AdminActionLog[];
+  total: number;
+  offset: number;
+  limit: number;
+}> {
   const q = new URLSearchParams();
   if (params.offset != null) q.set("offset", String(params.offset));
   if (params.limit != null) q.set("limit", String(params.limit));

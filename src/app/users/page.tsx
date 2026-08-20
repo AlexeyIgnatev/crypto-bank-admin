@@ -15,12 +15,7 @@ import {
   updateUser,
   type AdminActionLog,
 } from "@/lib/api";
-import {
-  CustomerResidency,
-  TariffCategory,
-  User,
-  UserStatus,
-} from "@/types";
+import { CustomerResidency, TariffCategory, User, UserStatus } from "@/types";
 
 function mapUiStatuses(statuses?: UserStatus[]) {
   return (statuses || []).map((status) =>
@@ -135,7 +130,9 @@ export default function UsersPage() {
     setExporting(format);
     try {
       const rows = await loadAllUsers();
-      const activeCount = rows.filter((user) => user.status === "Активен").length;
+      const activeCount = rows.filter(
+        (user) => user.status === "Активен",
+      ).length;
 
       await exportRows<User>({
         format,
@@ -158,7 +155,9 @@ export default function UsersPage() {
           {
             header: "Последний логин",
             getValue: (row) =>
-              row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : "—",
+              row.lastLoginAt
+                ? new Date(row.lastLoginAt).toLocaleString()
+                : "—",
           },
           { header: "COM", getValue: (row) => row.balances.COM },
           { header: "Салам", getValue: (row) => row.balances.SALAM },
@@ -381,7 +380,6 @@ function CreateUserForm({
           {submitting ? "Сохранение..." : "Сохранить"}
         </button>
       </div>
-
     </form>
   );
 }
@@ -415,7 +413,9 @@ function EditUserForm({
   const [email, setEmail] = useState(user.email);
   const [status, setStatus] = useState<UserStatus>(user.status);
   const [statusComment, setStatusComment] = useState(user.statusComment || "");
-  const [statusCommentError, setStatusCommentError] = useState<string | null>(null);
+  const [statusCommentError, setStatusCommentError] = useState<string | null>(
+    null,
+  );
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -457,11 +457,6 @@ function EditUserForm({
         setSubmitting(true);
         try {
           await updateUser(user.id, {
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            email,
             status,
             statusComment: trimmedStatusComment,
             tariffCategory,
@@ -469,7 +464,9 @@ function EditUserForm({
           });
 
           await onSave({
-            fullName: [lastName, firstName, middleName].filter(Boolean).join(" "),
+            fullName: [lastName, firstName, middleName]
+              .filter(Boolean)
+              .join(" "),
             phone,
             email,
             status,
@@ -506,6 +503,7 @@ function EditUserForm({
         onTariffCategory={setTariffCategory}
         onResidency={setResidency}
         showTariff
+        identityReadOnly
       />
       {err && <div className="text-sm text-red-500">{err}</div>}
       <div className="grid grid-cols-2 gap-2 pt-4">
@@ -547,6 +545,7 @@ function UserFormFields({
   onTariffCategory,
   onResidency,
   showTariff = false,
+  identityReadOnly = false,
 }: {
   lastName: string;
   firstName: string;
@@ -569,15 +568,23 @@ function UserFormFields({
   onTariffCategory?: (value: TariffCategory) => void;
   onResidency?: (value: CustomerResidency) => void;
   showTariff?: boolean;
+  identityReadOnly?: boolean;
 }) {
   return (
     <div className="grid grid-cols-2 gap-3">
+      {identityReadOnly ? (
+        <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          ФИО, телефон и email загружаются из АБС и недоступны для
+          редактирования.
+        </div>
+      ) : null}
       <div>
         <div className="mb-1 text-sm">Фамилия</div>
         <input
           className="ui-input w-full"
           required
           value={lastName}
+          disabled={identityReadOnly}
           onChange={(event) => onLastName(event.target.value)}
         />
       </div>
@@ -587,6 +594,7 @@ function UserFormFields({
           className="ui-input w-full"
           required
           value={firstName}
+          disabled={identityReadOnly}
           onChange={(event) => onFirstName(event.target.value)}
         />
       </div>
@@ -595,6 +603,7 @@ function UserFormFields({
         <input
           className="ui-input w-full"
           value={middleName}
+          disabled={identityReadOnly}
           onChange={(event) => onMiddleName(event.target.value)}
           placeholder="(необязательно)"
         />
@@ -605,6 +614,7 @@ function UserFormFields({
           className="ui-input w-full"
           required
           value={phone}
+          disabled={identityReadOnly}
           onChange={(event) => onPhone(event.target.value)}
         />
       </div>
@@ -615,6 +625,7 @@ function UserFormFields({
           required
           type="email"
           value={email}
+          disabled={identityReadOnly}
           onChange={(event) => onEmail(event.target.value)}
         />
       </div>
@@ -632,7 +643,9 @@ function UserFormFields({
       </div>
       {onStatusComment ? (
         <div className="col-span-2">
-          <div className={`mb-1 text-sm ${statusCommentError ? "text-red-500" : ""}`}>
+          <div
+            className={`mb-1 text-sm ${statusCommentError ? "text-red-500" : ""}`}
+          >
             Комментарий к статусу
             {requireStatusComment ? " *" : ""}
           </div>
@@ -644,7 +657,9 @@ function UserFormFields({
             placeholder={COMMENT_PROMPT}
           />
           {statusCommentError ? (
-            <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>
+            <div className="mt-1 text-xs text-red-500">
+              {statusCommentError}
+            </div>
           ) : null}
         </div>
       ) : null}
@@ -686,7 +701,6 @@ function UserFormFields({
     </div>
   );
 }
-
 
 function UserStatusHistorySection({
   userId,
@@ -748,7 +762,9 @@ function UserStatusHistorySection({
       } catch (e) {
         if (!active) return;
         setStatusHistoryError(
-          e instanceof Error ? e.message : "Не удалось загрузить историю статуса",
+          e instanceof Error
+            ? e.message
+            : "Не удалось загрузить историю статуса",
         );
         setStatusHistory([]);
       } finally {
@@ -771,10 +787,7 @@ function UserStatusHistorySection({
       status: statusLabelForLog(body?.status ?? body?.status_comment),
       comment:
         String(
-          body?.status_comment ??
-            body?.statusComment ??
-            body?.comment ??
-            "?",
+          body?.status_comment ?? body?.statusComment ?? body?.comment ?? "?",
         ) || "?",
       action: item.action,
       ip: item.ip,
@@ -811,7 +824,9 @@ function UserStatusHistorySection({
     <div className="mt-6 rounded-2xl border border-soft bg-[var(--bg-soft)]">
       <div className="flex items-center justify-between gap-3 border-b border-soft px-4 py-3">
         <div>
-          <div className="text-sm font-semibold">История комментариев по статусу</div>
+          <div className="text-sm font-semibold">
+            История комментариев по статусу
+          </div>
           <div className="text-xs text-muted">
             Последние изменения статуса и комментарии к ним.
           </div>
@@ -820,7 +835,9 @@ function UserStatusHistorySection({
           <button
             type="button"
             className="btn h-9"
-            disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+            disabled={
+              !statusHistoryRows.length || Boolean(statusHistoryExporting)
+            }
             onClick={() => exportStatusHistory("csv")}
           >
             {statusHistoryExporting === "csv" ? "CSV..." : "Скачать CSV"}
@@ -828,7 +845,9 @@ function UserStatusHistorySection({
           <button
             type="button"
             className="btn h-9"
-            disabled={!statusHistoryRows.length || Boolean(statusHistoryExporting)}
+            disabled={
+              !statusHistoryRows.length || Boolean(statusHistoryExporting)
+            }
             onClick={() => exportStatusHistory("pdf")}
           >
             {statusHistoryExporting === "pdf" ? "PDF..." : "Скачать PDF"}
@@ -852,7 +871,10 @@ function UserStatusHistorySection({
             </thead>
             <tbody>
               {statusHistoryRows.map((item, index) => (
-                <tr key={`${item.date}-${index}`} className="border-t border-soft">
+                <tr
+                  key={`${item.date}-${index}`}
+                  className="border-t border-soft"
+                >
                   <td className="py-2 pr-3 whitespace-nowrap text-muted">
                     {new Date(item.date).toLocaleString()}
                   </td>
@@ -864,7 +886,9 @@ function UserStatusHistorySection({
             </tbody>
           </table>
         ) : (
-          <div className="text-sm text-muted">Пока нет истории изменения статуса.</div>
+          <div className="text-sm text-muted">
+            Пока нет истории изменения статуса.
+          </div>
         )}
       </div>
     </div>

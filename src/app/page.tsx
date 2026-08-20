@@ -87,7 +87,10 @@ export default function Home() {
         {selected && (
           <div className="space-y-2 text-sm text-fg">
             <Row label="ID/tx_hash" value={selected.id} mono />
-            <Row label="Статус" value={<StatusBadge status={selected.status} />} />
+            <Row
+              label="Статус"
+              value={<StatusBadge status={selected.status} />}
+            />
             <Row
               label="Дата"
               value={new Date(selected.createdAt).toLocaleString()}
@@ -104,30 +107,22 @@ export default function Home() {
               <>
                 <Row
                   label="Сетевая комиссия"
-                  value={
-                    `${formatAmount6(asNumber(selected.networkFeeAmount))} ${selected.networkFeeAsset || ""}`.trim()
-                  }
+                  value={`${formatAmount6(asNumber(selected.networkFeeAmount))} ${selected.networkFeeAsset || ""}`.trim()}
                 />
                 <Row
                   label="Потрачено газа (energy)"
-                  value={
-                    asNumber(selected.energyUsed).toLocaleString()
-                  }
+                  value={asNumber(selected.energyUsed).toLocaleString()}
                 />
                 <Row
                   label="Двигающая сила (bandwidth)"
-                  value={
-                    asNumber(selected.bandwidthUsed).toLocaleString()
-                  }
+                  value={asNumber(selected.bandwidthUsed).toLocaleString()}
                 />
               </>
             )}
             {selected.currency === "SALAM" && (
               <Row
                 label="Сожжено BRICS"
-                value={
-                  formatAmount6(asNumber(selected.bricsBurnedAmount))
-                }
+                value={formatAmount6(asNumber(selected.bricsBurnedAmount))}
               />
             )}
             <Row
@@ -158,9 +153,7 @@ export default function Home() {
             <Row
               label="ID получателя ABS"
               value={
-                selected.recipientAbsId ||
-                selected.recipientCustomerId ||
-                "—"
+                selected.recipientAbsId || selected.recipientCustomerId || "—"
               }
               mono
             />
@@ -204,9 +197,9 @@ export default function Home() {
         {selectedUser && (
           <EditUserInline
             user={selectedUser}
-          onCancel={() => setOpenUserEdit(false)}
-          onSave={(next) => {
-            setSelectedUser(next);
+            onCancel={() => setOpenUserEdit(false)}
+            onSave={(next) => {
+              setSelectedUser(next);
               setOpenUserEdit(false);
             }}
           />
@@ -266,16 +259,16 @@ function EditUserInline({
   onCancel: () => void;
   onSave: (u: User) => void;
 }) {
-  const [lastName, setLastName] = useState(user.fullName.split(" ")[0] || "");
-  const [firstName, setFirstName] = useState(user.fullName.split(" ")[1] || "");
-  const [middleName, setMiddleName] = useState(
-    user.fullName.split(" ")[2] || "",
-  );
-  const [phone, setPhone] = useState(user.phone);
-  const [email, setEmail] = useState(user.email);
+  const lastName = user.fullName.split(" ")[0] || "";
+  const firstName = user.fullName.split(" ")[1] || "";
+  const middleName = user.fullName.split(" ")[2] || "";
+  const phone = user.phone;
+  const email = user.email;
   const [status, setStatus] = useState(user.status);
   const [statusComment, setStatusComment] = useState(user.statusComment || "");
-  const [statusCommentError, setStatusCommentError] = useState<string | null>(null);
+  const [statusCommentError, setStatusCommentError] = useState<string | null>(
+    null,
+  );
   const [tariffCategory, setTariffCategory] = useState<TariffCategory>(
     user.tariffCategory || "K1",
   );
@@ -323,11 +316,6 @@ function EditUserInline({
         setSubmitting(true);
         try {
           await updateUser(user.id, {
-            firstName,
-            lastName,
-            middleName,
-            phone,
-            email,
             status,
             statusComment: trimmedStatusComment,
             tariffCategory,
@@ -353,50 +341,38 @@ function EditUserInline({
       }}
     >
       <div className="grid grid-cols-2 gap-3">
+        <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+          ФИО, телефон и email загружаются из АБС и недоступны для
+          редактирования.
+        </div>
         <div>
           <div className="text-sm mb-1">Фамилия</div>
-          <input
-            className="ui-input w-full"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
-          />
+          <input className="ui-input w-full" value={lastName} disabled />
         </div>
         <div>
           <div className="text-sm mb-1">Имя</div>
-          <input
-            className="ui-input w-full"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
-          />
+          <input className="ui-input w-full" value={firstName} disabled />
         </div>
         <div className="col-span-2">
           <div className="text-sm mb-1">Отчество</div>
           <input
             className="ui-input w-full"
             value={middleName}
-            onChange={(e) => setMiddleName(e.target.value)}
+            disabled
             placeholder="(необязательно)"
           />
         </div>
         <div>
           <div className="text-sm mb-1">Телефон</div>
-          <input
-            className="ui-input w-full"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+          <input className="ui-input w-full" value={phone} disabled />
         </div>
         <div>
           <div className="text-sm mb-1">E-mail</div>
           <input
             className="ui-input w-full"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
             type="email"
-            required
+            disabled
           />
         </div>
         <div className="col-span-2">
@@ -421,7 +397,9 @@ function EditUserInline({
             placeholder={COMMENT_PROMPT}
           />
           {statusCommentError ? (
-            <div className="mt-1 text-xs text-red-500">{statusCommentError}</div>
+            <div className="mt-1 text-xs text-red-500">
+              {statusCommentError}
+            </div>
           ) : null}
         </div>
         <div>
@@ -490,7 +468,7 @@ function StatusBadge({ status }: { status: TransactionStatus }) {
         ? "В ожидании"
         : status === "REJECTED"
           ? "Отклонено"
-          : "Ошибка"
+          : "Ошибка";
 
   return <span className={`badge ${cls} whitespace-nowrap`}>{text}</span>;
 }
